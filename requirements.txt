@@ -1,0 +1,25 @@
+# =============================================
+# OrganoidQC Bridge — requirements.txt
+# Step 2: 이미지 수신 + 저장 + 픽셀 분석
+# Step 3: OrganoID 파이프라인 연결
+# =============================================
+
+# --- 웹 서버 ---
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+
+# --- 이미지 처리 ---
+pillow==10.3.0
+numpy==1.26.4
+opencv-python-headless==4.9.0.80
+
+# --- OrganoID 의존성 (Step 3) ---
+scipy==1.13.0
+scikit-image==0.23.2
+# tensorflow-cpu==2.16.1   # GPU 없는 로컬 환경 권장
+# tflite-runtime==2.14.0   # 경량 대안
+
+# --- 유틸 ---
+python-multipart==0.0.9
+aiofiles==23.2.1
+python-dotenv==1.0.1

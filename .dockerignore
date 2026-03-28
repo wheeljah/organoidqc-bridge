@@ -1,0 +1,20 @@
+# Git
+.git
+.gitignore
+
+# 로컬 전용 파일
+uploads/
+organoID/
+models/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.log
+
+# 테스트 / 문서
+tests/
+*.md
+*.sh
+*.json
+*.yaml

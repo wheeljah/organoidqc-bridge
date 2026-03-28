@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: organoidqc-bridge
+    runtime: docker
+    plan: free                      # free / starter / standard
+    region: singapore               # 한국과 가장 가까운 리전
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "8000"
+      - key: KEEP_UPLOADS
+        value: "false"
+      - key: ORGANO_ID_DIR
+        value: /app/organoID
+      - key: UPLOAD_DIR
+        value: /tmp/uploads
+    healthCheckPath: /health

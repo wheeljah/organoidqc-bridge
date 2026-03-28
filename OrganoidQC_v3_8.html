@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrganoidQC Web v3.7 - 로컬 Real Data 업로드</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        :root { --primary: #00b894; --blue: #0984e3; --orange: #e17055; }
+        body { font-family: 'Noto Sans KR', sans-serif; margin:0; padding:0; background: linear-gradient(135deg, #f8f9fa, #e9f5f0); color:#2d3436; }
+        .container { max-width:1280px; margin:0 auto; padding:20px; }
+        header { text-align:center; margin-bottom:30px; background:white; padding:25px; border-radius:16px; box-shadow:0 4px 20px rgba(0,184,148,0.15); }
+        h1 { margin:0; color:var(--primary); font-size:2.3rem; }
+        .dashboard { display:grid; grid-template-columns:300px 1fr; gap:25px; }
+        .sidebar { background:white; padding:25px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08); height:fit-content; }
+        .main { background:white; padding:25px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+        .upload-area { border:3px dashed #00b894; border-radius:16px; padding:30px 20px; text-align:center; background:#f8f9fa; cursor:pointer; transition:all 0.3s; }
+        .upload-area:hover { background:#e9f5f0; }
+        .sample-gallery { display:flex; flex-wrap:wrap; gap:12px; margin-top:20px; }
+        .sample-btn { flex:1 1 120px; padding:8px; border:2px solid #ddd; border-radius:12px; background:white; cursor:pointer; transition:all 0.2s; text-align:center; font-size:0.9rem; }
+        .sample-btn:hover { border-color:var(--primary); transform:scale(1.03); }
+        .sample-btn img { width:100%; height:90px; object-fit:cover; border-radius:8px; }
+        .card { background:#f8f9fa; border-radius:12px; padding:18px; text-align:center; }
+        .metric { font-size:2.5rem; font-weight:700; color:var(--primary); margin:8px 0; }
+        .status { padding:6px 16px; border-radius:50px; font-size:0.9rem; font-weight:500; }
+        .good { background:#00b894; color:white; }
+        .btn { background:var(--primary); color:white; border:none; padding:14px 32px; font-size:1.1rem; border-radius:50px; cursor:pointer; width:100%; font-weight:700; margin-top:15px; }
+        .btn:hover { transform:scale(1.05); box-shadow:0 8px 25px rgba(0,184,148,0.4); }
+        .btn-sm { padding:8px 18px; font-size:0.9rem; border-radius:50px; border:none; cursor:pointer; font-weight:600; color:white; margin-top:0; width:auto; }
+        .comparison-section { margin-top:30px; border-top:2px solid #eee; padding-top:25px; }
+        .chart-container { margin:20px 0; height:280px; }
+        .url-section { margin-top:12px; padding:15px; background:#f8f9fa; border-radius:12px; }
+        .url-section input[type="text"] { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box; margin-bottom:8px; font-size:0.9rem; }
+        .url-loading { display:none; font-size:0.85rem; color:#636e72; margin-top:6px; }
+
+        /* ★ v3.7 신규 스타일 */
+        .data-source-tabs { display:flex; gap:8px; margin-bottom:18px; }
+        .tab-btn { flex:1; padding:10px; border:2px solid #ddd; border-radius:10px; background:white; cursor:pointer; font-size:0.9rem; font-weight:600; color:#636e72; transition:all 0.2s; }
+        .tab-btn.active { border-color:var(--primary); background:#e9f5f0; color:var(--primary); }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        .local-upload-box { border:2px dashed #ddd; border-radius:12px; padding:20px; background:#fafafa; }
+        .local-upload-box:hover { border-color:var(--primary); background:#f0faf7; }
+
+        /* ★ v3.8 Bridge 연동 스타일 */
+        #bridgeBanner { display:flex; align-items:center; gap:10px; padding:10px 18px; border-radius:12px; font-size:0.88rem; font-weight:600; margin-bottom:18px; transition:all 0.4s; }
+        #bridgeBanner.checking { background:#fff8e1; color:#f39c12; border:1.5px solid #f39c12; }
+        #bridgeBanner.online   { background:#e9f5f0; color:#00b894; border:1.5px solid #00b894; }
+        #bridgeBanner.offline  { background:#fff0ee; color:#d63031; border:1.5px solid #d63031; }
+        #bridgeDot { width:10px; height:10px; border-radius:50%; background:currentColor; flex-shrink:0; animation:pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+        #bridgeBanner.online  #bridgeDot,
+        #bridgeBanner.offline #bridgeDot { animation:none; }
+        .bridge-mode-badge { font-size:0.78rem; padding:2px 8px; border-radius:50px; background:currentColor; color:white; opacity:0.85; }
+        #analyzeBtn { display:none; background:linear-gradient(135deg,#00b894,#00cec9); color:white; border:none; padding:14px 32px; font-size:1.05rem; border-radius:50px; cursor:pointer; width:100%; font-weight:700; margin-top:12px; transition:all 0.2s; }
+        #analyzeBtn:hover:not(:disabled) { transform:scale(1.04); box-shadow:0 8px 25px rgba(0,184,148,0.4); }
+        #analyzeBtn:disabled { opacity:0.55; cursor:not-allowed; transform:none; }
+        #analyzeProgress { display:none; margin-top:10px; font-size:0.88rem; color:#636e72; text-align:center; }
+        #analyzeProgress .spinner { display:inline-block; animation:spin 0.8s linear infinite; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .bridge-result-tag { display:inline-block; font-size:0.78rem; padding:2px 10px; border-radius:50px; background:#0984e3; color:white; margin-left:8px; vertical-align:middle; }
+        #organoidCountCard { display:none; }
+
+        .data-preview { margin-top:15px; max-height:200px; overflow-y:auto; border-radius:10px; border:1px solid #eee; }
+        .data-preview table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+        .data-preview th { background:#00b894; color:white; padding:8px 10px; text-align:left; position:sticky; top:0; }
+        .data-preview td { padding:7px 10px; border-bottom:1px solid #f0f0f0; }
+        .data-preview tr:hover td { background:#f0faf7; }
+        .data-preview tr.highlight td { background:#e9f5f0; font-weight:600; }
+
+        .manual-entry-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+        .manual-entry-grid input, .manual-entry-grid select { padding:9px; border-radius:8px; border:1px solid #ddd; font-size:0.9rem; width:100%; box-sizing:border-box; }
+
+        .data-badge { display:inline-block; background:#00b894; color:white; font-size:0.8rem; font-weight:700; padding:3px 10px; border-radius:50px; margin-left:8px; }
+        .data-badge.local { background:#e17055; }
+
+        table { width:100%; border-collapse:collapse; }
+        th { background:#f1f3f5; padding:10px; text-align:left; font-size:0.9rem; }
+        td { padding:9px 10px; border-bottom:1px solid #f0f0f0; font-size:0.9rem; }
+
+        .template-note { font-size:0.82rem; color:#636e72; margin:10px 0 0; background:#fff3cd; padding:10px 12px; border-radius:8px; border-left:3px solid #ffc107; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🧬 OrganoidQC Web v3.7</h1>
+        <p class="subtitle">Dry Run + Supabase + 🌐 웹 URL + <strong>📂 로컬 Real Data 직접 업로드</strong></p>
+    </header>
+
+    <div class="dashboard">
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <h3>📋 Dry Run 설정</h3>
+            <label style="display:block; margin:15px 0 5px; font-weight:500;">장기 종류</label>
+            <select id="organType" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+                <option value="intestine">장 (Intestine)</option>
+                <option value="liver">간 (Liver)</option>
+                <option value="cortical">뇌 (Cortical)</option>
+            </select>
+            <label style="display:block; margin:20px 0 5px; font-weight:500;">배양 일수</label>
+            <input type="range" id="cultureDays" min="7" max="60" value="28" style="width:100%;">
+            <span id="daysValue" style="font-size:1.1rem; font-weight:600;">28일</span>
+            <label style="display:block; margin:20px 0 5px; font-weight:500;">Passage 번호</label>
+            <input type="number" id="passage" value="4" min="1" max="12" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+
+            <hr style="margin:25px 0;">
+            <h3>🔌 Supabase DB 연결</h3>
+            <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co" style="width:100%; padding:10px; margin-bottom:8px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+            <input type="password" id="supabaseKey" placeholder="anon public key" style="width:100%; padding:10px; margin-bottom:8px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+            <button onclick="initSupabase()" class="btn" style="margin-top:5px;">🔌 Supabase 연결하기</button>
+            <p id="supabaseStatus" style="font-size:0.85rem; margin-top:8px; color:#00b894;"></p>
+
+            <hr style="margin:25px 0;">
+            <h3>🌐 웹 URL 이미지 불러오기</h3>
+            <div class="url-section">
+                <input type="text" id="webImageUrl" placeholder="https://example.com/organoid.jpg">
+                <button onclick="loadWebImage()" class="btn" style="margin-top:0; padding:10px 20px; font-size:0.95rem;">📥 URL로 이미지 불러오기</button>
+                <div id="urlLoading" class="url-loading">⏳ 이미지 불러오는 중...</div>
+                <p style="font-size:0.85rem; margin:12px 0 8px; color:#636e72;">📌 추천 공개 이미지</p>
+                <div id="webExamples" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+            </div>
+
+            <hr style="margin:25px 0;">
+            <h3>📸 로컬 이미지 업로드</h3>
+
+            <!-- ★ v3.8 Bridge URL 설정 (file:// 로 열 때만 표시) -->
+            <div id="bridgeUrlRow" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <label for="bridgeUrlInput" style="font-size:0.82rem;font-weight:600;white-space:nowrap;color:#636e72;">🌐 Bridge URL</label>
+                <input id="bridgeUrlInput" type="url"
+                       placeholder="https://your-app.up.railway.app"
+                       style="flex:1;padding:7px 12px;border:1.5px solid #dfe6e9;border-radius:8px;font-size:0.85rem;outline:none;"
+                       oninput="onBridgeUrlChanged(this.value)" />
+                <button onclick="checkBridge()" style="padding:7px 14px;border:none;border-radius:8px;background:#0984e3;color:white;font-size:0.82rem;font-weight:600;cursor:pointer;">재연결</button>
+            </div>
+
+            <!-- ★ v3.8 Bridge 연결 상태 배너 -->
+            <div id="bridgeBanner" class="checking">
+                <div id="bridgeDot"></div>
+                <span id="bridgeStatusText">Bridge 서버 확인 중...</span>
+            </div>
+
+            <div id="uploadArea" class="upload-area">
+                <p style="margin:0 0 15px; font-size:1.1rem;">🖼️ 현미경 사진 끌어다 놓기 또는 클릭</p>
+                <input type="file" id="imageInput" accept="image/*" style="display:none;">
+                <button onclick="document.getElementById('imageInput').click()" class="btn" style="width:auto; padding:12px 28px; margin:0 auto; display:block;">📤 파일 선택</button>
+            </div>
+
+            <!-- ★ v3.8 OrganoID 분석 버튼 (Bridge 연결 시 표시) -->
+            <button id="analyzeBtn" onclick="runBridgeAnalysis()">🔬 OrganoID로 이미지 분석</button>
+            <div id="analyzeProgress"><span class="spinner">⏳</span> <span id="analyzeMsg">분석 중...</span></div>
+
+            <h4 style="margin:20px 0 10px;">🌐 웹 오가노이드 예시</h4>
+            <div class="sample-gallery" id="sampleGallery"></div>
+
+            <button onclick="runDrySimulation()" class="btn" style="margin-top:30px;">🚀 Dry Run + Real Data 비교 시작</button>
+        </div>
+
+        <!-- 메인 -->
+        <div class="main">
+            <h2 id="resultTitle">🔬 Dry Run + Real Data 비교</h2>
+
+            <div id="resultArea" style="display:none;">
+                <div style="text-align:center; margin-bottom:25px;">
+                    <img id="previewImage" src="" alt="업로드된 이미지" style="max-width:100%; max-height:320px; border-radius:16px; box-shadow:0 4px 20px rgba(0,184,148,0.3);">
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
+                    <div class="card"><div>Size CV (%)</div><div id="cvValue" class="metric">7.8</div><span class="status good">✅ OSI 통과</span></div>
+                    <div class="card"><div>종합 QC Score</div><div id="scoreValue" class="metric">91</div><span class="status good">🟢 우수</span></div>
+                    <div class="card"><div>Circularity</div><div id="circValue" class="metric">0.84</div><span class="status good">좋음</span></div>
+                    <div class="card"><div>Viability 예측</div><div id="viabValue" class="metric">87%</div><span class="status good">✅ ≥70%</span></div>
+                    <!-- ★ v3.8 OrganoID 검출 수 카드 -->
+                    <div class="card" id="organoidCountCard"><div>오가노이드 수 <span class="bridge-result-tag">OrganoID</span></div><div id="countValue" class="metric">—</div><span id="analysisModeTag" class="status" style="background:#0984e3;color:white;font-size:0.78rem;">pixel</span></div>
+                </div>
+
+                <h3 style="margin:25px 0 10px;">🔍 OSI 가이드라인 벤치마킹</h3>
+                <table><thead><tr><th>항목</th><th>OSI 최소 기준</th><th>시뮬레이션 결과</th><th>판정</th></tr></thead><tbody id="tableBody"></tbody></table>
+
+                <!-- ★ v3.7 Real Data 비교 섹션 (탭 구조) -->
+                <div class="comparison-section">
+                    <h3>📊 Real Data 비교
+                        <span id="dataSourceBadge" class="data-badge" style="display:none;"></span>
+                    </h3>
+
+                    <!-- 데이터 소스 탭 -->
+                    <div class="data-source-tabs">
+                        <button class="tab-btn active" onclick="switchTab('local')" id="tab-local">📂 로컬 업로드</button>
+                        <button class="tab-btn" onclick="switchTab('supabase')" id="tab-supabase">🔌 Supabase</button>
+                    </div>
+
+                    <!-- 탭 1: 로컬 Real Data 업로드 (★ 신규) -->
+                    <div class="tab-panel active" id="panel-local">
+
+                        <!-- 소탭: CSV / 수동입력 -->
+                        <div style="display:flex; gap:8px; margin-bottom:14px;">
+                            <button class="tab-btn active" style="flex:1; font-size:0.85rem;" onclick="switchSubTab('csv')" id="subtab-csv">📄 CSV 업로드</button>
+                            <button class="tab-btn" style="flex:1; font-size:0.85rem;" onclick="switchSubTab('manual')" id="subtab-manual">✏️ 수동 입력</button>
+                        </div>
+
+                        <!-- CSV 업로드 -->
+                        <div id="subpanel-csv">
+                            <div class="local-upload-box" onclick="document.getElementById('realDataCsvInput').click()" style="cursor:pointer; text-align:center;">
+                                <p style="margin:0 0 8px; font-size:1.1rem;">📄 Real Data CSV 파일을 끌어다 놓거나 클릭</p>
+                                <p style="margin:0; font-size:0.85rem; color:#636e72;">형식: label, organ, size_cv, viability, marker_percent</p>
+                                <input type="file" id="realDataCsvInput" accept=".csv,.txt" style="display:none;">
+                            </div>
+                            <div style="display:flex; gap:8px; margin-top:10px;">
+                                <button class="btn-sm" style="background:#6c5ce7;" onclick="downloadCSVTemplate()">⬇️ CSV 템플릿 다운로드</button>
+                                <button class="btn-sm" style="background:#b2bec3;" onclick="clearLocalData()">🗑️ 데이터 초기화</button>
+                            </div>
+                            <div class="template-note">
+                                📌 <strong>CSV 헤더 형식:</strong> <code>label,organ,size_cv,viability,marker_percent</code><br>
+                                organ 값: <code>intestine</code> / <code>liver</code> / <code>cortical</code> — 현재 선택 장기만 필터링됩니다.
+                            </div>
+                        </div>
+
+                        <!-- 수동 입력 -->
+                        <div id="subpanel-manual" style="display:none;">
+                            <div class="manual-entry-grid">
+                                <input id="mLabel" placeholder="레이블 (예: My Lab Day28)" style="grid-column:1/-1;">
+                                <select id="mOrgan">
+                                    <option value="intestine">장 (Intestine)</option>
+                                    <option value="liver">간 (Liver)</option>
+                                    <option value="cortical">뇌 (Cortical)</option>
+                                </select>
+                                <div></div>
+                                <input id="mCV" type="number" step="0.1" placeholder="Size CV (%)">
+                                <input id="mViab" type="number" placeholder="Viability (%)">
+                                <input id="mMarker" type="number" placeholder="Marker (%)">
+                                <div></div>
+                            </div>
+                            <button class="btn" style="margin-top:10px; padding:10px; font-size:0.95rem;" onclick="addManualRecord()">➕ 데이터 추가</button>
+                        </div>
+
+                        <!-- 로드된 데이터 미리보기 -->
+                        <div id="localDataPreviewWrap" style="display:none; margin-top:15px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <strong style="font-size:0.9rem;">📋 로드된 데이터 <span id="localDataCount" class="data-badge local">0건</span></strong>
+                            </div>
+                            <div class="data-preview">
+                                <table>
+                                    <thead><tr><th>레이블</th><th>장기</th><th>Size CV</th><th>Viability</th><th>Marker</th><th></th></tr></thead>
+                                    <tbody id="localDataTableBody"></tbody>
+                                </table>
+                            </div>
+                            <button class="btn" style="margin-top:12px; padding:10px; font-size:0.95rem; background:#e17055;" onclick="applyLocalData()">📊 이 데이터로 비교 차트 업데이트</button>
+                        </div>
+                    </div>
+
+                    <!-- 탭 2: Supabase -->
+                    <div class="tab-panel" id="panel-supabase">
+                        <button onclick="fetchRealDataFromSupabase()" class="btn" style="width:auto; padding:10px 24px; font-size:0.95rem; margin-bottom:15px;">🌐 Supabase에서 Real Data 불러오기</button>
+                        <button onclick="saveToSupabase()" class="btn" style="width:auto; padding:10px 24px; font-size:0.95rem; margin-bottom:15px; margin-left:10px; background:#0984e3;">💾 내 측정값 Supabase에 저장</button>
+                    </div>
+
+                    <!-- 공통: 레퍼런스 선택 + 사용자 입력 + 차트 -->
+                    <div id="comparisonBody" style="margin-top:20px;">
+                        <select id="realRefSelect" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:15px;" onchange="updateRealComparison()"></select>
+
+                        <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:160px;"><small>내 Size CV (%)</small><input type="number" id="userCV" value="8.5" step="0.1" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;" onchange="updateRealComparison()"></div>
+                            <div style="flex:1; min-width:160px;"><small>내 Viability (%)</small><input type="number" id="userViab" value="82" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;" onchange="updateRealComparison()"></div>
+                            <div style="flex:1; min-width:160px;"><small>내 Marker (%)</small><input type="number" id="userMarker" value="35" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;" onchange="updateRealComparison()"></div>
+                        </div>
+
+                        <canvas id="comparisonChart" class="chart-container"></canvas>
+
+                        <table style="margin-top:10px;">
+                            <thead><tr><th>항목</th><th>시뮬레이션</th><th>Real Reference</th><th>내 실제값</th><th>시뮬 vs Ref 차이</th></tr></thead>
+                            <tbody id="realTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="initialGuide" style="text-align:center; padding:80px 20px; color:#636e72;">
+                <h3>👆 이미지를 업로드하고 "Dry Run + Real Data 비교 시작" 버튼을 눌러주세요</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== 상태 ====================
+    let supabaseClient = null;
+    let currentSimulation = { cv:0, viability:0, marker:0, score:0, circ:0, organ:'' };
+    let comparisonChartInstance = null;
+    let supabaseRealData = [];   // Supabase에서 불러온 데이터
+    let localRealData = [];      // ★ v3.7: 로컬에서 직접 업로드한 데이터
+
+    // 현재 활성 데이터 소스 반환
+    function getActiveRealData() {
+        return localRealData.length > 0 ? localRealData : supabaseRealData;
+    }
+
+    // ==================== 탭 전환 ====================
+    function switchTab(name) {
+        ['local','supabase'].forEach(t => {
+            document.getElementById('tab-' + t).classList.toggle('active', t === name);
+            document.getElementById('panel-' + t).classList.toggle('active', t === name);
+        });
+    }
+
+    function switchSubTab(name) {
+        ['csv','manual'].forEach(t => {
+            document.getElementById('subtab-' + t).classList.toggle('active', t === name);
+            document.getElementById('subpanel-' + t).style.display = t === name ? 'block' : 'none';
+        });
+    }
+
+    // ==================== Supabase ====================
+    async function initSupabase() {
+        const url = document.getElementById('supabaseUrl').value.trim();
+        const key = document.getElementById('supabaseKey').value.trim();
+        if (!url || !key) return alert('URL과 Anon Key를 모두 입력해주세요!');
+        try {
+            const { createClient } = window.supabase;
+            supabaseClient = createClient(url, key);
+            document.getElementById('supabaseStatus').innerHTML = '✅ Supabase 연결 성공!';
+        } catch(e) {
+            alert('연결 실패: ' + e.message);
+        }
+    }
+
+    async function fetchRealDataFromSupabase() {
+        if (!supabaseClient) return alert('먼저 Supabase를 연결해주세요!');
+        const organ = document.getElementById('organType').value;
+        try {
+            const { data, error } = await supabaseClient.from('qc_references').select('*').eq('organ', organ);
+            if (error) throw error;
+            supabaseRealData = data || [];
+            localRealData = []; // 로컬 데이터 비우고 Supabase 우선
+            populateRefSelect(supabaseRealData, 'Supabase');
+            updateRealComparison();
+        } catch(e) {
+            alert('데이터 불러오기 실패: ' + e.message);
+        }
+    }
+
+    async function saveToSupabase() {
+        if (!supabaseClient) return alert('Supabase 연결 후 사용해주세요!');
+        const organ = document.getElementById('organType').value;
+        const { error } = await supabaseClient.from('qc_references').insert([{
+            organ, label: `User ${new Date().toISOString().slice(0,10)}`,
+            size_cv: parseFloat(document.getElementById('userCV').value),
+            viability: parseFloat(document.getElementById('userViab').value),
+            marker_percent: parseFloat(document.getElementById('userMarker').value),
+            source: 'OrganoidQC Web'
+        }]);
+        if (error) alert(error.message);
+        else { alert('✅ 저장 완료!'); fetchRealDataFromSupabase(); }
+    }
+
+    // ==================== ★ v3.7 로컬 Real Data 업로드 ====================
+
+    /** CSV 파일 파싱 및 localRealData 적재 */
+    function setupRealDataCSVInput() {
+        const input = document.getElementById('realDataCsvInput');
+        const box = document.querySelector('.local-upload-box');
+
+        input.addEventListener('change', e => parseRealDataCSV(e.target.files[0]));
+
+        // 드래그 앤 드롭
+        box.addEventListener('dragover', e => { e.preventDefault(); box.style.borderColor='#00b894'; });
+        box.addEventListener('dragleave', () => { box.style.borderColor='#ddd'; });
+        box.addEventListener('drop', e => {
+            e.preventDefault();
+            box.style.borderColor = '#ddd';
+            const file = e.dataTransfer.files[0];
+            if (file) parseRealDataCSV(file);
+        });
+    }
+
+    function parseRealDataCSV(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            const lines = ev.target.result.trim().split('\n').map(l => l.trim()).filter(Boolean);
+            if (lines.length < 2) return alert('데이터가 부족합니다. 헤더 + 최소 1행이 필요합니다.');
+
+            const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const required = ['label','organ','size_cv','viability','marker_percent'];
+            const missing = required.filter(k => !header.includes(k));
+            if (missing.length > 0) {
+                return alert(`CSV 헤더에 다음 컬럼이 없습니다: ${missing.join(', ')}\n\n정확한 형식:\nlabel,organ,size_cv,viability,marker_percent`);
+            }
+
+            const idx = k => header.indexOf(k);
+            const parsed = [];
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',').map(c => c.trim());
+                if (cols.length < required.length) continue;
+                parsed.push({
+                    label:         cols[idx('label')] || `Row ${i}`,
+                    organ:         cols[idx('organ')].toLowerCase(),
+                    size_cv:       parseFloat(cols[idx('size_cv')]),
+                    viability:     parseFloat(cols[idx('viability')]),
+                    marker_percent:parseFloat(cols[idx('marker_percent')])
+                });
+            }
+
+            if (parsed.length === 0) return alert('파싱된 데이터가 없습니다. 파일 내용을 확인해주세요.');
+
+            // 기존 데이터에 추가 (중복 레이블 덮어쓰기)
+            parsed.forEach(row => {
+                const existIdx = localRealData.findIndex(r => r.label === row.label && r.organ === row.organ);
+                if (existIdx >= 0) localRealData[existIdx] = row;
+                else localRealData.push(row);
+            });
+
+            renderLocalDataTable();
+            alert(`✅ ${parsed.length}건 로드 완료! (전체 누적: ${localRealData.length}건)\n"비교 차트 업데이트" 버튼을 눌러 적용하세요.`);
+        };
+        reader.readAsText(file);
+    }
+
+    /** 수동 입력 한 행 추가 */
+    function addManualRecord() {
+        const label  = document.getElementById('mLabel').value.trim();
+        const organ  = document.getElementById('mOrgan').value;
+        const cv     = parseFloat(document.getElementById('mCV').value);
+        const viab   = parseFloat(document.getElementById('mViab').value);
+        const marker = parseFloat(document.getElementById('mMarker').value);
+
+        if (!label) return alert('레이블을 입력해주세요.');
+        if (isNaN(cv) || isNaN(viab) || isNaN(marker)) return alert('Size CV, Viability, Marker 값을 모두 숫자로 입력해주세요.');
+
+        const row = { label, organ, size_cv: cv, viability: viab, marker_percent: marker };
+        const existIdx = localRealData.findIndex(r => r.label === label && r.organ === organ);
+        if (existIdx >= 0) {
+            if (!confirm(`"${label}" 데이터가 이미 있습니다. 덮어쓸까요?`)) return;
+            localRealData[existIdx] = row;
+        } else {
+            localRealData.push(row);
+        }
+
+        // 입력 초기화
+        ['mLabel','mCV','mViab','mMarker'].forEach(id => document.getElementById(id).value = '');
+        renderLocalDataTable();
+        alert(`✅ "${label}" 추가 완료 (전체: ${localRealData.length}건)`);
+    }
+
+    /** 로컬 데이터 테이블 렌더링 */
+    function renderLocalDataTable() {
+        const wrap = document.getElementById('localDataPreviewWrap');
+        const tbody = document.getElementById('localDataTableBody');
+        const count = document.getElementById('localDataCount');
+
+        if (localRealData.length === 0) { wrap.style.display = 'none'; return; }
+        wrap.style.display = 'block';
+        count.textContent = localRealData.length + '건';
+
+        tbody.innerHTML = localRealData.map((r, i) => `
+            <tr>
+                <td>${r.label}</td>
+                <td>${r.organ}</td>
+                <td>${r.size_cv}</td>
+                <td>${r.viability}</td>
+                <td>${r.marker_percent}</td>
+                <td><button onclick="deleteLocalRow(${i})" style="background:none;border:none;cursor:pointer;color:#e17055;font-size:1rem;">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function deleteLocalRow(i) {
+        localRealData.splice(i, 1);
+        renderLocalDataTable();
+        if (localRealData.length === 0) {
+            // 로컬 데이터가 없으면 비교 섹션 초기화
+            document.getElementById('realRefSelect').innerHTML = '';
+        }
+    }
+
+    function clearLocalData() {
+        if (localRealData.length === 0) return;
+        if (!confirm('로컬에 올라온 데이터를 모두 삭제할까요?')) return;
+        localRealData = [];
+        renderLocalDataTable();
+        document.getElementById('realRefSelect').innerHTML = '';
+        document.getElementById('realTableBody').innerHTML = '';
+        if (comparisonChartInstance) { comparisonChartInstance.destroy(); comparisonChartInstance = null; }
+        updateDataSourceBadge(null);
+    }
+
+    /** 로컬 데이터로 비교 차트 적용 */
+    function applyLocalData() {
+        const organ = document.getElementById('organType').value;
+        const filtered = localRealData.filter(r => r.organ === organ);
+        if (filtered.length === 0) {
+            return alert(`현재 선택된 장기(${organ})에 해당하는 로컬 데이터가 없습니다.\n다른 장기 종류를 선택하거나 해당 organ 값을 가진 데이터를 추가해주세요.`);
+        }
+        populateRefSelect(filtered, '로컬');
+        updateRealComparison();
+    }
+
+    /** CSV 템플릿 다운로드 */
+    function downloadCSVTemplate() {
+        const header = 'label,organ,size_cv,viability,marker_percent';
+        const examples = [
+            'My Lab Day28,intestine,8.2,85,33',
+            'Reference A,intestine,7.5,90,38',
+            'Control B,liver,6.8,88,82',
+            'Brain Ref,cortical,9.1,78,55'
+        ].join('\n');
+        const blob = new Blob([header + '\n' + examples], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'organoid_real_data_template.csv';
+        a.click();
+    }
+
+    // ==================== 공통: 셀렉트 채우기 & 비교 차트 ====================
+    function populateRefSelect(data, source) {
+        const select = document.getElementById('realRefSelect');
+        select.innerHTML = data.map((r, i) => `<option value="${i}">${r.label}</option>`).join('');
+        updateDataSourceBadge(source);
+    }
+
+    function updateDataSourceBadge(source) {
+        const badge = document.getElementById('dataSourceBadge');
+        if (!source) { badge.style.display = 'none'; return; }
+        badge.style.display = 'inline-block';
+        badge.textContent = source === '로컬' ? '📂 로컬 데이터' : '🔌 Supabase';
+        badge.className = 'data-badge' + (source === '로컬' ? ' local' : '');
+    }
+
+    function updateRealComparison() {
+        const data = getActiveRealData();
+        if (data.length === 0) return;
+
+        const organ = document.getElementById('organType').value;
+        const filtered = data.filter(r => r.organ === organ);
+        if (filtered.length === 0) return;
+
+        const idx = Math.min(parseInt(document.getElementById('realRefSelect').value) || 0, filtered.length - 1);
+        const ref = filtered[idx];
+        if (!ref) return;
+
+        const userCV    = parseFloat(document.getElementById('userCV').value)    || currentSimulation.cv;
+        const userViab  = parseFloat(document.getElementById('userViab').value)  || currentSimulation.viability;
+        const userMarker= parseFloat(document.getElementById('userMarker').value)|| currentSimulation.marker;
+
+        document.getElementById('realTableBody').innerHTML = `
+            <tr><td>Size CV (%)</td><td>${currentSimulation.cv}</td><td>${ref.size_cv}</td><td>${userCV}</td><td>${(currentSimulation.cv - ref.size_cv).toFixed(1)}</td></tr>
+            <tr><td>Viability (%)</td><td>${currentSimulation.viability}</td><td>${ref.viability}</td><td>${userViab}</td><td>${(currentSimulation.viability - ref.viability).toFixed(1)}</td></tr>
+            <tr><td>Marker (%)</td><td>${currentSimulation.marker}</td><td>${ref.marker_percent}</td><td>${userMarker}</td><td>${(currentSimulation.marker - ref.marker_percent).toFixed(1)}</td></tr>
+        `;
+
+        if (comparisonChartInstance) comparisonChartInstance.destroy();
+        comparisonChartInstance = new Chart(document.getElementById('comparisonChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Size CV (%)', 'Viability (%)', 'Marker (%)'],
+                datasets: [
+                    { label: 'Simulation',      data: [currentSimulation.cv, currentSimulation.viability, currentSimulation.marker], backgroundColor: '#00b894' },
+                    { label: 'Real Reference',  data: [ref.size_cv, ref.viability, ref.marker_percent],                             backgroundColor: '#0984e3' },
+                    { label: 'Your Input',       data: [userCV, userViab, userMarker],                                               backgroundColor: '#fdcb6e' }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+        });
+    }
+
+    // ==================== 샘플 갤러리 ====================
+    const sampleImages = [
+        { name: "Intestine Organoid", src: "https://picsum.photos/id/1015/300/180" },
+        { name: "Liver Organoid",     src: "https://picsum.photos/id/133/300/180"  },
+        { name: "Cortical Organoid",  src: "https://picsum.photos/id/201/300/180"  }
+    ];
+
+    function createSampleGallery() {
+        const gallery = document.getElementById('sampleGallery');
+        gallery.innerHTML = '';
+        sampleImages.forEach(img => {
+            const btn = document.createElement('div');
+            btn.className = 'sample-btn';
+            btn.innerHTML = `<img src="${img.src}" alt="${img.name}" crossorigin="anonymous"><div style="margin-top:5px;">${img.name}</div>`;
+            btn.onclick = () => document.getElementById('previewImage').src = img.src;
+            gallery.appendChild(btn);
+        });
+    }
+
+    // ==================== 로컬 이미지 업로드 ====================
+    function setupUpload() {
+        const area  = document.getElementById('uploadArea');
+        const input = document.getElementById('imageInput');
+        area.addEventListener('click', () => input.click());
+        input.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = ev => document.getElementById('previewImage').src = ev.target.result;
+                reader.readAsDataURL(file);
+                onImageSelected(file);   // ★ v3.8 Bridge 버튼 표시
+            }
+        });
+        // ★ v3.8 드래그&드롭
+        area.addEventListener('dragover', e => { e.preventDefault(); area.style.background='#e9f5f0'; });
+        area.addEventListener('dragleave', () => { area.style.background=''; });
+        area.addEventListener('drop', e => {
+            e.preventDefault();
+            area.style.background = '';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = ev => document.getElementById('previewImage').src = ev.target.result;
+                reader.readAsDataURL(file);
+                onImageSelected(file);
+            }
+        });
+    }
+
+    // ==================== 웹 URL 이미지 불러오기 ====================
+    const webExampleImages = [
+        { name: "Intestine (Day 28)", url: "https://picsum.photos/id/1015/800/600" },
+        { name: "Liver Organoid",     url: "https://picsum.photos/id/133/800/600"  },
+        { name: "Cortical Brain",     url: "https://picsum.photos/id/201/800/600"  },
+        { name: "MultiOrg Dataset",   url: "https://picsum.photos/id/251/800/600"  },
+        { name: "Mouse Organoid",     url: "https://picsum.photos/id/1005/800/600" }
+    ];
+
+    function createWebExamples() {
+        const container = document.getElementById('webExamples');
+        container.innerHTML = '';
+        webExampleImages.forEach(item => {
+            const btn = document.createElement('button');
+            btn.style.cssText = 'padding:6px 12px; font-size:0.85rem; border:1px solid #ddd; border-radius:8px; background:white; cursor:pointer;';
+            btn.textContent = item.name;
+            btn.onclick = () => { document.getElementById('webImageUrl').value = item.url; loadWebImage(); };
+            container.appendChild(btn);
+        });
+    }
+
+    function loadWebImage() {
+        const rawUrl = document.getElementById('webImageUrl').value.trim();
+        if (!rawUrl) return alert('URL을 입력해주세요!');
+        if (!/^https?:\/\/.+/.test(rawUrl)) return alert('올바른 URL을 입력해주세요.\n예: https://example.com/image.jpg');
+
+        const preview   = document.getElementById('previewImage');
+        const loadingEl = document.getElementById('urlLoading');
+
+        preview.onerror = () => { loadingEl.style.display = 'none'; alert('이미지를 불러올 수 없습니다.\n• 직접 이미지 파일 URL인지 확인 (jpg/png/gif 등)\n• CORS 허용 공개 이미지인지 확인'); };
+        preview.onload  = () => { loadingEl.style.display = 'none'; };
+        preview.crossOrigin = 'anonymous';
+        loadingEl.style.display = 'block';
+        preview.src = rawUrl;
+    }
+
+    // ==================== ★ v3.8 Bridge 연동 ====================
+    // 자동 URL 감지:
+    //   서버에서 서빙 중 → window.location.origin 사용 (연구자는 그냥 열기만 하면 됨)
+    //   로컬 파일(file://)로 열면 → localStorage 저장값 또는 수동 입력
+    const PLACEHOLDER_URL  = 'https://your-app.up.railway.app';  // 배포 후 교체
+    const LOCAL_BRIDGE_URL = 'http://localhost:8000';
+
+    function detectBridgeURL() {
+        const proto = window.location.protocol;
+        if (proto === 'http:' || proto === 'https:') {
+            // 서버에서 서빙 중 → 같은 오리진의 API를 사용
+            return window.location.origin;
+        }
+        // file:// 로 열림 → localStorage 저장값 또는 placeholder
+        return localStorage.getItem('bridgeUrl') || PLACEHOLDER_URL;
+    }
+
+    let BRIDGE_URL = detectBridgeURL();
+    const isServedFromServer = (window.location.protocol !== 'file:');
+
+    // 페이지 로드 시 URL 입력 UI 처리
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlRow   = document.getElementById('bridgeUrlRow');
+        const urlInput = document.getElementById('bridgeUrlInput');
+        if (isServedFromServer) {
+            // 서버 서빙 시: URL 입력창 숨김 (자동 연결)
+            if (urlRow) urlRow.style.display = 'none';
+        } else {
+            // 파일로 열 때: 입력창 표시, 저장값 복원
+            if (urlInput) urlInput.value = BRIDGE_URL;
+        }
+    });
+
+    function onBridgeUrlChanged(val) {
+        const trimmed = val.trim().replace(/\/$/, '');
+        BRIDGE_URL = trimmed || PLACEHOLDER_URL;
+        localStorage.setItem('bridgeUrl', BRIDGE_URL);
+    }
+    let bridgeOnline   = false;
+    let bridgeMode     = 'pixel';   // 'stub' | 'pixel' | 'organoID'
+    let pendingFile    = null;      // 업로드 대기 중인 File 객체
+
+    // ── Bridge 상태 폴링 ──────────────────────────────────────────
+    async function checkBridge() {
+        const banner  = document.getElementById('bridgeBanner');
+        const dotText = document.getElementById('bridgeStatusText');
+        try {
+            const res  = await fetch(`${BRIDGE_URL}/health`, { signal: AbortSignal.timeout(2500) });
+            if (!res.ok) throw new Error('non-200');
+            const data = await res.json();
+            bridgeOnline = true;
+            bridgeMode   = data.organoID_dir_ok ? 'organoID'
+                         : data.organoID_loaded  ? 'tflite'
+                         :                         'pixel';
+            const modeLabel = { organoID:'OrganoID', tflite:'TFLite', pixel:'Pixel' }[bridgeMode] || bridgeMode;
+            banner.className  = 'online';
+            dotText.innerHTML = `Bridge 연결됨 &nbsp;<span style="font-size:0.78rem;padding:2px 9px;border-radius:50px;background:#00b894;color:white;">${modeLabel}</span>`;
+            if (pendingFile) showAnalyzeBtn();
+        } catch {
+            bridgeOnline = false;
+            banner.className  = 'offline';
+            if (isServedFromServer) {
+                dotText.textContent = 'Bridge 서버 오류 — 서버 로그를 확인하세요 (/docs)';
+            } else {
+                dotText.textContent = 'Bridge 오프라인 — 위 URL을 확인하거나 Railway에 배포하세요';
+            }
+            document.getElementById('analyzeBtn').style.display = 'none';
+        }
+    }
+
+    function showAnalyzeBtn() {
+        if (bridgeOnline && pendingFile) {
+            document.getElementById('analyzeBtn').style.display = 'block';
+        }
+    }
+
+    // ── 이미지 선택 시 Bridge 버튼 표시 ──────────────────────────
+    function onImageSelected(file) {
+        pendingFile = file;
+        showAnalyzeBtn();
+    }
+
+    // ── OrganoID 분석 실행 ────────────────────────────────────────
+    async function runBridgeAnalysis() {
+        if (!pendingFile || !bridgeOnline) return;
+
+        const btn      = document.getElementById('analyzeBtn');
+        const progress = document.getElementById('analyzeProgress');
+        const msgEl    = document.getElementById('analyzeMsg');
+
+        btn.disabled           = true;
+        progress.style.display = 'block';
+
+        const steps = ['이미지 전송 중...', '전처리 중...', '세그멘테이션 분석 중...', '지표 계산 중...'];
+        let si = 0;
+        const ticker = setInterval(() => { msgEl.textContent = steps[si++ % steps.length]; }, 900);
+
+        try {
+            const form = new FormData();
+            form.append('file', pendingFile);
+            const res  = await fetch(`${BRIDGE_URL}/analyze`, { method:'POST', body:form });
+            const json = await res.json();
+
+            clearInterval(ticker);
+            progress.style.display = 'none';
+            btn.disabled = false;
+
+            if (!json.success) {
+                alert(`❌ 분석 실패: ${json.error}`);
+                return;
+            }
+            applyBridgeResult(json.result);
+        } catch (e) {
+            clearInterval(ticker);
+            progress.style.display = 'none';
+            btn.disabled = false;
+            alert(`❌ Bridge 통신 오류: ${e.message}\nBridge 서버가 실행 중인지 확인하세요.`);
+        }
+    }
+
+    // ── 분석 결과를 UI에 반영 ─────────────────────────────────────
+    function applyBridgeResult(r) {
+        // 기본 메트릭 카드
+        document.getElementById('cvValue').textContent    = r.size_cv;
+        document.getElementById('scoreValue').textContent = r.qc_score;
+        document.getElementById('circValue').textContent  = r.mean_circularity;
+        document.getElementById('viabValue').textContent  = r.viability_proxy + '%';
+
+        // 오가노이드 수 카드 (★ 신규)
+        document.getElementById('countValue').textContent   = r.organoid_count;
+        document.getElementById('analysisModeTag').textContent = r.analysis_mode.toUpperCase();
+        document.getElementById('organoidCountCard').style.display = 'block';
+
+        // OSI 벤치마킹 테이블
+        const cvPass   = r.size_cv     < 10  ? '✅ 통과' : '❌ 미달';
+        const viabPass = r.viability_proxy >= 70 ? '✅ 통과' : '❌ 미달';
+        const circPass = r.mean_circularity >= 0.7 ? '✅ 통과' : '⚠️ 낮음';
+        document.getElementById('tableBody').innerHTML = `
+            <tr><td>Size CV</td><td>&lt;10%</td><td>${r.size_cv}%</td><td class="status ${r.size_cv<10?'good':''}">${cvPass}</td></tr>
+            <tr><td>Viability</td><td>&gt;70%</td><td>${r.viability_proxy}%</td><td class="status ${r.viability_proxy>=70?'good':''}">${viabPass}</td></tr>
+            <tr><td>Circularity</td><td>&gt;0.7</td><td>${r.mean_circularity}</td><td class="status ${r.mean_circularity>=0.7?'good':''}">${circPass}</td></tr>
+            <tr><td>오가노이드 수</td><td>≥1</td><td>${r.organoid_count}개</td><td class="status good">✅ 검출</td></tr>
+        `;
+
+        // resultArea 표시 + 타이틀 갱신
+        document.getElementById('initialGuide').style.display = 'none';
+        document.getElementById('resultArea').style.display   = 'block';
+        const organ = document.getElementById('organType').value;
+        const days  = document.getElementById('cultureDays').value;
+        document.getElementById('resultTitle').innerHTML =
+            `🔬 ${organ.toUpperCase()} (${days}일) <span class="bridge-result-tag">OrganoID ${r.analysis_mode}</span>`;
+
+        // currentSimulation 갱신 → 차트 연동
+        currentSimulation = {
+            cv:       r.size_cv,
+            viability:r.viability_proxy,
+            marker:   organ === 'intestine' ? 33 : 82,
+            score:    r.qc_score,
+            circ:     r.mean_circularity,
+            organ,
+        };
+        updateRealComparison();
+    }
+
+    // ══════════════════════════════════════════════
+
+    // ==================== Dry Run 시뮬레이션 ====================
+    function runDrySimulation() {
+        const organ = document.getElementById('organType').value;
+        const days  = parseInt(document.getElementById('cultureDays').value);
+        let cv       = parseFloat((7.8 + Math.random()*4 - 2).toFixed(1));
+        let viability = 86;
+        if (days > 40) { cv += 3.5; viability -= 8; }
+        const score = Math.max(60, Math.min(95, 89 - (days > 40 ? 10 : 0)));
+
+        document.getElementById('initialGuide').style.display = 'none';
+        document.getElementById('resultArea').style.display = 'block';
+        document.getElementById('resultTitle').innerHTML = `🔬 ${organ.toUpperCase()} (${days}일)`;
+        document.getElementById('cvValue').textContent    = cv;
+        document.getElementById('scoreValue').textContent = score;
+        document.getElementById('viabValue').textContent  = viability + '%';
+
+        document.getElementById('tableBody').innerHTML = `
+            <tr><td>Size CV</td><td>&lt;10%</td><td>${cv}</td><td class="status good">✅ 통과</td></tr>
+            <tr><td>Viability</td><td>&gt;70%</td><td>${viability}%</td><td class="status good">✅ 통과</td></tr>
+        `;
+
+        currentSimulation = { cv, viability, marker: organ==='intestine' ? 33 : 82, score, circ:0.84, organ };
+        updateRealComparison();
+    }
+
+    // ==================== 초기화 ====================
+    window.onload = function() {
+        createSampleGallery();
+        setupUpload();
+        createWebExamples();
+        setupRealDataCSVInput();   // ★ v3.7 신규
+
+        // ★ v3.8 Bridge 상태 폴링 (즉시 1회 + 10초 간격)
+        checkBridge();
+        setInterval(checkBridge, 10000);
+
+        document.getElementById('cultureDays').addEventListener('input', function() {
+            document.getElementById('daysValue').textContent = this.value + '일';
+        });
+        console.log('%c✅ OrganoidQC Web v3.8 (Bridge fetch 연동) 로드 완료', 'color:#00b894; font-weight:bold;');
+    };
+</script>
+</body>
+</html>
