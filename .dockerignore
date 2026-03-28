@@ -4,7 +4,6 @@
 
 # 로컬 전용 파일
 uploads/
-organoID/
 models/
 __pycache__/
 *.pyc
