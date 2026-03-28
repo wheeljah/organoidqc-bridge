@@ -1,9 +1,0 @@
-venv/
-*__pycache__*
-build/
-.idea/
-*.pkl
-*.tif
-*.gif
-*.png
-Publication/Dataset
