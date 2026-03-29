@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt \
  && pip install --no-cache-dir tensorflow-cpu==2.16.1
 
 # ── OrganoID 설치 (픽셀 수준 세그멘테이션) ─
-COPY OrganoID/ /app/organoID/
+COPY organoID/ /app/organoID/
 RUN if [ -f /app/organoID/requirements.txt ]; then \
         pip install --no-cache-dir -r /app/organoID/requirements.txt; \
     fi
