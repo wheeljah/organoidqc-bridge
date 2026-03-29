@@ -2593,6 +2593,7 @@
         setupUpload();
         createWebExamples();
         setupRealDataCSVInput();
+        applyTranslations();  // ★ fix: 페이지 최초 로드 시 번역(비교표 포함) 적용
 
         // ★ v3.8 Bridge 상태 폴링 (즉시 1회 + 10초 간격)
         checkBridge();
