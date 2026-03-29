@@ -17,9 +17,40 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # ── Python 의존성 설치 ─────────────────────
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libgl1 \
+        libglib2.0-0 \
+        libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
- && pip install --no-cache-dir tensorflow-cpu==2.16.1
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY organoID/ /app/organoID/
+RUN if [ -f /app/organoID/requirements.txt ]; then \
+        pip install --no-cache-dir -r /app/organoID/requirements.txt; \
+    fi
+
+COPY app/ app/
+COPY run.py .
+COPY OrganoidQC_v3_8.html .
+
+RUN mkdir -p /tmp/uploads
+
+ENV ORGANO_ID_DIR=/app/organoID \
+    UPLOAD_DIR=/tmp/uploads \
+    HOST=0.0.0.0 \
+    PORT=8000 \
+    KEEP_UPLOADS=false \
+    PYTHONUNBUFFERED=1
+
+EXPOSE 8000
+
+CMD ["python", "run.py"]
 
 # ── OrganoID 설치 (픽셀 수준 세그멘테이션) ─
 COPY organoID/ /app/organoID/
