@@ -314,12 +314,115 @@
             .tab-btn { padding: 7px 4px; font-size: 0.78rem; }
             .algo-view-btn { font-size: 0.72rem; padding: 4px 8px; }
         }
+
+        /* ── Request 접수 모달 ── */
+        #requestModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:3000; overflow-y:auto; padding:30px 16px; }
+        #requestBox {
+            background:linear-gradient(160deg,#162b20,#0f2218);
+            border-radius:20px; max-width:520px; margin:0 auto;
+            padding:36px 32px; box-shadow:0 20px 60px rgba(0,0,0,0.65);
+            position:relative; border:1px solid rgba(0,184,148,0.22); color:#cde8da;
+        }
+        #requestBox h2 { color:#00e898; margin:0 0 6px; font-size:1.3rem; }
+        #requestBox .req-subtitle { color:#6da88a; font-size:0.87rem; margin:0 0 22px; }
+        .req-field { margin-bottom:14px; }
+        .req-field label { display:block; font-size:0.85rem; color:#a8d8be; font-weight:600; margin-bottom:5px; }
+        .req-field input,
+        .req-field select,
+        .req-field textarea {
+            width:100%; padding:10px 13px; border-radius:10px;
+            border:1.5px solid rgba(0,184,148,0.25);
+            background:#0d1f17; color:#cde8da; font-size:0.93rem;
+            font-family:inherit; box-sizing:border-box; transition:border-color 0.2s;
+            resize:vertical;
+        }
+        .req-field input:focus,
+        .req-field select:focus,
+        .req-field textarea:focus { outline:none; border-color:#00e898; }
+        .req-field textarea { min-height:110px; }
+        .req-type-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .req-type-btn {
+            padding:9px 6px; border-radius:10px; border:1.5px solid rgba(0,184,148,0.2);
+            background:rgba(0,184,148,0.04); color:#7ec8a4; font-size:0.83rem;
+            font-weight:600; cursor:pointer; transition:all 0.18s; text-align:center;
+        }
+        .req-type-btn.sel { border-color:#00e898; background:rgba(0,232,152,0.13); color:#00e898; }
+        .req-actions { display:flex; gap:10px; margin-top:20px; }
+        .req-send-btn {
+            flex:1; padding:13px; border-radius:50px; border:none;
+            background:linear-gradient(135deg,#0984e3,#00b4d8);
+            color:white; font-size:1rem; font-weight:700; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            transition:all 0.2s;
+        }
+        .req-send-btn:hover { transform:scale(1.03); box-shadow:0 6px 20px rgba(9,132,227,0.45); }
+        .req-cancel-btn {
+            padding:13px 22px; border-radius:50px; border:1.5px solid rgba(0,184,148,0.25);
+            background:transparent; color:#7ec8a4; font-size:0.95rem; font-weight:600; cursor:pointer;
+            transition:all 0.18s;
+        }
+        .req-cancel-btn:hover { border-color:#00e898; color:#00e898; }
+        .req-notice {
+            margin-top:14px; padding:10px 13px; border-radius:10px;
+            background:rgba(9,132,227,0.08); border:1px solid rgba(9,132,227,0.25);
+            font-size:0.8rem; color:#74b9ff; line-height:1.6;
+        }
+        .req-gmail-icon { font-size:1.2rem; }
+        @media (max-width:480px) {
+            #requestBox { padding:22px 16px; }
+            .req-type-grid { grid-template-columns:1fr 1fr; }
+            .req-actions { flex-direction:column; }
+            .req-cancel-btn { text-align:center; }
+        }
     </style>
 </head>
 <body>
 
 <!-- 언어 토글 버튼 -->
 <button id="langToggle" onclick="toggleLang()">🌐 EN</button>
+
+<!-- Request 접수 모달 -->
+<div id="requestModal" onclick="if(event.target===this)closeRequest()">
+  <div id="requestBox">
+    <button class="close-modal" onclick="closeRequest()">&#10005;</button>
+    <h2>&#128233; Request 접수</h2>
+    <p class="req-subtitle" id="reqSubtitle">기능 요청 &middot; 버그 리포트 &middot; 기관 맞춤 설정 &mdash; Gmail로 바로 전송됩니다</p>
+
+    <div class="req-field">
+      <label id="reqLabelType">요청 유형</label>
+      <div class="req-type-grid" id="reqTypeGrid">
+        <button class="req-type-btn sel" data-val="기능 요청" onclick="selectReqType(this)">&#10024; 기능 요청</button>
+        <button class="req-type-btn" data-val="버그 리포트" onclick="selectReqType(this)">&#128027; 버그 리포트</button>
+        <button class="req-type-btn" data-val="기관 맞춤 설정" onclick="selectReqType(this)">&#127973; 기관 맞춤</button>
+        <button class="req-type-btn" data-val="기타 문의" onclick="selectReqType(this)">&#128172; 기타 문의</button>
+      </div>
+    </div>
+
+    <div class="req-field">
+      <label for="reqName" id="reqLabelName">이름 / 소속 (선택)</label>
+      <input type="text" id="reqName" placeholder="예: 홍길동 / 서울대학교 의과대학">
+    </div>
+
+    <div class="req-field">
+      <label for="reqBody" id="reqLabelBody">내용</label>
+      <textarea id="reqBody" placeholder="요청하실 내용을 자세히 적어주세요..."></textarea>
+    </div>
+
+    <div class="req-notice" id="reqNotice">
+      <span class="req-gmail-icon">&#128236;</span>
+      아래 버튼을 누르면 <strong>Gmail</strong> 작성 화면이 열립니다.<br>
+      수신자(<strong>traffic.rnd@gmail.com</strong>)와 내용이 자동 입력되며, 전송 전 내용을 확인&#183;수정하실 수 있습니다.
+    </div>
+
+    <div class="req-actions">
+      <button class="req-send-btn" onclick="openGmailCompose()" id="reqSendBtn">
+        <span class="req-gmail-icon">&#128231;</span>
+        <span id="reqSendLabel">Gmail로 전송하기</span>
+      </button>
+      <button class="req-cancel-btn" onclick="closeRequest()" id="reqCancelBtn">취소</button>
+    </div>
+  </div>
+</div>
 
 <!-- 매뉴얼 모달 -->
 <div id="manualModal" onclick="if(event.target===this)closeManual()">
@@ -378,7 +481,7 @@
         <p class="subtitle" id="headerSubtitle">OSI · NIH SOM · Sartorius 글로벌 3대 표준 기반 &nbsp;|&nbsp; AI × Classical 교차 검증 오가노이드 QC 플랫폼</p>
         <div style="margin-top:14px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
           <button onclick="openManual()" style="background:rgba(0,184,148,0.1); border:2px solid var(--primary); color:#00e898; padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='var(--primary)';this.style.color='white'" onmouseout="this.style.background='rgba(0,184,148,0.1)';this.style.color='#00e898'" id="manualBtn">📖 연구자 매뉴얼</button>
-          <a href="/cdn-cgi/l/email-protection#3a4e485b5c5c53591448545e7a5d575b535614595557" style="background:rgba(9,132,227,0.1); border:2px solid #0984e3; color:#74b9ff; padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.background='#0984e3';this.style.color='white'" onmouseout="this.style.background='rgba(9,132,227,0.1)';this.style.color='#74b9ff'" id="contactBtn">📩 Request 접수</a>
+          <button onclick="openRequest()" style="background:rgba(9,132,227,0.1); border:2px solid #0984e3; color:#74b9ff; padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#0984e3';this.style.color='white'" onmouseout="this.style.background='rgba(9,132,227,0.1)';this.style.color='#74b9ff'" id="contactBtn">&#128233; Request 접수</button>
         </div>
     </header>
 
@@ -782,7 +885,7 @@
       <div class="footer-grid">
         <div>🧬 <strong>OrganoidQC Web v5.2</strong></div>
         <div>👤 <strong id="footerDev">개발자:</strong> Jongwoo Hahn</div>
-        <div>📩 <strong id="footerRequest">Request 접수:</strong> <a href="/cdn-cgi/l/email-protection#dda9afbcbbbbb4bef3afb3b99dbab0bcb4b1f3beb2b0"><span class="__cf_email__" data-cfemail="5c282e3d3a3a353f722e32381c3b313d3530723f3331">[email&#160;protected]</span></a></div>
+        <div>&#128233; <strong id="footerRequest">Request 접수:</strong> <button onclick="openRequest()" style="background:none;border:none;color:var(--primary);font-size:0.88rem;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">Gmail로 접수하기</button></div>
         <div style="color:#b2bec3; font-size:0.82rem;" id="footerCopy">© 2026 OrganoidQC. All rights reserved. | v5.2</div>
       </div>
     </footer>
@@ -2678,7 +2781,94 @@
     // ==================== 매뉴얼 ====================
     function openManual() { document.getElementById('manualModal').style.display = 'block'; document.body.style.overflow = 'hidden'; }
     function closeManual() { document.getElementById('manualModal').style.display = 'none'; document.body.style.overflow = ''; }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeManual(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeManual(); closeRequest(); } });
+
+    // ── Request 접수 모달 ──────────────────────────────────────
+    function openRequest() {
+        document.getElementById('requestModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        applyRequestI18n();
+    }
+    function closeRequest() {
+        document.getElementById('requestModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    function selectReqType(btn) {
+        document.querySelectorAll('.req-type-btn').forEach(b => b.classList.remove('sel'));
+        btn.classList.add('sel');
+    }
+    function openGmailCompose() {
+        const typeBtn = document.querySelector('.req-type-btn.sel');
+        const reqType = typeBtn ? typeBtn.getAttribute('data-val') : 'Request';
+        const name    = (document.getElementById('reqName').value || '').trim();
+        const body    = (document.getElementById('reqBody').value || '').trim();
+        const isKo    = (typeof currentLang !== 'undefined') ? currentLang === 'ko' : true;
+
+        if (!body) {
+            document.getElementById('reqBody').focus();
+            document.getElementById('reqBody').style.borderColor = '#e17055';
+            setTimeout(() => { document.getElementById('reqBody').style.borderColor = ''; }, 1800);
+            return;
+        }
+
+        const to = 'traffic.rnd@gmail.com';
+        const subject = encodeURIComponent('[OrganoidQC] ' + reqType + (name ? ' — ' + name : ''));
+        const bodyLines = [
+            '[OrganoidQC Request]',
+            isKo ? '유형: ' + reqType : 'Type: ' + reqType,
+            name ? (isKo ? '보내는 분: ' + name : 'From: ' + name) : '',
+            '',
+            body,
+            '',
+            '---',
+            'OrganoidQC Web v5.2 | ' + navigator.userAgent.substring(0, 60)
+        ].filter(l => l !== null);
+        const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(to) + '&su=' + subject + '&body=' + encodeURIComponent(bodyLines.join('\n'));
+
+        window.open(gmailUrl, '_blank', 'noopener');
+
+        // 전송 완료 피드백
+        const btn = document.getElementById('reqSendBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span>✅</span><span>' + (isKo ? 'Gmail이 열렸습니다!' : 'Gmail opened!') + '</span>';
+        btn.style.background = 'linear-gradient(135deg,#00b894,#00cec9)';
+        setTimeout(() => {
+            btn.innerHTML = orig;
+            btn.style.background = '';
+            closeRequest();
+            document.getElementById('reqBody').value = '';
+            document.getElementById('reqName').value = '';
+            document.querySelectorAll('.req-type-btn').forEach((b,i) => b.classList.toggle('sel', i===0));
+        }, 2000);
+    }
+    function applyRequestI18n() {
+        const isKo = (typeof currentLang !== 'undefined') ? currentLang === 'ko' : true;
+        if (!isKo) {
+            document.getElementById('reqSubtitle').textContent  = 'Feature requests · Bug reports · Custom setup — opens Gmail directly';
+            document.getElementById('reqLabelType').textContent = 'Request type';
+            document.getElementById('reqLabelName').textContent = 'Name / Affiliation (optional)';
+            document.getElementById('reqLabelBody').textContent = 'Details';
+            document.getElementById('reqSendLabel').textContent = 'Send via Gmail';
+            document.getElementById('reqCancelBtn').textContent = 'Cancel';
+            document.getElementById('reqNotice').innerHTML      = '&#128236; Clicking the button opens <strong>Gmail</strong> with the recipient (<strong>traffic.rnd@gmail.com</strong>) and content pre-filled. You can review before sending.';
+            const btns = document.querySelectorAll('.req-type-btn');
+            const enLabels = ['✨ Feature Request','🐛 Bug Report','🏥 Institutional','💬 Other'];
+            const enVals   = ['Feature Request','Bug Report','Institutional Setup','Other'];
+            btns.forEach((b,i) => { b.textContent = enLabels[i]; b.setAttribute('data-val', enVals[i]); });
+        } else {
+            document.getElementById('reqSubtitle').textContent  = '기능 요청 · 버그 리포트 · 기관 맞춤 설정 — Gmail로 바로 전송됩니다';
+            document.getElementById('reqLabelType').textContent = '요청 유형';
+            document.getElementById('reqLabelName').textContent = '이름 / 소속 (선택)';
+            document.getElementById('reqLabelBody').textContent = '내용';
+            document.getElementById('reqSendLabel').textContent = 'Gmail로 전송하기';
+            document.getElementById('reqCancelBtn').textContent = '취소';
+            document.getElementById('reqNotice').innerHTML      = '&#128236; 아래 버튼을 누르면 <strong>Gmail</strong> 작성 화면이 열립니다.<br>수신자(<strong>traffic.rnd@gmail.com</strong>)와 내용이 자동 입력되며, 전송 전 확인·수정하실 수 있습니다.';
+            const btns = document.querySelectorAll('.req-type-btn');
+            const koLabels = ['✨ 기능 요청','🐛 버그 리포트','🏥 기관 맞춤','💬 기타 문의'];
+            const koVals   = ['기능 요청','버그 리포트','기관 맞춤 설정','기타 문의'];
+            btns.forEach((b,i) => { b.textContent = koLabels[i]; b.setAttribute('data-val', koVals[i]); });
+        }
+    }
 
     // ==================== i18n 언어 전환 ====================
     let currentLang = 'ko';
@@ -2767,7 +2957,7 @@
             manualS3: '🚀 사용 방법 (Step-by-step)',
             manualS4: '📐 QC 지표 설명',
             manualS5: '📩 문의 및 요청',
-            manualContact: '기능 요청, 버그 리포트, 기관 맞춤 설정은 아래로 문의해주세요:<br>📧 <a href="mailto:traffic.rnd@gmail.com">traffic.rnd@gmail.com</a> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong>',
+            manualContact: '기능 요청, 버그 리포트, 기관 맞춤 설정은 아래로 문의해주세요:<br>📧 <button onclick="closeManual();setTimeout(openRequest,150)" style="background:none;border:none;color:var(--primary);font-size:1rem;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;">Gmail로 Request 접수하기</button> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong>',
             manualCloseBtn: '닫기',
             manualTH1: '지표', manualTH2: '설명', manualTH3: 'OSI 기준',
             manualCV: '오가노이드 크기의 변동계수 — 낮을수록 균일한 배양',
@@ -2872,7 +3062,7 @@
             manualS3: '🚀 How to Use (Step-by-step)',
             manualS4: '📐 QC Metric Descriptions',
             manualS5: '📩 Contact & Requests',
-            manualContact: 'For feature requests, bug reports, or institutional customization:<br>📧 <a href="mailto:traffic.rnd@gmail.com">traffic.rnd@gmail.com</a> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong>',
+            manualContact: 'For feature requests, bug reports, or institutional customization:<br>📧 <button onclick="closeManual();setTimeout(openRequest,150)" style="background:none;border:none;color:var(--primary);font-size:1rem;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;">Submit via Gmail</button> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong>',
             manualCloseBtn: 'Close',
             manualTH1: 'Metric', manualTH2: 'Description', manualTH3: 'OSI Standard',
             manualCV: 'Coefficient of variation of organoid size — lower = more uniform culture',
