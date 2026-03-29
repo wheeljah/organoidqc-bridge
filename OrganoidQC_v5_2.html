@@ -388,7 +388,7 @@
             <div id="uploadArea" class="upload-area">
                 <p style="margin:0 0 15px; font-size:1.1rem;" id="uploadHint">🖼️ 현미경 사진 끌어다 놓기 또는 클릭</p>
                 <input type="file" id="imageInput" accept="image/*" style="display:none;">
-                <button onclick="document.getElementById('imageInput').click()" class="btn" style="width:auto; padding:12px 28px; margin:0 auto; display:block;" id="btnSelectFile">📤 파일 선택</button>
+                <button onclick="event.stopPropagation(); document.getElementById('imageInput').click()" class="btn" style="width:auto; padding:12px 28px; margin:0 auto; display:block;" id="btnSelectFile">📤 파일 선택</button>
             </div>
 
             <!-- ★ v3.8 OrganoID 분석 버튼 (Bridge 연결 시 표시) -->
