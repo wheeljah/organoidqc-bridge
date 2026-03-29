@@ -258,7 +258,7 @@
     <h2 id="manualTitle">📖 OrganoidQC Web — 연구자 매뉴얼</h2>
 
     <h3 id="manualS1">🔬 서비스 소개</h3>
-    <p id="manualIntro">OrganoidQC Web은 오가노이드 배양 품질을 빠르게 평가하고 레퍼런스 데이터와 비교할 수 있는 연구자 전용 웹 도구입니다. OrganoID AI 분석 엔진과 연동하여 현미경 이미지에서 직접 QC 지표를 추출합니다.</p>
+    <p id="manualIntro">OrganoidQC Web은 오가노이드 배양 품질을 빠르게 평가하고 레퍼런스 데이터와 비교할 수 있는 연구자 전용 웹 도구입니다. OrganoID AI 분석 엔진과 연동하여 현미경 이미지에서 직접 QC 지표를 추출합니다.<br><br>OrganoidQC v5.2 픽셀 알고리즘은 OSI·NIH SOM·Sartorius 3대 글로벌 표준을 완벽 준수하는 투명하고 재현 가능한 baseline QC 방법으로, OrganoID AI 분석 결과와의 실시간 비교를 통해 교차 검증과 과학적 신뢰성을 극대화합니다.</p>
 
     <h3 id="manualS2">⚡ 주요 기능 및 장점</h3>
     <ul id="manualBenefitsList">
@@ -301,7 +301,7 @@
 
 <div class="container">
     <header>
-        <h1>🧬 OrganoidQC Web <span style="font-size:1.2rem; opacity:0.7;">v5.0</span></h1>
+        <h1>🧬 OrganoidQC Web <span style="font-size:1.2rem; opacity:0.7;">v5.2</span></h1>
         <p class="subtitle" id="headerSubtitle">⚙️ 픽셀 알고리즘 + OrganoID AI + 🌐 웹 URL + <strong>📂 로컬 Real Data 직접 업로드</strong> + <strong>🤖 알고리즘 비교</strong></p>
         <div style="margin-top:14px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
           <button onclick="openManual()" style="background:rgba(0,184,148,0.1); border:2px solid var(--primary); color:#00e898; padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='var(--primary)';this.style.color='white'" onmouseout="this.style.background='rgba(0,184,148,0.1)';this.style.color='#00e898'" id="manualBtn">📖 연구자 매뉴얼</button>
@@ -707,10 +707,10 @@
     <!-- Footer -->
     <footer>
       <div class="footer-grid">
-        <div>🧬 <strong>OrganoidQC Web v4.0</strong></div>
+        <div>🧬 <strong>OrganoidQC Web v5.2</strong></div>
         <div>👤 <strong id="footerDev">개발자:</strong> Jongwoo Hahn</div>
         <div>📩 <strong id="footerRequest">Request 접수:</strong> <a href="/cdn-cgi/l/email-protection#dda9afbcbbbbb4bef3afb3b99dbab0bcb4b1f3beb2b0"><span class="__cf_email__" data-cfemail="5c282e3d3a3a353f722e32381c3b313d3530723f3331">[email&#160;protected]</span></a></div>
-        <div style="color:#b2bec3; font-size:0.82rem;" id="footerCopy">© 2025 OrganoidQC. All rights reserved. | v5.0</div>
+        <div style="color:#b2bec3; font-size:0.82rem;" id="footerCopy">© 2025 OrganoidQC. All rights reserved. | v5.2</div>
       </div>
     </footer>
 </div>
@@ -2598,7 +2598,7 @@
         document.getElementById('cultureDays').addEventListener('input', function() {
             document.getElementById('daysValue').textContent = this.value + (currentLang === 'ko' ? '일' : ' days');
         });
-        console.log('%c✅ OrganoidQC Web v5.0 (다크 테마 + 픽셀 분석 + Bridge + 알고리즘 비교) 로드 완료', 'color:#00e898; font-weight:bold;');
+        console.log('%c✅ OrganoidQC Web v5.2 (다크 테마 + 픽셀 분석 + Bridge + 알고리즘 비교) 로드 완료', 'color:#00e898; font-weight:bold;');
     };
 
     // ==================== 매뉴얼 ====================
@@ -2688,7 +2688,7 @@
             // Manual
             manualTitle: '📖 OrganoidQC Web — 연구자 매뉴얼',
             manualS1: '🔬 서비스 소개',
-            manualIntro: 'OrganoidQC Web은 오가노이드 배양 품질을 빠르게 평가하고 레퍼런스 데이터와 비교할 수 있는 연구자 전용 웹 도구입니다. OrganoID AI 분석 엔진과 연동하여 현미경 이미지에서 직접 QC 지표를 추출합니다.',
+            manualIntro: 'OrganoidQC Web은 오가노이드 배양 품질을 빠르게 평가하고 레퍼런스 데이터와 비교할 수 있는 연구자 전용 웹 도구입니다. OrganoID AI 분석 엔진과 연동하여 현미경 이미지에서 직접 QC 지표를 추출합니다.<br><br>OrganoidQC v5.2 픽셀 알고리즘은 OSI·NIH SOM·Sartorius 3대 글로벌 표준을 완벽 준수하는 투명하고 재현 가능한 baseline QC 방법으로, OrganoID AI 분석 결과와의 실시간 비교를 통해 교차 검증과 과학적 신뢰성을 극대화합니다.',
             manualS2: '⚡ 주요 기능 및 장점',
             manualS3: '🚀 사용 방법 (Step-by-step)',
             manualS4: '📐 QC 지표 설명',
@@ -2792,7 +2792,7 @@
             // Manual
             manualTitle: '📖 OrganoidQC Web — Researcher Manual',
             manualS1: '🔬 About This Service',
-            manualIntro: 'OrganoidQC Web is a researcher-focused web tool for rapidly evaluating organoid culture quality and comparing results against reference data. It integrates with the OrganoID AI engine to extract QC metrics directly from microscopy images.',
+            manualIntro: 'OrganoidQC Web is a researcher-focused web tool for rapidly evaluating organoid culture quality and comparing results against reference data. It integrates with the OrganoID AI engine to extract QC metrics directly from microscopy images.<br><br>The OrganoidQC v5.2 pixel algorithm is a transparent and reproducible baseline QC method in full compliance with three global standards — OSI, NIH SOM, and Sartorius — and maximizes cross-validation and scientific reliability through real-time comparison with OrganoID AI analysis results.',
             manualS2: '⚡ Key Features & Benefits',
             manualS3: '🚀 How to Use (Step-by-step)',
             manualS4: '📐 QC Metric Descriptions',
