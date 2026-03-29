@@ -1,4 +1,5 @@
 # OrganoidQC Bridge  
+[<image-card alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.19311801.svg" ></image-card>](https://doi.org/10.5281/zenodo.19311801)
 **v0.4.0 — 클라우드 배포 + 연구자 배포 간소화**
 
 OrganoidQC 웹 앱(`OrganoidQC_v5_2.html`)과 OrganoID 분석 엔진을 연결하는 FastAPI 서버.
