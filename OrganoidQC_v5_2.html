@@ -260,6 +260,113 @@
     <h3 id="manualS1">🔬 서비스 소개</h3>
     <p id="manualIntro">OrganoidQC Web은 오가노이드 배양 품질을 빠르게 평가하고 레퍼런스 데이터와 비교할 수 있는 연구자 전용 웹 도구입니다. OrganoID AI 분석 엔진과 연동하여 현미경 이미지에서 직접 QC 지표를 추출합니다.<br><br>OrganoidQC v5.2 픽셀 알고리즘은 OSI·NIH SOM·Sartorius 3대 글로벌 표준을 완벽 준수하는 투명하고 재현 가능한 baseline QC 방법으로, OrganoID AI 분석 결과와의 실시간 비교를 통해 교차 검증과 과학적 신뢰성을 극대화합니다.</p>
 
+    <!-- ── 경쟁 솔루션 비교표 ── -->
+    <h3 style="color:#a8d8be; border-bottom:2px solid rgba(0,184,148,0.2); padding-bottom:8px; margin-top:28px;">🏆 경쟁 솔루션 비교</h3>
+    <div style="overflow-x:auto; border-radius:12px; border:1px solid rgba(0,184,148,0.2); margin-bottom:8px;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.82rem; min-width:860px;">
+        <thead>
+          <tr style="background:linear-gradient(90deg,rgba(0,184,148,0.25),rgba(0,150,180,0.18));">
+            <th style="padding:10px 12px; text-align:left; color:#00e898; font-weight:700; white-space:nowrap; border-bottom:2px solid rgba(0,184,148,0.35);">플랫폼</th>
+            <th style="padding:10px 12px; text-align:left; color:#00e898; font-weight:700; white-space:nowrap; border-bottom:2px solid rgba(0,184,148,0.35);">유형</th>
+            <th style="padding:10px 12px; text-align:center; color:#00e898; font-weight:700; white-space:nowrap; border-bottom:2px solid rgba(0,184,148,0.35);">AI 지원</th>
+            <th style="padding:10px 12px; text-align:center; color:#00e898; font-weight:700; white-space:nowrap; border-bottom:2px solid rgba(0,184,148,0.35);">Pixel 지원</th>
+            <th style="padding:10px 12px; text-align:center; color:#00e898; font-weight:700; white-space:nowrap; border-bottom:2px solid rgba(0,184,148,0.35);">OSI/NIH</th>
+            <th style="padding:10px 12px; text-align:center; color:#00e898; font-weight:700; white-space:nowrap; border-bottom:2px solid rgba(0,184,148,0.35);">웹 기반</th>
+            <th style="padding:10px 12px; text-align:center; color:#00e898; font-weight:700; white-space:nowrap; border-bottom:2px solid rgba(0,184,148,0.35);">실시간</th>
+            <th style="padding:10px 12px; text-align:center; color:#00e898; font-weight:700; white-space:nowrap; border-bottom:2px solid rgba(0,184,148,0.35);">가격</th>
+            <th style="padding:10px 14px; text-align:left; color:#00e898; font-weight:700; border-bottom:2px solid rgba(0,184,148,0.35); min-width:200px;">OrganoidQC 대비 차별점</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- OrganoidQC — 강조 행 -->
+          <tr style="background:linear-gradient(90deg,rgba(0,184,148,0.14),rgba(0,184,148,0.06)); border-left:3px solid #00e898;">
+            <td style="padding:10px 12px; font-weight:700; color:#00e898; white-space:nowrap;">⭐ OrganoidQC v5.2</td>
+            <td style="padding:10px 12px; color:#cde8da; white-space:nowrap;">Web</td>
+            <td style="padding:10px 12px; text-align:center; color:#00e898;">OrganoID AI</td>
+            <td style="padding:10px 12px; text-align:center;">✅</td>
+            <td style="padding:10px 12px; text-align:center; color:#00e898; font-weight:600;">✅ 직접 Pass/Fail</td>
+            <td style="padding:10px 12px; text-align:center; color:#00e898; font-weight:600;">✅ 완전 웹</td>
+            <td style="padding:10px 12px; text-align:center; color:#00e898; font-weight:600;">✅ 5초</td>
+            <td style="padding:10px 12px; text-align:center; color:#00e898; font-weight:700;">무료</td>
+            <td style="padding:10px 14px; color:#7ec8a4; font-size:0.78rem;">— (기준)</td>
+          </tr>
+          <!-- OrganoID -->
+          <tr style="background:rgba(0,184,148,0.04);">
+            <td style="padding:9px 12px; font-weight:600; color:#cde8da; white-space:nowrap;">OrganoID (공식)</td>
+            <td style="padding:9px 12px; color:#a8d8be; white-space:nowrap; font-size:0.8rem;">Desktop / 라이브러리</td>
+            <td style="padding:9px 12px; text-align:center; color:#74b9ff;">✅ CNN</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#fdcb6e; font-size:0.8rem;">부분</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#00cec9;">✅</td>
+            <td style="padding:9px 12px; text-align:center; color:#a8d8be;">무료</td>
+            <td style="padding:9px 14px; color:#7ec8a4; font-size:0.78rem; line-height:1.5;">AI 특화지만 웹 없음. <span style="color:#00e898;">AI+Classical 비교로 교차 검증 우위</span></td>
+          </tr>
+          <!-- OrganoSeg2 -->
+          <tr style="background:rgba(0,184,148,0.02);">
+            <td style="padding:9px 12px; font-weight:600; color:#cde8da; white-space:nowrap;">OrganoSeg2</td>
+            <td style="padding:9px 12px; color:#a8d8be; white-space:nowrap; font-size:0.8rem;">Desktop (MATLAB)</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#fdcb6e;">✅+</td>
+            <td style="padding:9px 12px; text-align:center; color:#fdcb6e; font-size:0.8rem;">부분</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#00cec9;">✅</td>
+            <td style="padding:9px 12px; text-align:center; color:#a8d8be;">무료</td>
+            <td style="padding:9px 14px; color:#7ec8a4; font-size:0.78rem; line-height:1.5;">Classical만 강함. <span style="color:#00e898;">웹+AI비교+OSI로 더 포괄적</span></td>
+          </tr>
+          <!-- AssayScope -->
+          <tr style="background:rgba(0,184,148,0.04);">
+            <td style="padding:9px 12px; font-weight:600; color:#cde8da; white-space:nowrap;">AssayScope</td>
+            <td style="padding:9px 12px; color:#a8d8be; white-space:nowrap; font-size:0.8rem;">Desktop</td>
+            <td style="padding:9px 12px; text-align:center; color:#74b9ff;">✅ 3D AI</td>
+            <td style="padding:9px 12px; text-align:center; color:#fdcb6e; font-size:0.8rem;">부분</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#00cec9;">✅</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675; font-size:0.8rem;">유료</td>
+            <td style="padding:9px 14px; color:#7ec8a4; font-size:0.78rem; line-height:1.5;">3D 특화. <span style="color:#00e898;">웹+무료+OSI로 일상 연구 우위</span></td>
+          </tr>
+          <!-- ZEISS -->
+          <tr style="background:rgba(0,184,148,0.02);">
+            <td style="padding:9px 12px; font-weight:600; color:#cde8da; white-space:nowrap; font-size:0.8rem;">ZEISS arivis / NoviSight</td>
+            <td style="padding:9px 12px; color:#a8d8be; white-space:nowrap; font-size:0.8rem;">High-content SW</td>
+            <td style="padding:9px 12px; text-align:center; color:#74b9ff;">✅ AI</td>
+            <td style="padding:9px 12px; text-align:center; color:#fdcb6e; font-size:0.8rem;">부분</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#fdcb6e; font-size:0.8rem;">부분</td>
+            <td style="padding:9px 12px; text-align:center; color:#00cec9;">✅</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675; font-size:0.8rem;">고가</td>
+            <td style="padding:9px 14px; color:#7ec8a4; font-size:0.78rem; line-height:1.5;">하드웨어 통합 강점. <span style="color:#00e898;">독립 웹+Supabase로 저비용 팀 공유 우위</span></td>
+          </tr>
+          <!-- OSCAR -->
+          <tr style="background:rgba(0,184,148,0.04);">
+            <td style="padding:9px 12px; font-weight:600; color:#cde8da; white-space:nowrap;">OSCAR</td>
+            <td style="padding:9px 12px; color:#a8d8be; white-space:nowrap; font-size:0.8rem;">Online ML Tool</td>
+            <td style="padding:9px 12px; text-align:center; color:#74b9ff; font-size:0.8rem;">✅ Mask R-CNN</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#fdcb6e; font-size:0.8rem;">부분</td>
+            <td style="padding:9px 12px; text-align:center; color:#00cec9;">✅</td>
+            <td style="padding:9px 12px; text-align:center; color:#a8d8be;">무료</td>
+            <td style="padding:9px 14px; color:#7ec8a4; font-size:0.78rem; line-height:1.5;">Cell counting 특화. <span style="color:#00e898;">CV·Circ·OSI 전체 QC+AI 비교로 더 넓은 범위</span></td>
+          </tr>
+          <!-- CellProfiler -->
+          <tr style="background:rgba(0,184,148,0.02);">
+            <td style="padding:9px 12px; font-weight:600; color:#cde8da; white-space:nowrap; font-size:0.8rem;">CellProfiler + OrganoSeg</td>
+            <td style="padding:9px 12px; color:#a8d8be; white-space:nowrap; font-size:0.8rem;">Desktop (오픈소스)</td>
+            <td style="padding:9px 12px; text-align:center; color:#fdcb6e; font-size:0.8rem;">부분</td>
+            <td style="padding:9px 12px; text-align:center; color:#00cec9;">✅</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#ff7675;">❌</td>
+            <td style="padding:9px 12px; text-align:center; color:#a8d8be;">무료</td>
+            <td style="padding:9px 14px; color:#7ec8a4; font-size:0.78rem; line-height:1.5;">고전·커스터마이징 강함. <span style="color:#00e898;">웹+실시간+표준 벤치마킹으로 현대적 우위</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.75rem; color:#6da88a; margin:6px 0 0; text-align:right;">✅ 지원 &nbsp;|&nbsp; ❌ 미지원 &nbsp;|&nbsp; 부분 = 일부 지원</p>
+
     <h3 id="manualS2">⚡ 주요 기능 및 장점</h3>
     <ul id="manualBenefitsList">
       <li><strong>즉시 QC 분석</strong> — 이미지 업로드 후 5초 내 Size CV, Circularity, Viability 지표 자동 산출</li>
@@ -302,7 +409,7 @@
 <div class="container">
     <header>
         <h1>🧬 OrganoidQC Web <span style="font-size:1.2rem; opacity:0.7;">v5.2</span></h1>
-        <p class="subtitle" id="headerSubtitle">⚙️ 픽셀 알고리즘 + OrganoID AI + 🌐 웹 URL + <strong>📂 로컬 Real Data 직접 업로드</strong> + <strong>🤖 알고리즘 비교</strong></p>
+        <p class="subtitle" id="headerSubtitle">OSI · NIH SOM · Sartorius 글로벌 3대 표준 기반 &nbsp;|&nbsp; AI × Classical 교차 검증 오가노이드 QC 플랫폼</p>
         <div style="margin-top:14px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
           <button onclick="openManual()" style="background:rgba(0,184,148,0.1); border:2px solid var(--primary); color:#00e898; padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='var(--primary)';this.style.color='white'" onmouseout="this.style.background='rgba(0,184,148,0.1)';this.style.color='#00e898'" id="manualBtn">📖 연구자 매뉴얼</button>
           <a href="/cdn-cgi/l/email-protection#3a4e485b5c5c53591448545e7a5d575b535614595557" style="background:rgba(9,132,227,0.1); border:2px solid #0984e3; color:#74b9ff; padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.background='#0984e3';this.style.color='white'" onmouseout="this.style.background='rgba(9,132,227,0.1)';this.style.color='#74b9ff'" id="contactBtn">📩 Request 접수</a>
@@ -2612,7 +2719,7 @@
     const translations = {
         ko: {
             langToggle: '🌐 EN',
-            headerSubtitle: '⚙️ 픽셀 알고리즘 + OrganoID AI + 🌐 웹 URL + <strong>📂 로컬 Real Data 직접 업로드</strong> + <strong>🤖 알고리즘 비교</strong>',
+            headerSubtitle: 'OSI · NIH SOM · Sartorius 글로벌 3대 표준 기반 &nbsp;|&nbsp; AI × Classical 교차 검증 오가노이드 QC 플랫폼',
             manualBtn: '📖 연구자 매뉴얼',
             contactBtn: '📩 Request 접수',
             // Benefits
@@ -2716,7 +2823,7 @@
         },
         en: {
             langToggle: '🌐 KO',
-            headerSubtitle: '⚙️ Pixel Algorithm + OrganoID AI + 🌐 Web URL + <strong>📂 Local Real Data Upload</strong> + <strong>🤖 Algorithm Comparison</strong>',
+            headerSubtitle: 'OSI · NIH SOM · Sartorius Global Standards &nbsp;|&nbsp; AI × Classical Cross-Validation Organoid QC Platform',
             manualBtn: '📖 Researcher Manual',
             contactBtn: '📩 Submit Request',
             // Benefits
