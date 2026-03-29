@@ -149,6 +149,86 @@
         p.subtitle { color:#6da88a; }
         #initialGuide { color:#6da88a !important; }
 
+        /* ── ★ v5.3 알고리즘 이미지 비교 패널 ── */
+        #algoImageCompare {
+            display: none;
+            margin-bottom: 20px;
+        }
+        .algo-img-compare-label {
+            font-size: 0.9rem; font-weight: 700; letter-spacing: 0.05em;
+            text-transform: uppercase; text-align: left;
+            padding: 8px 4px 10px;
+        }
+        .algo-img-compare-label.lbl-pixel { color: #00e898; }
+        .algo-img-compare-label.lbl-organo { color: #74b9ff; }
+        .algo-img-panels {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        .algo-img-panel {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1.5px solid rgba(255,255,255,0.08);
+            position: relative;
+            background: rgba(0,0,0,0.4);
+        }
+        .algo-img-panel.panel-pixel  { border-color: rgba(0,232,152,0.45); }
+        .algo-img-panel.panel-organo { border-color: rgba(9,132,227,0.45); }
+        .algo-img-panel canvas,
+        .algo-img-panel img {
+            width: 100%; height: auto; display: block;
+            border-radius: 0;
+        }
+        .algo-img-badge {
+            position: absolute; bottom: 12px; left: 12px;
+            font-size: 0.85rem; font-weight: 700;
+            padding: 5px 14px; border-radius: 20px; backdrop-filter: blur(4px);
+        }
+        .algo-img-badge.pix-badge  { background: rgba(0,184,148,0.85); color: white; }
+        .algo-img-badge.org-badge  { background: rgba(9,132,227,0.85); color: white; }
+        .algo-img-panel .placeholder-canvas {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 160px; font-size: 0.85rem; color: #6da88a;
+            flex-direction: column; gap: 8px; padding: 20px;
+            text-align: center;
+        }
+
+        /* 슬라이더 비교 (선택적) */
+        #algoSliderWrap {
+            display: none; position: relative;
+            border-radius: 12px; overflow: hidden;
+            border: 1.5px solid rgba(108,92,231,0.5);
+            cursor: ew-resize; margin-bottom: 14px;
+            user-select: none;
+        }
+        #algoSliderWrap canvas { width: 100%; display: block; }
+        #algoSliderDivider {
+            position: absolute; top: 0; bottom: 0;
+            width: 2px; background: white;
+            box-shadow: 0 0 8px rgba(255,255,255,0.7);
+            pointer-events: none;
+        }
+        #algoSliderHandle {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 32px; height: 32px; border-radius: 50%;
+            background: white; box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; color: #333;
+            pointer-events: none;
+        }
+        .algo-view-toggle {
+            display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+        }
+        .algo-view-btn {
+            padding: 6px 14px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,0.15);
+            background: transparent; color: #7ec8a4; font-size: 0.8rem; cursor: pointer;
+            transition: all 0.2s; font-weight: 600;
+        }
+        .algo-view-btn.active { background: rgba(108,92,231,0.25); border-color: #a29bfe; color: #a29bfe; }
+        .algo-view-btn:hover:not(.active) { border-color: rgba(255,255,255,0.3); color: #cde8da; }
+
         /* ── Footer ── */
         footer { text-align:center; margin-top:40px; padding:24px; background:linear-gradient(135deg,#162b20,#0f2218); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.3); border:1px solid rgba(0,184,148,0.15); font-size:0.88rem; color:#6da88a; }
         footer strong { color:#a8d8be; }
@@ -368,6 +448,42 @@
                     <div id="algoCompareLoading" style="display:none; font-size:0.85rem; color:#7ec8a4; margin-bottom:14px; padding:10px 14px; background:rgba(9,132,227,0.08); border-radius:8px; border:1px solid rgba(9,132,227,0.2);">
                         <span style="display:inline-block; animation:spin 0.8s linear infinite;">⏳</span>
                         &nbsp; OrganoID Bridge 분석 중 — 잠시 기다려주세요...
+                    </div>
+
+                    <!-- ★ v5.3 이미지 시각 비교 패널 -->
+                    <div id="algoImageCompare">
+                        <!-- 뷰 모드 토글 -->
+                        <div class="algo-view-toggle">
+                            <button class="algo-view-btn active" onclick="setAlgoViewMode('side')" id="viewBtnSide">⊞ 나란히 보기</button>
+                            <button class="algo-view-btn" onclick="setAlgoViewMode('slider')" id="viewBtnSlider">⇔ 슬라이더 비교</button>
+                        </div>
+
+                        <!-- 나란히 보기 (기본) -->
+                        <div id="algoSideView">
+                            <div class="algo-img-panels">
+                                <div>
+                                    <div class="algo-img-compare-label lbl-pixel">⚙️ 픽셀 알고리즘 결과</div>
+                                    <div class="algo-img-panel panel-pixel">
+                                        <canvas id="pixelCompareCanvas"></canvas>
+                                        <span class="algo-img-badge pix-badge" id="pixelCompareBadge">Pixel</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="algo-img-compare-label lbl-organo">🤖 OrganoID (Bridge) 결과</div>
+                                    <div class="algo-img-panel panel-organo">
+                                        <canvas id="organoIDCompareCanvas"></canvas>
+                                        <span class="algo-img-badge org-badge" id="organoIDCompareBadge">OrganoID AI</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 슬라이더 비교 -->
+                        <div id="algoSliderWrap">
+                            <canvas id="algoSliderCanvas"></canvas>
+                            <div id="algoSliderDivider"></div>
+                            <div id="algoSliderHandle">⇔</div>
+                        </div>
                     </div>
 
                     <!-- 2열 카드 비교 -->
@@ -1391,6 +1507,9 @@
                 }
             }
         });
+
+        // ★ v5.3 이미지 시각 비교 패널 렌더링
+        renderAlgoImageCompare(org);
     }
 
     function toggleAlgoRaw() {
@@ -1398,6 +1517,217 @@
         const btn = el.previousElementSibling;
         el.style.display = el.style.display==='none' ? 'block' : 'none';
         btn.textContent = el.style.display==='none' ? '▼ 상세 수치 보기' : '▲ 접기';
+    }
+
+    // ── ★ v5.3 알고리즘 이미지 비교 패널 ────────────────────────────────
+    let _algoViewMode = 'side';
+
+    function setAlgoViewMode(mode) {
+        _algoViewMode = mode;
+        document.getElementById('viewBtnSide').classList.toggle('active', mode==='side');
+        document.getElementById('viewBtnSlider').classList.toggle('active', mode==='slider');
+        document.getElementById('algoSideView').style.display   = mode==='side'   ? 'block' : 'none';
+        document.getElementById('algoSliderWrap').style.display = mode==='slider' ? 'block' : 'none';
+    }
+
+    // 픽셀 알고리즘 캔버스를 비교 패널에 고해상도 확대 복사
+    function copyPixelCanvasToCompare() {
+        const src  = document.getElementById('annotationCanvas');
+        const dest = document.getElementById('pixelCompareCanvas');
+        if (!src || src.style.display === 'none' || !src.width) return;
+        // annotationCanvas(최대 600px)를 3배 해상도로 스케일업
+        const SCALE = 3;
+        dest.width  = src.width  * SCALE;
+        dest.height = src.height * SCALE;
+        const ctx = dest.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(src, 0, 0, dest.width, dest.height);
+        // 배지 업데이트
+        const badge = document.getElementById('pixelCompareBadge');
+        const pixCount = document.getElementById('cmpPixelCount').textContent;
+        if (badge) badge.textContent = `⚙️ Pixel — ${pixCount}개`;
+    }
+
+    // OrganoID 결과 이미지를 비교 캔버스에 렌더링
+    function renderOrganoIDCanvas(org) {
+        const dest   = document.getElementById('organoIDCompareCanvas');
+        const imgEl  = document.getElementById('previewImage');
+        if (!dest || !imgEl) return;
+
+        const MAX = 1800;
+        const ow  = imgEl.naturalWidth  || 400;
+        const oh  = imgEl.naturalHeight || 300;
+        const dr  = Math.min(MAX/ow, MAX/oh, 1);
+        dest.width  = Math.round(ow * dr);
+        dest.height = Math.round(oh * dr);
+        const ctx = dest.getContext('2d');
+
+        // Case 1: Bridge가 result_image(base64) 반환 시 그대로 표시
+        if (org.result_image) {
+            const img = new Image();
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, dest.width, dest.height);
+                _drawOrganoIDBadge(ctx, dest, org);
+            };
+            img.src = org.result_image.startsWith('data:')
+                ? org.result_image
+                : 'data:image/png;base64,' + org.result_image;
+            return;
+        }
+
+        // Case 2: result_image 없을 때 — 원본 이미지에 OrganoID 스타일 오버레이
+        ctx.drawImage(imgEl, 0, 0, dest.width, dest.height);
+
+        // 파란 틴트 오버레이 (OrganoID 색상 테마)
+        ctx.fillStyle = 'rgba(9,132,227,0.18)';
+        ctx.fillRect(0, 0, dest.width, dest.height);
+
+        // 검출된 박스/원 (bounding_boxes 배열이 있으면 그리기)
+        if (Array.isArray(org.bounding_boxes) && org.bounding_boxes.length > 0) {
+            org.bounding_boxes.forEach((box, i) => {
+                // box: { x, y, w, h } or { x1,y1,x2,y2 } or [x,y,w,h]
+                let bx, by, bw, bh;
+                if (Array.isArray(box)) { [bx,by,bw,bh] = box; }
+                else if (box.w !== undefined) { bx=box.x*dr; by=box.y*dr; bw=box.w*dr; bh=box.h*dr; }
+                else { bx=box.x1*dr; by=box.y1*dr; bw=(box.x2-box.x1)*dr; bh=(box.y2-box.y1)*dr; }
+                const cx2 = bx + bw/2, cy2 = by + bh/2;
+                const rx2 = bw/2, ry2 = bh/2;
+                const lw = Math.max(3, dest.width / 300); // 해상도 비례 선 굵기
+                // 발광 테두리
+                for (let g=3;g>=1;g--) {
+                    ctx.beginPath();
+                    ctx.ellipse(cx2, cy2, rx2*1.1, ry2*1.1, 0, 0, Math.PI*2);
+                    ctx.strokeStyle = `rgba(9,132,227,${0.12*g})`;
+                    ctx.lineWidth = g * lw * 3;
+                    ctx.stroke();
+                }
+                ctx.beginPath();
+                ctx.ellipse(cx2, cy2, rx2*1.1, ry2*1.1, 0, 0, Math.PI*2);
+                ctx.strokeStyle = '#74b9ff';
+                ctx.lineWidth = lw * 2;
+                ctx.stroke();
+                // 번호 라벨 (해상도 비례)
+                const labelR = Math.max(12, dest.width / 80);
+                const labelFs = Math.max(10, dest.width / 110);
+                ctx.font = `bold ${labelFs}px monospace`;
+                ctx.fillStyle = 'rgba(9,132,227,0.85)';
+                ctx.beginPath(); ctx.arc(cx2, cy2-ry2*1.2, labelR, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(i+1, cx2, cy2-ry2*1.2);
+                ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+            });
+        } else {
+            // bounding_boxes 없을 때: count 표시 텍스트 오버레이 (해상도 비례)
+            const count = parseInt(org.organoid_count) || 0;
+            const fs1 = Math.round(dest.width / 18);
+            const fs2 = Math.round(dest.width / 55);
+            ctx.font = `bold ${fs1}px "Noto Sans KR", sans-serif`;
+            ctx.fillStyle = 'rgba(9,132,227,0.22)';
+            ctx.fillText(`${count}`, dest.width/2 - fs1*0.6, dest.height/2 + fs1*0.4);
+            const msg = `OrganoID: ${count}개 검출`;
+            ctx.font = `bold ${fs2}px "Noto Sans KR", sans-serif`;
+            const tw = ctx.measureText(msg).width;
+            const bh2 = fs2 * 2.4, pad2 = fs2 * 0.8;
+            ctx.fillStyle = 'rgba(9,50,90,0.82)';
+            ctx.beginPath();
+            ctx.roundRect(dest.width/2 - tw/2 - pad2, dest.height/2 - bh2/2, tw + pad2*2, bh2, fs2*0.4);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(9,132,227,0.6)';
+            ctx.lineWidth = Math.max(1, dest.width/600);
+            ctx.stroke();
+            ctx.fillStyle = '#74b9ff';
+            ctx.fillText(msg, dest.width/2 - tw/2, dest.height/2 + fs2*0.4);
+        }
+
+        _drawOrganoIDBadge(ctx, dest, org);
+    }
+
+    function _drawOrganoIDBadge(ctx, canvas, org) {
+        const title = `🤖 OrganoID — ${org.organoid_count ?? '?'}개`;
+        // 캔버스가 고해상도(1800px 기준)이므로 폰트도 비례 확대
+        const fs = Math.round(canvas.width / 60);
+        ctx.font = `bold ${fs}px "Noto Sans KR", sans-serif`;
+        const tw = ctx.measureText(title).width;
+        const pad = fs * 0.7, bh = fs * 2.2, br = fs * 0.5;
+        const bx = fs * 0.5, by = fs * 0.5;
+        ctx.fillStyle = 'rgba(9,132,227,0.85)';
+        ctx.beginPath();
+        ctx.roundRect(bx, by, tw + pad*2, bh, br);
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.fillText(title, bx + pad, by + bh * 0.7);
+    }
+
+    // 슬라이더 합성 캔버스 초기화
+    function initAlgoSlider() {
+        const pixCanvas = document.getElementById('pixelCompareCanvas');
+        const orgCanvas = document.getElementById('organoIDCompareCanvas');
+        const sliderCanvas = document.getElementById('algoSliderCanvas');
+        const wrap = document.getElementById('algoSliderWrap');
+        const divider = document.getElementById('algoSliderDivider');
+        const handle = document.getElementById('algoSliderHandle');
+        if (!pixCanvas.width || !orgCanvas.width) return;
+
+        const W = pixCanvas.width, H = pixCanvas.height;
+        sliderCanvas.width = W; sliderCanvas.height = H;
+        const ctx = sliderCanvas.getContext('2d');
+        let sliderX = W / 2;
+
+        function draw(x) {
+            sliderX = Math.max(10, Math.min(W-10, x));
+            ctx.clearRect(0, 0, W, H);
+            // 왼쪽: 픽셀
+            ctx.save();
+            ctx.beginPath(); ctx.rect(0, 0, sliderX, H); ctx.clip();
+            ctx.drawImage(pixCanvas, 0, 0); ctx.restore();
+            // 오른쪽: OrganoID
+            ctx.save();
+            ctx.beginPath(); ctx.rect(sliderX, 0, W-sliderX, H); ctx.clip();
+            ctx.drawImage(orgCanvas, 0, 0); ctx.restore();
+            // 레이블
+            ctx.font = 'bold 11px monospace';
+            if (sliderX > 80) {
+                ctx.fillStyle = 'rgba(0,20,14,0.7)'; ctx.beginPath(); ctx.roundRect(8, 8, 100, 20, 4); ctx.fill();
+                ctx.fillStyle = '#00e898'; ctx.fillText('⚙️ PIXEL', 14, 23);
+            }
+            if (sliderX < W - 80) {
+                ctx.fillStyle = 'rgba(6,28,54,0.7)'; ctx.beginPath(); ctx.roundRect(W-118, 8, 110, 20, 4); ctx.fill();
+                ctx.fillStyle = '#74b9ff'; ctx.fillText('🤖 ORGANOID', W-112, 23);
+            }
+            // 디바이더 위치
+            const pct = sliderX / W * 100;
+            divider.style.left = pct + '%';
+            handle.style.left  = `calc(${pct}% - 16px)`;
+        }
+
+        draw(W / 2);
+
+        const getX = e => {
+            const rect = sliderCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            return (clientX - rect.left) / rect.width * W;
+        };
+        let dragging = false;
+        wrap.onmousedown  = wrap.ontouchstart  = e => { dragging=true; draw(getX(e)); };
+        wrap.onmousemove  = wrap.ontouchmove   = e => { if(dragging) { e.preventDefault(); draw(getX(e)); }};
+        wrap.onmouseup    = wrap.onmouseleave  = wrap.ontouchend = () => { dragging=false; };
+    }
+
+    // ── ★ v5.3 공용 이미지 비교 렌더링 (renderAlgoComparison에서 호출) ────
+    function renderAlgoImageCompare(org) {
+        copyPixelCanvasToCompare();
+        renderOrganoIDCanvas(org);
+        document.getElementById('algoImageCompare').style.display = 'block';
+        // 배지 텍스트
+        const b = document.getElementById('organoIDCompareBadge');
+        if (b) b.textContent = `🤖 OrganoID — ${org.organoid_count ?? '?'}개`;
+        const pb = document.getElementById('pixelCompareBadge');
+        if (pb) pb.textContent = `⚙️ Pixel — ${document.getElementById('cmpPixelCount').textContent}개`;
+        // 슬라이더 초기화 (지연: OrganoID canvas가 그려진 후)
+        setTimeout(initAlgoSlider, 200);
+        setAlgoViewMode('side');
     }
 
     // ══════════════════════════════════════════════
@@ -2407,6 +2737,7 @@
             algoMatchLabel: '알고리즘 일치율 (검출 수 기준)',
             algoToggleRaw: '▼ 상세 수치 보기',
             algoRawTH1: '지표', algoRawTH3: '픽셀 알고리즘', algoRawTH4: '차이',
+            viewBtnSide: '⊞ 나란히 보기', viewBtnSlider: '⇔ 슬라이더 비교',
             algoWinnerHigh: (pct) => `✅ 두 알고리즘 일치율 <strong>${pct}%</strong> — 분석 신뢰도 높음`,
             algoWinnerMid:  (pct) => `⚠️ 두 알고리즘 일치율 <strong>${pct}%</strong> — OrganoID 결과를 우선하세요`,
             algoWinnerLow:  (pct) => `🔴 두 알고리즘 일치율 <strong>${pct}%</strong> — 이미지 품질을 점검하거나 OrganoID 결과를 참고하세요`,
@@ -2510,6 +2841,7 @@
             algoMatchLabel: 'Algorithm Match Rate (by count)',
             algoToggleRaw: '▼ Show Raw Values',
             algoRawTH1: 'Metric', algoRawTH3: 'Pixel Algorithm', algoRawTH4: 'Diff',
+            viewBtnSide: '⊞ Side by Side', viewBtnSlider: '⇔ Slider Compare',
             algoWinnerHigh: (pct) => `✅ Algorithm match rate <strong>${pct}%</strong> — High analysis confidence`,
             algoWinnerMid:  (pct) => `⚠️ Algorithm match rate <strong>${pct}%</strong> — Prefer OrganoID result`,
             algoWinnerLow:  (pct) => `🔴 Algorithm match rate <strong>${pct}%</strong> — Check image quality or refer to OrganoID`,
@@ -2591,6 +2923,7 @@
             'cmpPixelCardTitle','cmpLabelCount2','cmpLabelMode2',
             'algoMatchLabel','algoToggleRaw',
             'algoRawTH1','algoRawTH3','algoRawTH4',
+            'viewBtnSide','viewBtnSlider',
         ];
         simpleIds.forEach(id => {
             const el = document.getElementById(id);
