@@ -1077,7 +1077,10 @@
     function setupUpload() {
         const area  = document.getElementById('uploadArea');
         const input = document.getElementById('imageInput');
-        area.addEventListener('click', () => input.click());
+        area.addEventListener('click', (e) => {
+            if (e.target.closest('button, input')) return;  // 버튼/input 버블링 무시
+            input.click();
+        });
         input.addEventListener('change', e => {
             const file = e.target.files[0];
             if (file) {
