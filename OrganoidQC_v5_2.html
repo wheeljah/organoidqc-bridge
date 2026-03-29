@@ -244,6 +244,76 @@
         input::placeholder, select option { color:#6da88a; }
         #daysValue, #supabaseStatus { color:#00e898; }
         select option { background:#0d1f17; }
+
+        /* ── Mobile Responsive ── */
+        @media (max-width: 768px) {
+            body { font-size: 15px; }
+            .container { padding: 10px; }
+
+            header { padding: 16px 14px; margin-bottom: 18px; }
+            header h1 { font-size: 1.5rem; }
+            header p.subtitle { font-size: 0.85rem; }
+
+            #langToggle { top: 10px; right: 10px; padding: 5px 11px; font-size: 0.82rem; }
+
+            /* 대시보드: 2컬럼 → 1컬럼 */
+            .dashboard { grid-template-columns: 1fr; gap: 14px; }
+            .sidebar { padding: 16px; }
+            .main { padding: 16px; }
+
+            /* 베네핏 배너 */
+            .benefits-banner { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+            .benefit-card { padding: 12px 14px; }
+            .benefit-icon { font-size: 1.4rem; }
+            .benefit-card h4 { font-size: 0.88rem; }
+            .benefit-card p { font-size: 0.78rem; }
+
+            .upload-area { padding: 20px 12px; }
+
+            .data-source-tabs { flex-wrap: wrap; }
+            .tab-btn { font-size: 0.82rem; padding: 8px 6px; }
+
+            .card { padding: 12px 8px; }
+            .metric { font-size: 1.8rem; }
+            .chart-container { height: 220px; }
+
+            .sample-gallery { gap: 8px; }
+            .sample-btn { flex: 1 1 100px; font-size: 0.82rem; }
+            .sample-btn img { height: 70px; }
+
+            .algo-compare-grid { grid-template-columns: 1fr; gap: 10px; }
+            .manual-entry-grid { grid-template-columns: 1fr; }
+
+            .footer-grid { flex-direction: column; gap: 10px; align-items: center; text-align: center; }
+            footer { padding: 16px 14px; font-size: 0.82rem; }
+
+            #manualModal { padding: 16px 10px; }
+            #manualBox { padding: 22px 16px; }
+            #manualBox h2 { font-size: 1.2rem; }
+
+            .btn { font-size: 1rem; padding: 12px 20px; }
+            #analyzeBtn { font-size: 0.95rem; padding: 12px 20px; }
+            .url-section input[type="text"] { font-size: 0.85rem; }
+            .comparison-section { overflow-x: auto; }
+
+            .algo-view-toggle { gap: 6px; }
+            .algo-view-btn { font-size: 0.75rem; padding: 5px 10px; }
+            .data-preview { font-size: 0.8rem; }
+
+            h1 { font-size: 1.5rem; }
+            .main h2 { font-size: 1.1rem; }
+            .main h3 { font-size: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            header h1 { font-size: 1.25rem; }
+            .benefits-banner { grid-template-columns: 1fr; }
+            .metric { font-size: 1.5rem; }
+            .sample-btn { flex: 1 1 80px; }
+            .sample-btn img { height: 58px; }
+            .tab-btn { padding: 7px 4px; font-size: 0.78rem; }
+            .algo-view-btn { font-size: 0.72rem; padding: 4px 8px; }
+        }
     </style>
 </head>
 <body>
@@ -713,7 +783,7 @@
         <div>🧬 <strong>OrganoidQC Web v5.2</strong></div>
         <div>👤 <strong id="footerDev">개발자:</strong> Jongwoo Hahn</div>
         <div>📩 <strong id="footerRequest">Request 접수:</strong> <a href="/cdn-cgi/l/email-protection#dda9afbcbbbbb4bef3afb3b99dbab0bcb4b1f3beb2b0"><span class="__cf_email__" data-cfemail="5c282e3d3a3a353f722e32381c3b313d3530723f3331">[email&#160;protected]</span></a></div>
-        <div style="color:#b2bec3; font-size:0.82rem;" id="footerCopy">© 2025 OrganoidQC. All rights reserved. | v5.2</div>
+        <div style="color:#b2bec3; font-size:0.82rem;" id="footerCopy">© 2026 OrganoidQC. All rights reserved. | v5.2</div>
       </div>
     </footer>
 </div>
@@ -2663,7 +2733,7 @@
             optIntestine: '장 (Intestine)', optLiver: '간 (Liver)', optCortical: '뇌 (Cortical)',
             mOptIntestine: '장 (Intestine)', mOptLiver: '간 (Liver)', mOptCortical: '뇌 (Cortical)',
             footerDev: '개발자:', footerRequest: 'Request 접수:',
-            footerCopy: '© 2025 OrganoidQC. All rights reserved. | v5.0',
+            footerCopy: '© 2026 OrganoidQC. All rights reserved. | v5.2',
             daysUnit: '일',
             // Verdict / bridge result
             verdictPass: '✅ 통과', verdictFail: '❌ 미달', verdictLow: '⚠️ 낮음', verdictDetected: '✅ 검출',
@@ -2768,7 +2838,7 @@
             optIntestine: 'Intestine', optLiver: 'Liver', optCortical: 'Cortical',
             mOptIntestine: 'Intestine', mOptLiver: 'Liver', mOptCortical: 'Cortical',
             footerDev: 'Developer:', footerRequest: 'Request Submission:',
-            footerCopy: '© 2025 OrganoidQC. All rights reserved. | v5.0',
+            footerCopy: '© 2026 OrganoidQC. All rights reserved. | v5.2',
             daysUnit: ' days',
             // Verdict / bridge result
             verdictPass: '✅ Pass', verdictFail: '❌ Fail', verdictLow: '⚠️ Low', verdictDetected: '✅ Detected',
