@@ -181,19 +181,20 @@
             width: 100%; height: auto; display: block;
             border-radius: 0;
         }
-        .algo-img-badge {
-            position: absolute; bottom: 12px; left: 12px;
-            font-size: 0.85rem; font-weight: 700;
-            padding: 5px 14px; border-radius: 20px; backdrop-filter: blur(4px);
+        /* 이미지 하단 stats 바 */
+        .algo-img-stats {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            padding: 10px 4px 4px;
         }
-        .algo-img-badge.pix-badge  { background: rgba(0,184,148,0.85); color: white; }
-        .algo-img-badge.org-badge  { background: rgba(9,132,227,0.85); color: white; }
-        .algo-img-panel .placeholder-canvas {
-            display: flex; align-items: center; justify-content: center;
-            min-height: 160px; font-size: 0.85rem; color: #6da88a;
-            flex-direction: column; gap: 8px; padding: 20px;
-            text-align: center;
+        .stat-item {
+            font-size: 0.85rem; font-weight: 600;
+            padding: 4px 12px; border-radius: 20px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #a8d8be;
         }
+        .stat-item.stat-pixel  { background: rgba(0,184,148,0.12); border-color: rgba(0,232,152,0.3); color: #00e898; }
+        .stat-item.stat-organo { background: rgba(9,132,227,0.12); border-color: rgba(116,185,255,0.3); color: #74b9ff; }
 
         /* 슬라이더 비교 (선택적) */
         #algoSliderWrap {
@@ -405,30 +406,51 @@
             <h2 id="resultTitle">🔬 이미지 분석 결과</h2>
 
             <div id="resultArea" style="display:none;">
-                <div style="text-align:center; margin-bottom:25px;">
+                <!-- ── 이미지 캔버스 영역 (분석값 없음) ── -->
+                <div id="canvasWrapper" style="text-align:center; margin-bottom:0;">
                     <!-- 원본 프리뷰 (숨김 상태로 유지 — canvas 소스로 사용) -->
                     <img id="previewImage" src="" alt="업로드된 이미지" crossorigin="anonymous"
                          style="display:none;">
-                    <!-- 검출 결과 오버레이 캔버스 -->
+                    <!-- 검출 결과 오버레이 캔버스 (80% 크기, 고해상도) -->
                     <canvas id="annotationCanvas"
-                        style="max-width:100%; max-height:380px; border-radius:16px;
-                               box-shadow:0 4px 28px rgba(0,232,152,0.35); display:none; cursor:zoom-in;"
-                        title="클릭하면 원본 이미지 보기"
-                        onclick="toggleAnnotation()">
+                        style="width:80%; height:auto; display:none; border-radius:16px;
+                               box-shadow:0 4px 28px rgba(0,232,152,0.35); margin:0 auto;">
                     </canvas>
-                    <!-- 검출 정보 배지 -->
-                    <div id="detectionBadge" style="display:none; margin-top:12px; font-size:0.88rem; color:#7ec8a4;
-                         background:rgba(0,184,148,0.08); border:1px solid rgba(0,184,148,0.25);
-                         border-radius:10px; padding:10px 18px; align-items:center; gap:12px;">
-                        <span style="font-size:1.2rem;">🎯</span>
-                        <span id="detectionInfo">오가노이드 검출 중...</span>
-                        <button onclick="toggleAnnotation()" style="background:rgba(0,184,148,0.15);
-                            border:1px solid rgba(0,184,148,0.3); color:#00e898; border-radius:20px;
-                            padding:4px 12px; font-size:0.82rem; cursor:pointer;" id="toggleAnnotBtn">
-                            🔍 원본 보기
-                        </button>
+                </div>
+
+                <!-- ── 검출 분석값 패널 (이미지 영역 완전 분리) ── -->
+                <div id="detectionBadge" style="display:none; margin:14px auto 22px;
+                     max-width:80%;
+                     background:linear-gradient(135deg,rgba(0,184,148,0.07),rgba(0,150,180,0.05));
+                     border:1px solid rgba(0,184,148,0.28); border-radius:12px; padding:14px 22px;">
+                    <div style="font-size:0.75rem; font-weight:700; letter-spacing:0.08em;
+                                color:#7ec8a4; text-transform:uppercase; margin-bottom:10px;">
+                        🎯 픽셀 알고리즘 검출 결과
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px;">
+                        <div style="background:rgba(0,232,152,0.08); border:1px solid rgba(0,232,152,0.2);
+                                    border-radius:8px; padding:8px 12px; text-align:center;">
+                            <div style="font-size:0.72rem; color:#7ec8a4; margin-bottom:3px;">검출 수</div>
+                            <div id="infoCount" style="font-weight:700; color:#00e898; font-size:1rem;">—</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+                                    border-radius:8px; padding:8px 12px; text-align:center;">
+                            <div style="font-size:0.72rem; color:#7ec8a4; margin-bottom:3px;">지름 (px)</div>
+                            <div id="infoDiam" style="font-weight:700; color:#a8d8be; font-size:1rem;">—</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+                                    border-radius:8px; padding:8px 12px; text-align:center;">
+                            <div style="font-size:0.72rem; color:#7ec8a4; margin-bottom:3px;">Circularity</div>
+                            <div id="infoCirc" style="font-weight:700; color:#a8d8be; font-size:1rem;">—</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+                                    border-radius:8px; padding:8px 12px; text-align:center;">
+                            <div style="font-size:0.72rem; color:#7ec8a4; margin-bottom:3px;">Brightness</div>
+                            <div id="infoBright" style="font-weight:700; color:#a8d8be; font-size:1rem;">—</div>
+                        </div>
                     </div>
                 </div>
+                <div style="margin-bottom:25px;"></div>
 
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
                     <div class="card"><div id="cardCV">Size CV (%)</div><div id="cvValue" class="metric">7.8</div><span class="status good" id="cvStatus">✅ OSI 통과</span></div>
@@ -465,14 +487,22 @@
                                     <div class="algo-img-compare-label lbl-pixel">⚙️ 픽셀 알고리즘 결과</div>
                                     <div class="algo-img-panel panel-pixel">
                                         <canvas id="pixelCompareCanvas"></canvas>
-                                        <span class="algo-img-badge pix-badge" id="pixelCompareBadge">Pixel</span>
+                                    </div>
+                                    <div class="algo-img-stats" id="pixelImgStats">
+                                        <span class="stat-item stat-pixel" id="piStatCount">검출 수 —</span>
+                                        <span class="stat-item" id="piStatCV">Size CV —</span>
+                                        <span class="stat-item" id="piStatCirc">Circularity —</span>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="algo-img-compare-label lbl-organo">🤖 OrganoID (Bridge) 결과</div>
                                     <div class="algo-img-panel panel-organo">
                                         <canvas id="organoIDCompareCanvas"></canvas>
-                                        <span class="algo-img-badge org-badge" id="organoIDCompareBadge">OrganoID AI</span>
+                                    </div>
+                                    <div class="algo-img-stats" id="organoImgStats">
+                                        <span class="stat-item stat-organo" id="oiStatCount">검출 수 —</span>
+                                        <span class="stat-item" id="oiStatCV">Size CV —</span>
+                                        <span class="stat-item" id="oiStatCirc">Circularity —</span>
                                     </div>
                                 </div>
                             </div>
@@ -1509,7 +1539,7 @@
         });
 
         // ★ v5.3 이미지 시각 비교 패널 렌더링
-        renderAlgoImageCompare(org);
+        renderAlgoImageCompare(org, pix);
     }
 
     function toggleAlgoRaw() {
@@ -1543,10 +1573,6 @@
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(src, 0, 0, dest.width, dest.height);
-        // 배지 업데이트
-        const badge = document.getElementById('pixelCompareBadge');
-        const pixCount = document.getElementById('cmpPixelCount').textContent;
-        if (badge) badge.textContent = `⚙️ Pixel — ${pixCount}개`;
     }
 
     // OrganoID 결과 이미지를 비교 캔버스에 렌더링
@@ -1568,7 +1594,7 @@
             const img = new Image();
             img.onload = () => {
                 ctx.drawImage(img, 0, 0, dest.width, dest.height);
-                _drawOrganoIDBadge(ctx, dest, org);
+                // 캔버스 내부 배지 없음 — 외부 stats bar에서 표시
             };
             img.src = org.result_image.startsWith('data:')
                 ? org.result_image
@@ -1618,46 +1644,8 @@
                 ctx.fillText(i+1, cx2, cy2-ry2*1.2);
                 ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
             });
-        } else {
-            // bounding_boxes 없을 때: count 표시 텍스트 오버레이 (해상도 비례)
-            const count = parseInt(org.organoid_count) || 0;
-            const fs1 = Math.round(dest.width / 18);
-            const fs2 = Math.round(dest.width / 55);
-            ctx.font = `bold ${fs1}px "Noto Sans KR", sans-serif`;
-            ctx.fillStyle = 'rgba(9,132,227,0.22)';
-            ctx.fillText(`${count}`, dest.width/2 - fs1*0.6, dest.height/2 + fs1*0.4);
-            const msg = `OrganoID: ${count}개 검출`;
-            ctx.font = `bold ${fs2}px "Noto Sans KR", sans-serif`;
-            const tw = ctx.measureText(msg).width;
-            const bh2 = fs2 * 2.4, pad2 = fs2 * 0.8;
-            ctx.fillStyle = 'rgba(9,50,90,0.82)';
-            ctx.beginPath();
-            ctx.roundRect(dest.width/2 - tw/2 - pad2, dest.height/2 - bh2/2, tw + pad2*2, bh2, fs2*0.4);
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(9,132,227,0.6)';
-            ctx.lineWidth = Math.max(1, dest.width/600);
-            ctx.stroke();
-            ctx.fillStyle = '#74b9ff';
-            ctx.fillText(msg, dest.width/2 - tw/2, dest.height/2 + fs2*0.4);
         }
-
-        _drawOrganoIDBadge(ctx, dest, org);
-    }
-
-    function _drawOrganoIDBadge(ctx, canvas, org) {
-        const title = `🤖 OrganoID — ${org.organoid_count ?? '?'}개`;
-        // 캔버스가 고해상도(1800px 기준)이므로 폰트도 비례 확대
-        const fs = Math.round(canvas.width / 60);
-        ctx.font = `bold ${fs}px "Noto Sans KR", sans-serif`;
-        const tw = ctx.measureText(title).width;
-        const pad = fs * 0.7, bh = fs * 2.2, br = fs * 0.5;
-        const bx = fs * 0.5, by = fs * 0.5;
-        ctx.fillStyle = 'rgba(9,132,227,0.85)';
-        ctx.beginPath();
-        ctx.roundRect(bx, by, tw + pad*2, bh, br);
-        ctx.fill();
-        ctx.fillStyle = 'white';
-        ctx.fillText(title, bx + pad, by + bh * 0.7);
+        // 캔버스 내부 텍스트/배지 없음 — stats bar(외부 HTML)에서 표시
     }
 
     // 슬라이더 합성 캔버스 초기화
@@ -1716,16 +1704,22 @@
     }
 
     // ── ★ v5.3 공용 이미지 비교 렌더링 (renderAlgoComparison에서 호출) ────
-    function renderAlgoImageCompare(org) {
+    function renderAlgoImageCompare(org, pix) {
         copyPixelCanvasToCompare();
         renderOrganoIDCanvas(org);
         document.getElementById('algoImageCompare').style.display = 'block';
-        // 배지 텍스트
-        const b = document.getElementById('organoIDCompareBadge');
-        if (b) b.textContent = `🤖 OrganoID — ${org.organoid_count ?? '?'}개`;
-        const pb = document.getElementById('pixelCompareBadge');
-        if (pb) pb.textContent = `⚙️ Pixel — ${document.getElementById('cmpPixelCount').textContent}개`;
-        // 슬라이더 초기화 (지연: OrganoID canvas가 그려진 후)
+
+        // ── 픽셀 stats bar ──────────────────────────────────────
+        const el = id => document.getElementById(id);
+        if (el('piStatCount')) el('piStatCount').textContent = `🔢 ${pix.count ?? '—'}개 검출`;
+        if (el('piStatCV'))    el('piStatCV').textContent    = `Size CV ${pix.size_cv ?? '—'}%`;
+        if (el('piStatCirc'))  el('piStatCirc').textContent  = `Circ ${pix.mean_circularity ?? '—'}`;
+
+        // ── OrganoID stats bar ────────────────────────────────────
+        if (el('oiStatCount')) el('oiStatCount').textContent = `🔢 ${org.organoid_count ?? '—'}개 검출`;
+        if (el('oiStatCV'))    el('oiStatCV').textContent    = `Size CV ${org.size_cv ?? '—'}%`;
+        if (el('oiStatCirc'))  el('oiStatCirc').textContent  = `Circ ${org.mean_circularity ?? '—'}`;
+
         setTimeout(initAlgoSlider, 200);
         setAlgoViewMode('side');
     }
@@ -1734,21 +1728,6 @@
 
     // ==================== ★ v4.0 단일 오가노이드 검출 엔진 ====================
     // Blob 검출: 그레이스케일 → 임계값 → Connected Component → 최적 후보 선정
-
-    let showingAnnotation = true;  // 현재 주석 캔버스 표시 중인지
-    function toggleAnnotation() {
-        const canvas = document.getElementById('annotationCanvas');
-        const btn    = document.getElementById('toggleAnnotBtn');
-        const t      = translations[currentLang];
-        showingAnnotation = !showingAnnotation;
-        if (showingAnnotation) {
-            canvas.style.opacity = '1';
-            if (btn) btn.textContent = '🔍 ' + (currentLang==='ko' ? '원본 보기' : 'View Original');
-        } else {
-            canvas.style.opacity = '0.55';
-            if (btn) btn.textContent = '🎯 ' + (currentLang==='ko' ? '검출 결과 보기' : 'Show Detection');
-        }
-    }
 
     async function detectSingleOrganoid(imgEl) {
         return new Promise((resolve) => {
@@ -1879,10 +1858,10 @@
         });
     }
 
-    // ── 검출 결과를 캔버스에 그리기 ──────────────────────────────────────
+    // ── 검출 결과를 캔버스에 그리기 (v5.3: 텍스트 제거, 외부 info bar 업데이트) ──
     function drawDetectionResult(imgEl, det) {
         const canvas = document.getElementById('annotationCanvas');
-        const MAX_DISPLAY = 600;
+        const MAX_DISPLAY = 1600;
         const ow = imgEl.naturalWidth  || det.origW || 400;
         const oh = imgEl.naturalHeight || det.origH || 300;
         const dratio = Math.min(MAX_DISPLAY/ow, MAX_DISPLAY/oh, 1);
@@ -1890,21 +1869,20 @@
         canvas.height = Math.round(oh * dratio);
         const ctx = canvas.getContext('2d');
 
-        // 원본 이미지 그리기
+        // 원본 이미지
         ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
 
-        // 어둡게 오버레이 (검출 셀 외 영역 dimming)
+        // 어둡게 오버레이
         ctx.fillStyle = 'rgba(0,0,0,0.35)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 검출 좌표 스케일링
         const cx = det.cx * dratio;
         const cy = det.cy * dratio;
         const rx = det.rx * dratio;
         const ry = det.ry * dratio;
         const rMax = Math.max(rx, ry);
 
-        // ── 클리핑: 검출 원 내부만 밝게 복원 ─────────────────────
+        // 검출 원 내부만 밝게 복원
         ctx.save();
         ctx.beginPath();
         ctx.ellipse(cx, cy, rx*1.15, ry*1.15, 0, 0, Math.PI*2);
@@ -1912,28 +1890,27 @@
         ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
         ctx.restore();
 
-        // ── 발광 외곽선 (glow effect) ─────────────────────────────
+        // 발광 외곽선
         for (let g = 3; g >= 1; g--) {
             ctx.save();
             ctx.beginPath();
             ctx.ellipse(cx, cy, rx*1.15, ry*1.15, 0, 0, Math.PI*2);
             ctx.strokeStyle = `rgba(0,232,152,${0.12 * g})`;
-            ctx.lineWidth   = g * 5;
+            ctx.lineWidth   = g * 6;
             ctx.stroke();
             ctx.restore();
         }
-        // 메인 테두리
         ctx.beginPath();
         ctx.ellipse(cx, cy, rx*1.15, ry*1.15, 0, 0, Math.PI*2);
         ctx.strokeStyle = '#00e898';
-        ctx.lineWidth   = 2.5;
+        ctx.lineWidth   = 3;
         ctx.setLineDash([]);
         ctx.stroke();
 
-        // ── 십자선 ────────────────────────────────────────────────
-        ctx.strokeStyle = 'rgba(0,232,152,0.75)';
-        ctx.lineWidth   = 1.2;
-        ctx.setLineDash([4, 4]);
+        // 십자선
+        ctx.strokeStyle = 'rgba(0,232,152,0.7)';
+        ctx.lineWidth   = 1.5;
+        ctx.setLineDash([6, 6]);
         const arm = rMax * 1.8;
         ctx.beginPath();
         ctx.moveTo(cx - arm, cy); ctx.lineTo(cx + arm, cy);
@@ -1941,53 +1918,26 @@
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // ── 중심 점 ──────────────────────────────────────────────
+        // 중심점
         ctx.beginPath();
-        ctx.arc(cx, cy, 3.5, 0, Math.PI*2);
+        ctx.arc(cx, cy, 5, 0, Math.PI*2);
         ctx.fillStyle = '#00e898';
         ctx.fill();
-
-        // ── 정보 라벨 박스 ────────────────────────────────────────
-        const diamPx = Math.round((rx+ry) * 2 / dratio);      // 직경 (px)
-        const circStr = det.circularity.toFixed(2);
-        const brightPct = Math.round((det.meanBright/255)*100);
-        const lines = [
-            `⌀ ${diamPx} px`,
-            `Circ: ${circStr}`,
-            `Bright: ${brightPct}%`
-        ];
-        const lx = cx + rMax * 1.25 + 8;
-        const ly = cy - 28;
-        ctx.font = 'bold 11px monospace';
-        const maxTW = Math.max(...lines.map(l => ctx.measureText(l).width));
-        const bw2 = maxTW + 14, bh2 = lines.length * 17 + 10;
-        // 박스 위치 보정 (캔버스 밖 벗어나지 않게)
-        const bx = Math.min(lx, canvas.width  - bw2 - 4);
-        const by = Math.max(4, Math.min(ly, canvas.height - bh2 - 4));
-        ctx.fillStyle = 'rgba(0,20,14,0.82)';
-        ctx.beginPath();
-        ctx.roundRect(bx, by, bw2, bh2, 6);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0,232,152,0.5)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.fillStyle = '#00e898';
-        lines.forEach((line, i) => {
-            ctx.fillText(line, bx+7, by+15+i*17);
-        });
-
-        // ── 상단 타이틀 배지 ──────────────────────────────────────
-        const title = '🎯 Organoid Detected';
-        ctx.font = 'bold 12px "Noto Sans KR", sans-serif';
-        const tw = ctx.measureText(title).width;
-        ctx.fillStyle = 'rgba(0,184,148,0.85)';
-        ctx.beginPath();
-        ctx.roundRect(8, 8, tw+18, 24, 6);
-        ctx.fill();
-        ctx.fillStyle = 'white';
-        ctx.fillText(title, 17, 24);
 
         canvas.style.display = 'block';
+
+        // ── 외부 info bar 업데이트 (캔버스 밖 HTML) ──────────────
+        const diamPx    = Math.round((det.rx + det.ry) * 2);
+        const circStr   = det.circularity.toFixed(2);
+        const brightPct = Math.round((det.meanBright / 255) * 100);
+        const pixCount  = det.totalCount || 1;
+        const el = id => document.getElementById(id);
+        if (el('infoCount'))  el('infoCount').textContent  = `${pixCount}개`;
+        if (el('infoDiam'))   el('infoDiam').textContent   = `${diamPx} px`;
+        if (el('infoCirc'))   el('infoCirc').textContent   = circStr;
+        if (el('infoBright')) el('infoBright').textContent = `${brightPct}%`;
+        const badge = el('detectionBadge');
+        if (badge) badge.style.display = 'block';
     }
 
     // ── 이미지 픽셀 통계 (기존 호환용) ──────────────────────────────────
@@ -2088,19 +2038,11 @@
 
         // ── 어노테이션 캔버스 렌더링 ──────────────────────────────
         if (detection) {
-            drawDetectionResult(imgEl, detection);
-            const badge = document.getElementById('detectionBadge');
-            const info  = document.getElementById('detectionInfo');
-            badge.style.display = 'inline-flex';
-            const diamPx = Math.round((detection.rx + detection.ry) * 2);
-            info.innerHTML = currentLang === 'ko'
-                ? `<strong style="color:#00e898;">오가노이드 ${pixCount}개 검출</strong> &nbsp;|&nbsp; 대표 직경 <strong>${diamPx}px</strong> &nbsp;|&nbsp; Circularity <strong>${detection.circularity.toFixed(2)}</strong>`
-                : `<strong style="color:#00e898;">${pixCount} Organoids Detected</strong> &nbsp;|&nbsp; Diameter <strong>${diamPx}px</strong> &nbsp;|&nbsp; Circularity <strong>${detection.circularity.toFixed(2)}</strong>`;
-            showingAnnotation = true;
+            drawDetectionResult(imgEl, detection);  // info bar도 내부에서 업데이트
         } else {
             const canvas = document.getElementById('annotationCanvas');
             const ow = imgEl.naturalWidth || 400, oh = imgEl.naturalHeight || 300;
-            const dr = Math.min(600/ow, 600/oh, 1);
+            const dr = Math.min(1600/ow, 1600/oh, 1);
             canvas.width  = Math.round(ow*dr);
             canvas.height = Math.round(oh*dr);
             canvas.getContext('2d').drawImage(imgEl, 0, 0, canvas.width, canvas.height);
@@ -2251,20 +2193,11 @@
 
         // ── 검출 캔버스 렌더링 ────────────────────────────────────
         if (hasImage && detection) {
-            drawDetectionResult(imgEl, detection);
-            const badge = document.getElementById('detectionBadge');
-            const info  = document.getElementById('detectionInfo');
-            badge.style.display = 'inline-flex';
-            const diamPx = Math.round((detection.rx + detection.ry) * 2);
-            info.innerHTML = currentLang === 'ko'
-                ? `<strong style="color:#00e898;">오가노이드 1개 검출</strong> &nbsp;|&nbsp; 직경 <strong>${diamPx}px</strong> &nbsp;|&nbsp; Circularity <strong>${detection.circularity.toFixed(2)}</strong> &nbsp;|&nbsp; 전체 후보 <strong>${detection.totalCount}개</strong>`
-                : `<strong style="color:#00e898;">1 Organoid Detected</strong> &nbsp;|&nbsp; Diameter <strong>${diamPx}px</strong> &nbsp;|&nbsp; Circularity <strong>${detection.circularity.toFixed(2)}</strong> &nbsp;|&nbsp; Candidates <strong>${detection.totalCount}</strong>`;
-            showingAnnotation = true;
+            drawDetectionResult(imgEl, detection);  // info bar 내부 업데이트
         } else if (hasImage) {
-            // 검출 실패 시 원본 이미지 캔버스에 표시
             const canvas = document.getElementById('annotationCanvas');
             const ow = imgEl.naturalWidth || 400, oh = imgEl.naturalHeight || 300;
-            const dr = Math.min(600/ow, 600/oh, 1);
+            const dr = Math.min(1600/ow, 1600/oh, 1);
             canvas.width  = Math.round(ow*dr);
             canvas.height = Math.round(oh*dr);
             canvas.getContext('2d').drawImage(imgEl, 0, 0, canvas.width, canvas.height);
