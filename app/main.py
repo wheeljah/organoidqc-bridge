@@ -82,9 +82,9 @@ def root():
     """
     OrganoidQC 웹 앱 서빙.
     연구자는 이 URL 하나만 열면 됩니다.
-    HTML 파일 경로: 프로젝트 루트의 OrganoidQC_v3_8.html
+    HTML 파일 경로: 프로젝트 루트의 OrganoidQC_v5_2.html
     """
-    html_path = BASE_DIR / "OrganoidQC_v3_8.html"
+    html_path = BASE_DIR / "OrganoidQC_v5_2.html"
     if html_path.exists():
         return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
     # HTML 파일이 없을 경우 JSON fallback
@@ -92,7 +92,7 @@ def root():
     return JSONResponse({
         "service": "OrganoidQC Bridge",
         "version": BRIDGE_VERSION,
-        "error":   "OrganoidQC_v3_8.html 파일을 찾을 수 없습니다.",
+        "error":   "OrganoidQC_v5_2.html 파일을 찾을 수 없습니다.",
         "docs":    "/docs",
     })
 
