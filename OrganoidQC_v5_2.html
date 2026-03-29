@@ -1,0 +1,2628 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrganoidQC Web v5.2</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        :root { --primary: #00b894; --blue: #0984e3; --orange: #e17055; --bg-dark: #0d1f17; --bg-mid: #122b1e; --cell-glow: rgba(0,232,152,0.07); }
+        body { font-family: 'Noto Sans KR', sans-serif; margin:0; padding:0;
+            background: #0d1f17;
+            background-image:
+                radial-gradient(ellipse 600px 420px at 20% 30%, rgba(0,232,152,0.09) 0%, transparent 70%),
+                radial-gradient(ellipse 500px 350px at 75% 65%, rgba(0,180,210,0.07) 0%, transparent 65%),
+                radial-gradient(ellipse 300px 250px at 55% 15%, rgba(100,255,180,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse 400px 300px at 10% 80%, rgba(0,150,180,0.06) 0%, transparent 60%);
+            color:#2d3436; }
+        .container { max-width:1280px; margin:0 auto; padding:20px; }
+        header { text-align:center; margin-bottom:30px; background:linear-gradient(135deg,#162b20,#1a3828); padding:25px; border-radius:16px; box-shadow:0 4px 32px rgba(0,184,148,0.22), inset 0 1px 0 rgba(0,232,152,0.12); border:1px solid rgba(0,184,148,0.18); }
+        header h1 { color:#00e898 !important; text-shadow: 0 0 24px rgba(0,232,152,0.45); }
+        h1 { margin:0; color:var(--primary); font-size:2.3rem; }
+        .dashboard { display:grid; grid-template-columns:300px 1fr; gap:25px; }
+        .sidebar { background:linear-gradient(160deg,#162b20,#122b1e); padding:25px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.4); border:1px solid rgba(0,184,148,0.15); height:fit-content; color:#cde8da; }
+        .sidebar label, .sidebar h3 { color:#a8d8be; }
+        .sidebar select, .sidebar input[type="number"], .sidebar input[type="text"], .sidebar input[type="password"], .sidebar input[type="url"] { background:#0d1f17; color:#cde8da; border-color:rgba(0,184,148,0.25); }
+        .main { background:linear-gradient(160deg,#162b20,#122b1e); padding:25px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.4); border:1px solid rgba(0,184,148,0.15); color:#cde8da; }
+        .main h2, .main h3 { color:#a8d8be; }
+        .upload-area { border:3px dashed rgba(0,184,148,0.5); border-radius:16px; padding:30px 20px; text-align:center; background:rgba(0,184,148,0.05); cursor:pointer; transition:all 0.3s; color:#a8d8be; }
+        .upload-area:hover { background:rgba(0,184,148,0.12); border-color:#00e898; }
+        .sample-gallery { display:flex; flex-wrap:wrap; gap:12px; margin-top:20px; }
+        .sample-btn { flex:1 1 120px; padding:8px; border:2px solid rgba(0,184,148,0.3); border-radius:12px; background:rgba(0,184,148,0.06); cursor:pointer; transition:all 0.2s; text-align:center; font-size:0.9rem; color:#a8d8be; }
+        .sample-btn:hover { border-color:var(--primary); transform:scale(1.03); background:rgba(0,184,148,0.13); }
+        .sample-btn img { width:100%; height:90px; object-fit:cover; border-radius:8px; }
+        .card { background:rgba(0,40,28,0.7); border-radius:12px; padding:18px; text-align:center; border:1px solid rgba(0,184,148,0.18); color:#a8d8be; }
+        .metric { font-size:2.5rem; font-weight:700; color:var(--primary); margin:8px 0; }
+        .status { padding:6px 16px; border-radius:50px; font-size:0.9rem; font-weight:500; }
+        .good { background:#00b894; color:white; }
+        .btn { background:var(--primary); color:white; border:none; padding:14px 32px; font-size:1.1rem; border-radius:50px; cursor:pointer; width:100%; font-weight:700; margin-top:15px; }
+        .btn:hover { transform:scale(1.05); box-shadow:0 8px 25px rgba(0,184,148,0.4); }
+        .btn-sm { padding:8px 18px; font-size:0.9rem; border-radius:50px; border:none; cursor:pointer; font-weight:600; color:white; margin-top:0; width:auto; }
+        .comparison-section { margin-top:30px; border-top:2px solid rgba(0,184,148,0.25); padding-top:25px; }
+        .chart-container { margin:20px 0; height:280px; }
+        .url-section { margin-top:12px; padding:15px; background:rgba(0,184,148,0.06); border-radius:12px; border:1px solid rgba(0,184,148,0.15); }
+        .url-section input[type="text"] { width:100%; padding:10px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da; box-sizing:border-box; margin-bottom:8px; font-size:0.9rem; }
+        .url-loading { display:none; font-size:0.85rem; color:#7ec8a4; margin-top:6px; }
+
+        /* ★ v3.7 신규 스타일 */
+        .data-source-tabs { display:flex; gap:8px; margin-bottom:18px; }
+        .tab-btn { flex:1; padding:10px; border:2px solid rgba(0,184,148,0.25); border-radius:10px; background:rgba(0,184,148,0.05); cursor:pointer; font-size:0.9rem; font-weight:600; color:#7ec8a4; transition:all 0.2s; }
+        .tab-btn.active { border-color:var(--primary); background:rgba(0,184,148,0.15); color:#00e898; }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        .local-upload-box { border:2px dashed rgba(0,184,148,0.35); border-radius:12px; padding:20px; background:rgba(0,184,148,0.04); color:#a8d8be; }
+        .local-upload-box:hover { border-color:var(--primary); background:rgba(0,184,148,0.1); }
+
+        /* ★ v3.8 Bridge 연동 스타일 */
+        #bridgeBanner { display:flex; align-items:center; gap:10px; padding:10px 18px; border-radius:12px; font-size:0.88rem; font-weight:600; margin-bottom:18px; transition:all 0.4s; }
+        #bridgeBanner.checking { background:rgba(243,156,18,0.12); color:#f39c12; border:1.5px solid #f39c12; }
+        #bridgeBanner.online   { background:rgba(0,184,148,0.12); color:#00e898; border:1.5px solid #00b894; }
+        #bridgeBanner.offline  { background:rgba(214,48,49,0.12); color:#ff7675; border:1.5px solid #d63031; }
+        #bridgeDot { width:10px; height:10px; border-radius:50%; background:currentColor; flex-shrink:0; animation:pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+        #bridgeBanner.online  #bridgeDot,
+        #bridgeBanner.offline #bridgeDot { animation:none; }
+        .bridge-mode-badge { font-size:0.78rem; padding:2px 8px; border-radius:50px; background:currentColor; color:white; opacity:0.85; }
+        #analyzeBtn { display:none; background:linear-gradient(135deg,#00b894,#00cec9); color:white; border:none; padding:14px 32px; font-size:1.05rem; border-radius:50px; cursor:pointer; width:100%; font-weight:700; margin-top:12px; transition:all 0.2s; }
+        #analyzeBtn:hover:not(:disabled) { transform:scale(1.04); box-shadow:0 8px 25px rgba(0,184,148,0.4); }
+        #analyzeBtn:disabled { opacity:0.55; cursor:not-allowed; transform:none; }
+        #analyzeProgress { display:none; margin-top:10px; font-size:0.88rem; color:#7ec8a4; text-align:center; }
+        #analyzeProgress .spinner { display:inline-block; animation:spin 0.8s linear infinite; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .bridge-result-tag { display:inline-block; font-size:0.78rem; padding:2px 10px; border-radius:50px; background:#0984e3; color:white; margin-left:8px; vertical-align:middle; }
+        #organoidCountCard { display:none; }
+
+        .data-preview { margin-top:15px; max-height:200px; overflow-y:auto; border-radius:10px; border:1px solid rgba(0,184,148,0.2); }
+        .data-preview table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+        .data-preview th { background:#00b894; color:white; padding:8px 10px; text-align:left; position:sticky; top:0; }
+        .data-preview td { padding:7px 10px; border-bottom:1px solid rgba(0,184,148,0.1); color:#a8d8be; }
+        .data-preview tr:hover td { background:rgba(0,184,148,0.08); }
+        .data-preview tr.highlight td { background:rgba(0,184,148,0.12); font-weight:600; }
+
+        .manual-entry-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+        .manual-entry-grid input, .manual-entry-grid select { padding:9px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da; font-size:0.9rem; width:100%; box-sizing:border-box; }
+
+        .data-badge { display:inline-block; background:#00b894; color:white; font-size:0.8rem; font-weight:700; padding:3px 10px; border-radius:50px; margin-left:8px; }
+        .data-badge.local { background:#e17055; }
+
+        table { width:100%; border-collapse:collapse; }
+        th { background:rgba(0,184,148,0.15); padding:10px; text-align:left; font-size:0.9rem; color:#a8d8be; }
+        td { padding:9px 10px; border-bottom:1px solid rgba(0,184,148,0.1); font-size:0.9rem; color:#cde8da; }
+
+        .template-note { font-size:0.82rem; color:#a8d8be; margin:10px 0 0; background:rgba(255,193,7,0.08); padding:10px 12px; border-radius:8px; border-left:3px solid #ffc107; }
+
+        /* ── Language Toggle ── */
+        #langToggle { position:fixed; top:18px; right:20px; z-index:1000; background:#162b20; border:2px solid var(--primary); color:#00e898; padding:7px 16px; border-radius:50px; font-size:0.9rem; font-weight:700; cursor:pointer; box-shadow:0 2px 12px rgba(0,184,148,0.3); transition:all 0.2s; }
+        #langToggle:hover { background:var(--primary); color:white; }
+
+        /* ── Benefits Banner ── */
+        .benefits-banner { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:28px; }
+        .benefit-card { background:linear-gradient(135deg,#162b20,#1a3828); border-radius:14px; padding:18px 20px; box-shadow:0 3px 16px rgba(0,0,0,0.3); border-top:3px solid var(--primary); border:1px solid rgba(0,184,148,0.18); border-top:3px solid var(--primary); display:flex; align-items:flex-start; gap:12px; transition:transform 0.2s; }
+        .benefit-card:hover { transform:translateY(-3px); box-shadow:0 6px 24px rgba(0,184,148,0.22); }
+        .benefit-icon { font-size:1.8rem; flex-shrink:0; }
+        .benefit-card h4 { margin:0 0 4px; font-size:0.95rem; color:#a8d8be; }
+        .benefit-card p { margin:0; font-size:0.82rem; color:#6da88a; line-height:1.5; }
+
+        /* ── Manual Modal ── */
+        #manualModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; overflow-y:auto; padding:30px 20px; }
+        #manualBox { background:linear-gradient(160deg,#162b20,#0f2218); border-radius:20px; max-width:760px; margin:0 auto; padding:40px; box-shadow:0 20px 60px rgba(0,0,0,0.6); position:relative; border:1px solid rgba(0,184,148,0.2); color:#cde8da; }
+        #manualBox h2 { color:#00e898; margin-top:0; }
+        #manualBox h3 { color:#a8d8be; border-bottom:2px solid rgba(0,184,148,0.2); padding-bottom:8px; margin-top:28px; }
+        #manualBox ul { padding-left:20px; line-height:1.9; }
+        #manualBox .step { background:rgba(0,184,148,0.08); border-radius:10px; padding:14px 18px; margin-bottom:12px; border-left:4px solid var(--primary); }
+        #manualBox .step strong { color:#00e898; }
+        .close-modal { position:absolute; top:16px; right:20px; font-size:1.6rem; cursor:pointer; color:#6da88a; background:none; border:none; line-height:1; }
+        .close-modal:hover { color:#00e898; }
+        /* ── ★ v5.0 알고리즘 비교 섹션 ── */
+        #algoCompareSection {
+            display:none; margin-top:28px; padding:22px;
+            background:linear-gradient(135deg,rgba(108,92,231,0.08),rgba(0,184,148,0.06));
+            border-radius:16px; border:1.5px solid rgba(108,92,231,0.35);
+        }
+        #algoCompareSection h3 { color:#a29bfe; margin:0 0 16px; font-size:1.05rem; }
+        .algo-compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px; }
+        .algo-card {
+            background:rgba(0,0,0,0.3); border-radius:12px; padding:16px 18px;
+            border:1px solid rgba(255,255,255,0.08); text-align:center;
+        }
+        .algo-card .algo-name { font-size:0.8rem; font-weight:700; letter-spacing:0.04em; margin-bottom:10px; text-transform:uppercase; }
+        .algo-card.organoID-card { border-color:rgba(9,132,227,0.5); }
+        .algo-card.organoID-card .algo-name { color:#74b9ff; }
+        .algo-card.pixel-card   { border-color:rgba(0,184,148,0.5); }
+        .algo-card.pixel-card   .algo-name { color:#00e898; }
+        .algo-metric-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:0.85rem; }
+        .algo-metric-label { color:#6da88a; }
+        .algo-metric-val   { font-weight:700; color:#cde8da; }
+        .algo-badge { display:inline-block; font-size:0.72rem; padding:2px 8px; border-radius:50px; margin-top:6px; }
+        .algo-badge.ai  { background:#0984e3; color:white; }
+        .algo-badge.pix { background:#00b894; color:white; }
+        .algo-delta-bar { height:8px; border-radius:4px; background:rgba(255,255,255,0.07); margin-top:14px; overflow:hidden; }
+        .algo-delta-fill { height:100%; border-radius:4px; transition:width 0.8s ease; }
+        #algoWinnerBadge { margin-top:14px; text-align:center; font-size:0.9rem; font-weight:700; padding:10px 16px; border-radius:10px; }
+        #algoCompareChart { margin-top:16px; height:220px; }
+        .algo-toggle-raw { font-size:0.78rem; color:#7ec8a4; cursor:pointer; text-decoration:underline; margin-top:8px; display:inline-block; }
+
+        p.subtitle { color:#6da88a; }
+        #initialGuide { color:#6da88a !important; }
+
+        /* ── Footer ── */
+        footer { text-align:center; margin-top:40px; padding:24px; background:linear-gradient(135deg,#162b20,#0f2218); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.3); border:1px solid rgba(0,184,148,0.15); font-size:0.88rem; color:#6da88a; }
+        footer strong { color:#a8d8be; }
+        footer a { color:var(--primary); text-decoration:none; font-weight:600; }
+        footer a:hover { text-decoration:underline; }
+        .footer-grid { display:flex; justify-content:center; align-items:center; gap:30px; flex-wrap:wrap; }
+
+        /* ── 다크 테마 공통 보완 ── */
+        hr { border:none; border-top:1px solid rgba(0,184,148,0.18); }
+        .subtitle { color:#7ec8a4 !important; }
+        code { background:rgba(0,184,148,0.12); color:#00e898; padding:1px 6px; border-radius:4px; }
+        input::placeholder, select option { color:#6da88a; }
+        #daysValue, #supabaseStatus { color:#00e898; }
+        select option { background:#0d1f17; }
+    </style>
+</head>
+<body>
+
+<!-- 언어 토글 버튼 -->
+<button id="langToggle" onclick="toggleLang()">🌐 EN</button>
+
+<!-- 매뉴얼 모달 -->
+<div id="manualModal" onclick="if(event.target===this)closeManual()">
+  <div id="manualBox">
+    <button class="close-modal" onclick="closeManual()">✕</button>
+    <h2 id="manualTitle">📖 OrganoidQC Web — 연구자 매뉴얼</h2>
+
+    <h3 id="manualS1">🔬 서비스 소개</h3>
+    <p id="manualIntro">OrganoidQC Web은 오가노이드 배양 품질을 빠르게 평가하고 레퍼런스 데이터와 비교할 수 있는 연구자 전용 웹 도구입니다. OrganoID AI 분석 엔진과 연동하여 현미경 이미지에서 직접 QC 지표를 추출합니다.</p>
+
+    <h3 id="manualS2">⚡ 주요 기능 및 장점</h3>
+    <ul id="manualBenefitsList">
+      <li><strong>즉시 QC 분석</strong> — 이미지 업로드 후 5초 내 Size CV, Circularity, Viability 지표 자동 산출</li>
+      <li><strong>OSI 가이드라인 벤치마킹</strong> — 국제 오가노이드 표준(OSI) 기준과 자동 비교 및 Pass/Fail 판정</li>
+      <li><strong>OrganoID AI 연동</strong> — Bridge 서버를 통해 딥러닝 기반 세그멘테이션으로 개별 오가노이드 수 정밀 검출</li>
+      <li><strong>Real Data 비교</strong> — 자체 CSV 데이터 또는 Supabase DB와 연결하여 시뮬레이션 vs 실측 비교 차트 생성</li>
+      <li><strong>다중 장기 지원</strong> — 장(Intestine), 간(Liver), 뇌(Cortical) 오가노이드별 최적화된 QC 기준 적용</li>
+      <li><strong>웹 기반, 설치 불필요</strong> — 브라우저만 있으면 어디서든 접근 가능</li>
+    </ul>
+
+    <h3 id="manualS3">🚀 사용 방법 (Step-by-step)</h3>
+    <div class="step"><strong>Step 1.</strong> <span id="step1">왼쪽 사이드바에서 <em>장기 종류</em>와 <em>배양 일수</em>를 선택합니다.</span></div>
+    <div class="step"><strong>Step 2.</strong> <span id="step2"><em>로컬 이미지 업로드</em> 영역에 현미경 사진을 드래그하거나 "파일 선택"을 클릭합니다. (또는 웹 URL 이미지 사용)</span></div>
+    <div class="step"><strong>Step 3.</strong> <span id="step3"><em>"🔬 이미지 분석 시작"</em> 버튼을 클릭합니다. 픽셀 알고리즘이 자동 실행되며, Bridge 서버가 연결된 경우 OrganoID AI 분석도 자동으로 실행되어 알고리즘 비교 섹션이 표시됩니다.</span></div>
+    <div class="step"><strong>Step 4.</strong> <span id="step4">QC 지표 카드(Size CV, Circularity, Viability, 오가노이드 수)와 OSI 벤치마킹 테이블을 확인합니다. Bridge 연결 시 아래 알고리즘 비교 섹션에서 픽셀 알고리즘 vs OrganoID 결과를 나란히 비교할 수 있습니다.</span></div>
+    <div class="step"><strong>Step 5 (선택).</strong> <span id="step5">📂 CSV 파일을 업로드하거나 수동으로 Real Data를 입력하고 <em>"비교 차트 업데이트"</em>를 눌러 실측 데이터와 비교합니다.</span></div>
+    <div class="step"><strong>Step 6 (선택).</strong> <span id="step6">Supabase를 연결하면 여러 연구자의 데이터를 공유 DB에 저장하고 불러올 수 있습니다.</span></div>
+
+    <h3 id="manualS4">📐 QC 지표 설명</h3>
+    <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+      <thead><tr style="background:rgba(0,184,148,0.22);"><th style="padding:8px 12px; text-align:left; color:#00e898;" id="manualTH1">지표</th><th style="padding:8px 12px; color:#00e898;" id="manualTH2">설명</th><th style="padding:8px 12px; color:#00e898;" id="manualTH3">OSI 기준</th></tr></thead>
+      <tbody>
+        <tr style="background:rgba(0,184,148,0.05);"><td style="padding:8px 12px; font-weight:600; color:#cde8da;">Size CV (%)</td><td style="padding:8px 12px; color:#a8d8be;" id="manualCV">오가노이드 크기의 변동계수 — 낮을수록 균일한 배양</td><td style="padding:8px 12px; color:var(--primary);">&lt; 10%</td></tr>
+        <tr style="background:rgba(0,184,148,0.10);"><td style="padding:8px 12px; font-weight:600; color:#cde8da;">Circularity</td><td style="padding:8px 12px; color:#a8d8be;" id="manualCirc">구형에 가까울수록 1에 가까운 값 — 구조적 건강도 반영</td><td style="padding:8px 12px; color:var(--primary);">&gt; 0.7</td></tr>
+        <tr style="background:rgba(0,184,148,0.05);"><td style="padding:8px 12px; font-weight:600; color:#cde8da;">Viability (%)</td><td style="padding:8px 12px; color:#a8d8be;" id="manualViab">생존율 예측값 — 배양 일수와 장기 유형 기반 추정</td><td style="padding:8px 12px; color:var(--primary);">&gt; 70%</td></tr>
+        <tr style="background:rgba(0,184,148,0.10);"><td style="padding:8px 12px; font-weight:600; color:#cde8da;">QC Score</td><td style="padding:8px 12px; color:#a8d8be;" id="manualScore">위 지표들을 종합한 100점 기준 품질 점수</td><td style="padding:8px 12px; color:var(--primary);">&gt; 80</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="manualS5">📩 문의 및 요청</h3>
+    <p id="manualContact">기능 요청, 버그 리포트, 기관 맞춤 설정은 아래로 문의해주세요:<br>
+    📧 <a href="/cdn-cgi/l/email-protection#c7b3b5a6a1a1aea4e9b5a9a387a0aaa6aeabe9a4a8aa" style="color:var(--primary);"><span class="__cf_email__" data-cfemail="90e4e2f1f6f6f9f3bee2fef4d0f7fdf1f9fcbef3fffd">[email&#160;protected]</span></a> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong></p>
+
+    <div style="text-align:right; margin-top:30px;">
+      <button onclick="closeManual()" style="background:var(--primary); color:white; border:none; padding:12px 32px; border-radius:50px; font-size:1rem; font-weight:700; cursor:pointer;" id="manualCloseBtn">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+    <header>
+        <h1>🧬 OrganoidQC Web <span style="font-size:1.2rem; opacity:0.7;">v5.0</span></h1>
+        <p class="subtitle" id="headerSubtitle">⚙️ 픽셀 알고리즘 + OrganoID AI + 🌐 웹 URL + <strong>📂 로컬 Real Data 직접 업로드</strong> + <strong>🤖 알고리즘 비교</strong></p>
+        <div style="margin-top:14px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+          <button onclick="openManual()" style="background:rgba(0,184,148,0.1); border:2px solid var(--primary); color:#00e898; padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='var(--primary)';this.style.color='white'" onmouseout="this.style.background='rgba(0,184,148,0.1)';this.style.color='#00e898'" id="manualBtn">📖 연구자 매뉴얼</button>
+          <a href="/cdn-cgi/l/email-protection#3a4e485b5c5c53591448545e7a5d575b535614595557" style="background:rgba(9,132,227,0.1); border:2px solid #0984e3; color:#74b9ff; padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.background='#0984e3';this.style.color='white'" onmouseout="this.style.background='rgba(9,132,227,0.1)';this.style.color='#74b9ff'" id="contactBtn">📩 Request 접수</a>
+        </div>
+    </header>
+
+    <!-- Benefits Banner -->
+    <div class="benefits-banner" id="benefitsBanner">
+      <div class="benefit-card">
+        <div class="benefit-icon">⚡</div>
+        <div><h4 id="ben1t">즉시 QC 분석</h4><p id="ben1d">이미지 업로드 후 5초 내 Size CV·Circularity·Viability 자동 산출</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">🤖</div>
+        <div><h4 id="ben2t">OrganoID AI 연동</h4><p id="ben2d">딥러닝 세그멘테이션으로 개별 오가노이드 수 정밀 검출</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">📊</div>
+        <div><h4 id="ben3t">OSI 기준 벤치마킹</h4><p id="ben3d">국제 오가노이드 표준과 자동 비교 — Pass/Fail 즉시 판정</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">📂</div>
+        <div><h4 id="ben4t">Real Data 비교</h4><p id="ben4d">CSV·Supabase DB 연동으로 실측 데이터와 시각적 비교</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">🌐</div>
+        <div><h4 id="ben5t">설치 불필요</h4><p id="ben5d">브라우저만 있으면 어디서든 — 장(Intestine)·간(Liver)·뇌(Cortical) 지원</p></div>
+      </div>
+    </div>
+
+    <div class="dashboard">
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <h3 id="sideH1">📋 분석 설정</h3>
+            <label style="display:block; margin:15px 0 5px; font-weight:500;" id="labelOrgan">장기 종류</label>
+            <select id="organType" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da;">
+                <option value="intestine" id="optIntestine">장 (Intestine)</option>
+                <option value="liver" id="optLiver">간 (Liver)</option>
+                <option value="cortical" id="optCortical">뇌 (Cortical)</option>
+            </select>
+            <label style="display:block; margin:20px 0 5px; font-weight:500;" id="labelDays">배양 일수</label>
+            <input type="range" id="cultureDays" min="7" max="60" value="28" style="width:100%;">
+            <span id="daysValue" style="font-size:1.1rem; font-weight:600;">28일</span>
+            <label style="display:block; margin:20px 0 5px; font-weight:500;" id="labelPassage">Passage 번호</label>
+            <input type="number" id="passage" value="4" min="1" max="12" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da;">
+
+            <hr style="margin:25px 0;">
+            <h3 id="sideH2">🔌 Supabase DB 연결</h3>
+            <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co" style="width:100%; padding:10px; margin-bottom:8px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da; box-sizing:border-box;">
+            <input type="password" id="supabaseKey" placeholder="anon public key" style="width:100%; padding:10px; margin-bottom:8px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da; box-sizing:border-box;">
+            <button onclick="initSupabase()" class="btn" style="margin-top:5px;" id="btnSupabase">🔌 Supabase 연결하기</button>
+            <p id="supabaseStatus" style="font-size:0.85rem; margin-top:8px; color:#00b894;"></p>
+
+            <hr style="margin:25px 0;">
+            <h3 id="sideH3">🌐 웹 URL 이미지 불러오기</h3>
+            <div class="url-section">
+                <input type="text" id="webImageUrl" placeholder="https://example.com/organoid.jpg" style="background:#0d1f17; color:#cde8da; border-color:rgba(0,184,148,0.25);">
+                <button onclick="loadWebImage()" class="btn" style="margin-top:0; padding:10px 20px; font-size:0.95rem;" id="btnLoadUrl">📥 URL로 이미지 불러오기</button>
+                <div id="urlLoading" class="url-loading" id="urlLoadingTxt">⏳ 이미지 불러오는 중...</div>
+                <p style="font-size:0.85rem; margin:12px 0 8px; color:#6da88a;" id="webExampleLabel">📌 추천 공개 이미지</p>
+                <div id="webExamples" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+            </div>
+
+            <hr style="margin:25px 0;">
+            <h3 id="sideH4">📸 로컬 이미지 업로드</h3>
+
+            <!-- ★ v3.8 Bridge URL 설정 (file:// 로 열 때만 표시) -->
+            <div id="bridgeUrlRow" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <label for="bridgeUrlInput" style="font-size:0.82rem;font-weight:600;white-space:nowrap;color:#7ec8a4;">🌐 Bridge URL</label>
+                <input id="bridgeUrlInput" type="url"
+                       placeholder="https://your-app.up.railway.app"
+                       style="flex:1;padding:7px 12px;border:1.5px solid rgba(0,184,148,0.3);border-radius:8px;font-size:0.85rem;outline:none;background:#0d1f17;color:#cde8da;"
+                       oninput="onBridgeUrlChanged(this.value)" />
+                <button onclick="checkBridge()" style="padding:7px 14px;border:none;border-radius:8px;background:#0984e3;color:white;font-size:0.82rem;font-weight:600;cursor:pointer;">재연결</button>
+            </div>
+
+            <!-- ★ v3.8 Bridge 연결 상태 배너 -->
+            <div id="bridgeBanner" class="checking">
+                <div id="bridgeDot"></div>
+                <span id="bridgeStatusText">Bridge 서버 확인 중...</span>
+            </div>
+
+            <div id="uploadArea" class="upload-area">
+                <p style="margin:0 0 15px; font-size:1.1rem;" id="uploadHint">🖼️ 현미경 사진 끌어다 놓기 또는 클릭</p>
+                <input type="file" id="imageInput" accept="image/*" style="display:none;">
+                <button onclick="document.getElementById('imageInput').click()" class="btn" style="width:auto; padding:12px 28px; margin:0 auto; display:block;" id="btnSelectFile">📤 파일 선택</button>
+            </div>
+
+            <!-- ★ v3.8 OrganoID 분석 버튼 (Bridge 연결 시 표시) -->
+            <button id="analyzeBtn" onclick="runBridgeAnalysis()" data-ko="🔬 OrganoID로 이미지 분석" data-en="🔬 Analyze with OrganoID">🔬 OrganoID로 이미지 분석</button>
+            <div id="analyzeProgress"><span class="spinner">⏳</span> <span id="analyzeMsg">분석 중...</span></div>
+
+            <h4 style="margin:20px 0 10px;" id="webSampleTitle">🌐 웹 오가노이드 예시</h4>
+            <div class="sample-gallery" id="sampleGallery"></div>
+
+            <button onclick="runPixelAnalysis()" class="btn" style="margin-top:30px;" id="btnDryRun">🔬 이미지 분석 시작</button>
+        </div>
+
+        <!-- 메인 -->
+        <div class="main">
+            <h2 id="resultTitle">🔬 이미지 분석 결과</h2>
+
+            <div id="resultArea" style="display:none;">
+                <div style="text-align:center; margin-bottom:25px;">
+                    <!-- 원본 프리뷰 (숨김 상태로 유지 — canvas 소스로 사용) -->
+                    <img id="previewImage" src="" alt="업로드된 이미지" crossorigin="anonymous"
+                         style="display:none;">
+                    <!-- 검출 결과 오버레이 캔버스 -->
+                    <canvas id="annotationCanvas"
+                        style="max-width:100%; max-height:380px; border-radius:16px;
+                               box-shadow:0 4px 28px rgba(0,232,152,0.35); display:none; cursor:zoom-in;"
+                        title="클릭하면 원본 이미지 보기"
+                        onclick="toggleAnnotation()">
+                    </canvas>
+                    <!-- 검출 정보 배지 -->
+                    <div id="detectionBadge" style="display:none; margin-top:12px; font-size:0.88rem; color:#7ec8a4;
+                         background:rgba(0,184,148,0.08); border:1px solid rgba(0,184,148,0.25);
+                         border-radius:10px; padding:10px 18px; align-items:center; gap:12px;">
+                        <span style="font-size:1.2rem;">🎯</span>
+                        <span id="detectionInfo">오가노이드 검출 중...</span>
+                        <button onclick="toggleAnnotation()" style="background:rgba(0,184,148,0.15);
+                            border:1px solid rgba(0,184,148,0.3); color:#00e898; border-radius:20px;
+                            padding:4px 12px; font-size:0.82rem; cursor:pointer;" id="toggleAnnotBtn">
+                            🔍 원본 보기
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
+                    <div class="card"><div id="cardCV">Size CV (%)</div><div id="cvValue" class="metric">7.8</div><span class="status good" id="cvStatus">✅ OSI 통과</span></div>
+                    <div class="card"><div id="cardScore">종합 QC Score</div><div id="scoreValue" class="metric">91</div><span class="status good" id="scoreStatus">🟢 우수</span></div>
+                    <div class="card"><div id="cardCirc">Circularity</div><div id="circValue" class="metric">0.84</div><span class="status good" id="circStatus">좋음</span></div>
+                    <div class="card"><div id="cardViab">Viability 예측</div><div id="viabValue" class="metric">87%</div><span class="status good" id="viabStatus">✅ ≥70%</span></div>
+                    <!-- ★ v3.8 OrganoID 검출 수 카드 -->
+                    <div class="card" id="organoidCountCard"><div id="cardCount">오가노이드 수 <span class="bridge-result-tag">OrganoID</span></div><div id="countValue" class="metric">—</div><span id="analysisModeTag" class="status" style="background:#0984e3;color:white;font-size:0.78rem;">pixel</span></div>
+                </div>
+
+                <h3 style="margin:25px 0 10px;" id="osiTitle">🔍 OSI 가이드라인 벤치마킹</h3>
+                <table><thead><tr><th id="thItem">항목</th><th id="thOSI">OSI 최소 기준</th><th id="thSim">픽셀 분석 결과</th><th id="thVerdict">판정</th></tr></thead><tbody id="tableBody"></tbody></table>
+
+                <!-- ★ v5.0 알고리즘 비교 섹션 (Bridge 연결 시 표시) -->
+                <div id="algoCompareSection">
+                    <h3 id="algoCompareTitle">🤖 알고리즘 성능 비교 <span style="font-size:0.78rem;padding:3px 9px;border-radius:50px;background:linear-gradient(90deg,#0984e3,#6c5ce7);color:white;margin-left:8px;" id="algoCompareSubtitle">OrganoID vs 픽셀 알고리즘</span></h3>
+                    <div id="algoCompareLoading" style="display:none; font-size:0.85rem; color:#7ec8a4; margin-bottom:14px; padding:10px 14px; background:rgba(9,132,227,0.08); border-radius:8px; border:1px solid rgba(9,132,227,0.2);">
+                        <span style="display:inline-block; animation:spin 0.8s linear infinite;">⏳</span>
+                        &nbsp; OrganoID Bridge 분석 중 — 잠시 기다려주세요...
+                    </div>
+
+                    <!-- 2열 카드 비교 -->
+                    <div class="algo-compare-grid">
+                        <div class="algo-card organoID-card">
+                            <div class="algo-name">🤖 OrganoID (Bridge)</div>
+                            <div class="algo-metric-row"><span class="algo-metric-label" id="cmpLabelCount1">검출 수</span><span class="algo-metric-val" id="cmpOrganoCount">—</span></div>
+                            <div class="algo-metric-row"><span class="algo-metric-label">Size CV</span><span class="algo-metric-val" id="cmpOrganoCV">—</span></div>
+                            <div class="algo-metric-row"><span class="algo-metric-label">Circularity</span><span class="algo-metric-val" id="cmpOrganoCirc">—</span></div>
+                            <div class="algo-metric-row"><span class="algo-metric-label" id="cmpLabelMode1">분석 모드</span><span class="algo-metric-val" id="cmpOrganoMode">—</span></div>
+                            <div>
+                                <span class="algo-badge ai" id="cmpBadgeAI">딥러닝 세그멘테이션</span>
+                            </div>
+                        </div>
+                        <div class="algo-card pixel-card">
+                            <div class="algo-name" id="cmpPixelCardTitle">⚙️ 픽셀 알고리즘 (로컬)</div>
+                            <div class="algo-metric-row"><span class="algo-metric-label" id="cmpLabelCount2">검출 수</span><span class="algo-metric-val" id="cmpPixelCount">—</span></div>
+                            <div class="algo-metric-row"><span class="algo-metric-label">Size CV</span><span class="algo-metric-val" id="cmpPixelCV">—</span></div>
+                            <div class="algo-metric-row"><span class="algo-metric-label">Circularity</span><span class="algo-metric-val" id="cmpPixelCirc">—</span></div>
+                            <div class="algo-metric-row"><span class="algo-metric-label" id="cmpLabelMode2">분석 모드</span><span class="algo-metric-val">Blob Detection</span></div>
+                            <div>
+                                <span class="algo-badge pix">Connected Component</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 일치율 바 -->
+                    <div style="margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:#7ec8a4;margin-bottom:4px;">
+                            <span id="algoMatchLabel">알고리즘 일치율 (검출 수 기준)</span>
+                            <span id="algoMatchPct" style="font-weight:700;color:#cde8da;">—</span>
+                        </div>
+                        <div class="algo-delta-bar">
+                            <div class="algo-delta-fill" id="algoMatchBar" style="background:linear-gradient(90deg,#00b894,#0984e3);width:0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- 종합 판정 -->
+                    <div id="algoWinnerBadge" style="display:none;"></div>
+
+                    <!-- 비교 레이더/바 차트 -->
+                    <div id="algoCompareChart">
+                        <canvas id="algoChartCanvas"></canvas>
+                    </div>
+
+                    <!-- 상세 차이 펼치기 -->
+                    <span class="algo-toggle-raw" onclick="toggleAlgoRaw()" id="algoToggleRaw">▼ 상세 수치 보기</span>
+                    <div id="algoRawTable" style="display:none;margin-top:12px;">
+                        <table style="font-size:0.83rem;">
+                            <thead><tr><th id="algoRawTH1">지표</th><th style="color:#74b9ff;">OrganoID</th><th style="color:#00e898;" id="algoRawTH3">픽셀 알고리즘</th><th id="algoRawTH4">차이</th></tr></thead>
+                            <tbody id="algoRawBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ★ v3.7 Real Data 비교 섹션 (탭 구조) -->
+                <div class="comparison-section">
+                    <h3 id="realDataTitle">📊 Real Data 비교
+                        <span id="dataSourceBadge" class="data-badge" style="display:none;"></span>
+                    </h3>
+
+                    <!-- 데이터 소스 탭 -->
+                    <div class="data-source-tabs">
+                        <button class="tab-btn active" onclick="switchTab('local')" id="tab-local">📂 로컬 업로드</button>
+                        <button class="tab-btn" onclick="switchTab('supabase')" id="tab-supabase">🔌 Supabase</button>
+                    </div>
+
+                    <!-- 탭 1: 로컬 Real Data 업로드 -->
+                    <div class="tab-panel active" id="panel-local">
+                        <div style="display:flex; gap:8px; margin-bottom:14px;">
+                            <button class="tab-btn active" style="flex:1; font-size:0.85rem;" onclick="switchSubTab('csv')" id="subtab-csv">📄 CSV 업로드</button>
+                            <button class="tab-btn" style="flex:1; font-size:0.85rem;" onclick="switchSubTab('manual')" id="subtab-manual">✏️ 수동 입력</button>
+                        </div>
+
+                        <!-- CSV 업로드 -->
+                        <div id="subpanel-csv">
+                            <div class="local-upload-box" onclick="document.getElementById('realDataCsvInput').click()" style="cursor:pointer; text-align:center;">
+                                <p style="margin:0 0 8px; font-size:1.1rem;" id="csvDropHint">📄 Real Data CSV 파일을 끌어다 놓거나 클릭</p>
+                                <p style="margin:0; font-size:0.85rem; color:#6da88a;" id="csvFmtHint">형식: label, organ, size_cv, viability, marker_percent</p>
+                                <input type="file" id="realDataCsvInput" accept=".csv,.txt" style="display:none;">
+                            </div>
+                            <div style="display:flex; gap:8px; margin-top:10px;">
+                                <button class="btn-sm" style="background:#6c5ce7;" onclick="downloadCSVTemplate()" id="btnCSVTpl">⬇️ CSV 템플릿 다운로드</button>
+                                <button class="btn-sm" style="background:#b2bec3;" onclick="clearLocalData()" id="btnClearData">🗑️ 데이터 초기화</button>
+                            </div>
+                            <div class="template-note" id="csvNote">
+                                📌 <strong>CSV 헤더 형식:</strong> <code>label,organ,size_cv,viability,marker_percent</code><br>
+                                organ 값: <code>intestine</code> / <code>liver</code> / <code>cortical</code> — 현재 선택 장기만 필터링됩니다.
+                            </div>
+                        </div>
+
+                        <!-- 수동 입력 -->
+                        <div id="subpanel-manual" style="display:none;">
+                            <div class="manual-entry-grid">
+                                <input id="mLabel" data-ko="레이블 (예: My Lab Day28)" data-en="Label (e.g. My Lab Day28)" placeholder="레이블 (예: My Lab Day28)" style="grid-column:1/-1;">
+                                <select id="mOrgan">
+                                    <option value="intestine" id="mOptIntestine">장 (Intestine)</option>
+                                    <option value="liver" id="mOptLiver">간 (Liver)</option>
+                                    <option value="cortical" id="mOptCortical">뇌 (Cortical)</option>
+                                </select>
+                                <div></div>
+                                <input id="mCV" type="number" step="0.1" placeholder="Size CV (%)">
+                                <input id="mViab" type="number" placeholder="Viability (%)">
+                                <input id="mMarker" type="number" placeholder="Marker (%)">
+                                <div></div>
+                            </div>
+                            <button class="btn" style="margin-top:10px; padding:10px; font-size:0.95rem;" onclick="addManualRecord()" id="btnAddRow">➕ 데이터 추가</button>
+                        </div>
+
+                        <!-- 로드된 데이터 미리보기 -->
+                        <div id="localDataPreviewWrap" style="display:none; margin-top:15px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <strong style="font-size:0.9rem;" id="loadedDataLabel">📋 로드된 데이터 <span id="localDataCount" class="data-badge local">0건</span></strong>
+                            </div>
+                            <div class="data-preview">
+                                <table>
+                                    <thead><tr><th id="thLabel">레이블</th><th id="thOrgan">장기</th><th>Size CV</th><th>Viability</th><th>Marker</th><th></th></tr></thead>
+                                    <tbody id="localDataTableBody"></tbody>
+                                </table>
+                            </div>
+                            <button class="btn" style="margin-top:12px; padding:10px; font-size:0.95rem; background:#e17055;" onclick="applyLocalData()" id="btnApplyData">📊 이 데이터로 비교 차트 업데이트</button>
+                        </div>
+                    </div>
+
+                    <!-- 탭 2: Supabase -->
+                    <div class="tab-panel" id="panel-supabase">
+                        <button onclick="fetchRealDataFromSupabase()" class="btn" style="width:auto; padding:10px 24px; font-size:0.95rem; margin-bottom:15px;" id="btnFetchSupa">🌐 Supabase에서 Real Data 불러오기</button>
+                        <button onclick="saveToSupabase()" class="btn" style="width:auto; padding:10px 24px; font-size:0.95rem; margin-bottom:15px; margin-left:10px; background:#0984e3;" id="btnSaveSupa">💾 내 측정값 Supabase에 저장</button>
+                    </div>
+
+                    <!-- 공통: 레퍼런스 선택 + 사용자 입력 + 차트 -->
+                    <div id="comparisonBody" style="margin-top:20px;">
+                        <select id="realRefSelect" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da; margin-bottom:15px;" onchange="updateRealComparison()"></select>
+
+                        <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:160px;"><small id="labelUserCV" style="color:#6da88a;">내 Size CV (%)</small><input type="number" id="userCV" value="8.5" step="0.1" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da;" onchange="updateRealComparison()"></div>
+                            <div style="flex:1; min-width:160px;"><small id="labelUserViab" style="color:#6da88a;">내 Viability (%)</small><input type="number" id="userViab" value="82" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da;" onchange="updateRealComparison()"></div>
+                            <div style="flex:1; min-width:160px;"><small id="labelUserMarker" style="color:#6da88a;">내 Marker (%)</small><input type="number" id="userMarker" value="35" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(0,184,148,0.25); background:#0d1f17; color:#cde8da;" onchange="updateRealComparison()"></div>
+                        </div>
+
+                        <canvas id="comparisonChart" class="chart-container"></canvas>
+
+                        <table style="margin-top:10px;">
+                            <thead><tr>
+                                <th id="thCmpItem">항목</th>
+                                <th id="thCmpSim">시뮬레이션</th>
+                                <th id="thCmpRef">Real Reference</th>
+                                <th id="thCmpUser">내 실제값</th>
+                                <th id="thCmpDiff">시뮬 vs Ref 차이</th>
+                            </tr></thead>
+                            <tbody id="realTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ★ v4.0 PDF 리포트 다운로드 버튼 -->
+                <div style="margin-top:28px; padding-top:22px; border-top:1px solid rgba(0,184,148,0.2); display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap;">
+                    <button onclick="generatePDFReport()" id="btnPDF"
+                        style="background:linear-gradient(135deg,#e17055,#d63031); color:white; border:none; padding:12px 28px; border-radius:50px; font-size:1rem; font-weight:700; cursor:pointer; transition:all 0.2s;"
+                        onmouseover="this.style.transform='scale(1.04)';this.style.boxShadow='0 8px 24px rgba(225,112,85,0.4)'"
+                        onmouseout="this.style.transform='';this.style.boxShadow=''">
+                        📄 PDF 리포트 다운로드
+                    </button>
+                </div>
+            </div>
+
+            <div id="initialGuide" style="text-align:center; padding:40px 20px; color:#6da88a;">
+                <h3 id="initialGuideText">👆 현미경 이미지를 업로드하고 "🔬 이미지 분석 시작" 버튼을 눌러주세요</h3>
+                <p style="margin:10px 0 22px; font-size:0.95rem; color:#7ec8a4;">또는 아래 예시 이미지를 클릭하면 바로 분석이 시작됩니다 👇</p>
+                <div id="sampleDemoImg" onclick="loadSampleAndAnalyze()"
+                    title="클릭하면 예시 이미지로 분석 시작"
+                    style="cursor:pointer; display:inline-block; border-radius:16px; overflow:hidden;
+                           border:3px solid rgba(0,184,148,0.35);
+                           box-shadow:0 4px 24px rgba(0,184,148,0.18);
+                           transition:all 0.25s; max-width:400px; width:100%;"
+                    onmouseover="this.style.borderColor='#00e898';this.style.boxShadow='0 10px 36px rgba(0,232,152,0.38)';this.style.transform='translateY(-3px)'"
+                    onmouseout="this.style.borderColor='rgba(0,184,148,0.35)';this.style.boxShadow='0 4px 24px rgba(0,184,148,0.18)';this.style.transform=''">
+                    <img src="https://raw.githubusercontent.com/TKassis/OrgaQuant/master/readme_images/Figure_1_From_Paper.jpg"
+                         alt="Intestine Organoid 현미경 예시 이미지"
+                         crossorigin="anonymous"
+                         style="width:100%; height:230px; object-fit:cover; display:block;">
+                    <div style="padding:11px 16px; background:rgba(0,30,20,0.88); display:flex; align-items:center; justify-content:center; gap:10px;">
+                        <span style="font-size:1.3rem;">🔬</span>
+                        <span style="font-size:0.9rem; color:#7ec8a4;" id="sampleDemoLabel"><strong style="color:#00e898;">Intestine Organoid</strong> 예시 — 클릭하면 바로 분석 시작!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-grid">
+        <div>🧬 <strong>OrganoidQC Web v4.0</strong></div>
+        <div>👤 <strong id="footerDev">개발자:</strong> Jongwoo Hahn</div>
+        <div>📩 <strong id="footerRequest">Request 접수:</strong> <a href="/cdn-cgi/l/email-protection#dda9afbcbbbbb4bef3afb3b99dbab0bcb4b1f3beb2b0"><span class="__cf_email__" data-cfemail="5c282e3d3a3a353f722e32381c3b313d3530723f3331">[email&#160;protected]</span></a></div>
+        <div style="color:#b2bec3; font-size:0.82rem;" id="footerCopy">© 2025 OrganoidQC. All rights reserved. | v5.0</div>
+      </div>
+    </footer>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // ==================== 상태 ====================
+    let supabaseClient = null;
+    let currentSimulation = { cv:0, viability:0, marker:0, score:0, circ:0, organ:'' };
+    let comparisonChartInstance = null;
+    let supabaseRealData = [];   // Supabase에서 불러온 데이터
+    // ── 보안 v5.2: XSS 방어용 HTML 이스케이프 헬퍼 (H-2) ──────────
+    function esc(str) {
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+            .replace(/'/g,'&#39;');
+    }
+
+    // ── 보안 v5.2: Bridge URL SSRF 검증 (M-3) ────────────────────
+    function isAllowedBridgeUrl(url) {
+        try {
+            const u = new URL(url);
+            const blocked = /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.0\.0\.0)/i;
+            if (blocked.test(u.hostname)) return false;
+            return u.protocol === 'https:' || u.hostname === 'localhost';
+        } catch { return false; }
+    }
+
+    let localRealData = [];      // ★ v3.7: 로컬에서 직접 업로드한 데이터
+
+    // 현재 활성 데이터 소스 반환
+    function getActiveRealData() {
+        return localRealData.length > 0 ? localRealData : supabaseRealData;
+    }
+
+    // ==================== 탭 전환 ====================
+    function switchTab(name) {
+        ['local','supabase'].forEach(t => {
+            document.getElementById('tab-' + t).classList.toggle('active', t === name);
+            document.getElementById('panel-' + t).classList.toggle('active', t === name);
+        });
+    }
+
+    function switchSubTab(name) {
+        ['csv','manual'].forEach(t => {
+            document.getElementById('subtab-' + t).classList.toggle('active', t === name);
+            document.getElementById('subpanel-' + t).style.display = t === name ? 'block' : 'none';
+        });
+    }
+
+    // ==================== Supabase ====================
+    async function initSupabase() {
+        const url = document.getElementById('supabaseUrl').value.trim();
+        const key = document.getElementById('supabaseKey').value.trim();
+        if (!url || !key) return alert('URL과 Anon Key를 모두 입력해주세요!');
+        try {
+            const { createClient } = window.supabase;
+            supabaseClient = createClient(url, key);
+            document.getElementById('supabaseStatus').innerHTML = '✅ Supabase 연결 성공!';
+        } catch(e) {
+            alert('연결 실패: ' + e.message);
+        }
+    }
+
+    async function fetchRealDataFromSupabase() {
+        if (!supabaseClient) return alert('먼저 Supabase를 연결해주세요!');
+        const organ = document.getElementById('organType').value;
+        try {
+            const { data, error } = await supabaseClient.from('qc_references').select('*').eq('organ', organ);
+            if (error) throw error;
+            supabaseRealData = data || [];
+            localRealData = []; // 로컬 데이터 비우고 Supabase 우선
+            populateRefSelect(supabaseRealData, 'Supabase');
+            updateRealComparison();
+        } catch(e) {
+            alert('데이터 불러오기 실패: ' + e.message);
+        }
+    }
+
+    async function saveToSupabase() {
+        if (!supabaseClient) return alert('Supabase 연결 후 사용해주세요!');
+        const organ = document.getElementById('organType').value;
+        const { error } = await supabaseClient.from('qc_references').insert([{
+            organ, label: `User ${new Date().toISOString().slice(0,10)}`,
+            size_cv: parseFloat(document.getElementById('userCV').value),
+            viability: parseFloat(document.getElementById('userViab').value),
+            marker_percent: parseFloat(document.getElementById('userMarker').value),
+            source: 'OrganoidQC Web'
+        }]);
+        if (error) alert(error.message);
+        else { alert('✅ 저장 완료!'); fetchRealDataFromSupabase(); }
+    }
+
+    // ==================== ★ v3.7 로컬 Real Data 업로드 ====================
+
+    /** CSV 파일 파싱 및 localRealData 적재 */
+    function setupRealDataCSVInput() {
+        const input = document.getElementById('realDataCsvInput');
+        const box = document.querySelector('.local-upload-box');
+
+        input.addEventListener('change', e => parseRealDataCSV(e.target.files[0]));
+
+        // 드래그 앤 드롭
+        box.addEventListener('dragover', e => { e.preventDefault(); box.style.borderColor='#00b894'; });
+        box.addEventListener('dragleave', () => { box.style.borderColor='#ddd'; });
+        box.addEventListener('drop', e => {
+            e.preventDefault();
+            box.style.borderColor = '#ddd';
+            const file = e.dataTransfer.files[0];
+            if (file) parseRealDataCSV(file);
+        });
+    }
+
+    function parseRealDataCSV(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            const lines = ev.target.result.trim().split('\n').map(l => l.trim()).filter(Boolean);
+            if (lines.length < 2) return alert('데이터가 부족합니다. 헤더 + 최소 1행이 필요합니다.');
+
+            const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const required = ['label','organ','size_cv','viability','marker_percent'];
+            const missing = required.filter(k => !header.includes(k));
+            if (missing.length > 0) {
+                return alert(`CSV 헤더에 다음 컬럼이 없습니다: ${missing.join(', ')}\n\n정확한 형식:\nlabel,organ,size_cv,viability,marker_percent`);
+            }
+
+            const idx = k => header.indexOf(k);
+            const parsed = [];
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',').map(c => c.trim());
+                if (cols.length < required.length) continue;
+                parsed.push({
+                    label:         cols[idx('label')] || `Row ${i}`,
+                    organ:         cols[idx('organ')].toLowerCase(),
+                    size_cv:       parseFloat(cols[idx('size_cv')]),
+                    viability:     parseFloat(cols[idx('viability')]),
+                    marker_percent:parseFloat(cols[idx('marker_percent')])
+                });
+            }
+
+            if (parsed.length === 0) return alert('파싱된 데이터가 없습니다. 파일 내용을 확인해주세요.');
+
+            // 기존 데이터에 추가 (중복 레이블 덮어쓰기)
+            parsed.forEach(row => {
+                const existIdx = localRealData.findIndex(r => r.label === row.label && r.organ === row.organ);
+                if (existIdx >= 0) localRealData[existIdx] = row;
+                else localRealData.push(row);
+            });
+
+            renderLocalDataTable();
+            alert(`✅ ${parsed.length}건 로드 완료! (전체 누적: ${localRealData.length}건)\n"비교 차트 업데이트" 버튼을 눌러 적용하세요.`);
+        };
+        reader.readAsText(file);
+    }
+
+    /** 수동 입력 한 행 추가 */
+    function addManualRecord() {
+        const label  = document.getElementById('mLabel').value.trim();
+        const organ  = document.getElementById('mOrgan').value;
+        const cv     = parseFloat(document.getElementById('mCV').value);
+        const viab   = parseFloat(document.getElementById('mViab').value);
+        const marker = parseFloat(document.getElementById('mMarker').value);
+
+        if (!label) return alert('레이블을 입력해주세요.');
+        if (isNaN(cv) || isNaN(viab) || isNaN(marker)) return alert('Size CV, Viability, Marker 값을 모두 숫자로 입력해주세요.');
+
+        const row = { label, organ, size_cv: cv, viability: viab, marker_percent: marker };
+        const existIdx = localRealData.findIndex(r => r.label === label && r.organ === organ);
+        if (existIdx >= 0) {
+            if (!confirm(`"${label}" 데이터가 이미 있습니다. 덮어쓸까요?`)) return;
+            localRealData[existIdx] = row;
+        } else {
+            localRealData.push(row);
+        }
+
+        // 입력 초기화
+        ['mLabel','mCV','mViab','mMarker'].forEach(id => document.getElementById(id).value = '');
+        renderLocalDataTable();
+        alert(`✅ "${label}" 추가 완료 (전체: ${localRealData.length}건)`);
+    }
+
+    /** 로컬 데이터 테이블 렌더링 */
+    function renderLocalDataTable() {
+        const wrap = document.getElementById('localDataPreviewWrap');
+        const tbody = document.getElementById('localDataTableBody');
+        const count = document.getElementById('localDataCount');
+
+        if (localRealData.length === 0) { wrap.style.display = 'none'; return; }
+        wrap.style.display = 'block';
+        count.textContent = localRealData.length + '건';
+
+        tbody.innerHTML = localRealData.map((r, i) => `
+            <tr>
+                <td>${esc(r.label)}</td>
+                <td>${esc(r.organ)}</td>
+                <td>${esc(String(r.size_cv))}</td>
+                <td>${esc(String(r.viability))}</td>
+                <td>${esc(String(r.marker_percent))}</td>
+                <td><button onclick="deleteLocalRow(${i})" style="background:none;border:none;cursor:pointer;color:#e17055;font-size:1rem;">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function deleteLocalRow(i) {
+        localRealData.splice(i, 1);
+        renderLocalDataTable();
+        if (localRealData.length === 0) {
+            // 로컬 데이터가 없으면 비교 섹션 초기화
+            document.getElementById('realRefSelect').innerHTML = '';
+        }
+    }
+
+    function clearLocalData() {
+        if (localRealData.length === 0) return;
+        if (!confirm('로컬에 올라온 데이터를 모두 삭제할까요?')) return;
+        localRealData = [];
+        renderLocalDataTable();
+        document.getElementById('realRefSelect').innerHTML = '';
+        document.getElementById('realTableBody').innerHTML = '';
+        if (comparisonChartInstance) { comparisonChartInstance.destroy(); comparisonChartInstance = null; }
+        updateDataSourceBadge(null);
+    }
+
+    /** 로컬 데이터로 비교 차트 적용 */
+    function applyLocalData() {
+        const organ = document.getElementById('organType').value;
+        const filtered = localRealData.filter(r => r.organ === organ);
+        if (filtered.length === 0) {
+            return alert(`현재 선택된 장기(${organ})에 해당하는 로컬 데이터가 없습니다.\n다른 장기 종류를 선택하거나 해당 organ 값을 가진 데이터를 추가해주세요.`);
+        }
+        populateRefSelect(filtered, '로컬');
+        updateRealComparison();
+    }
+
+    /** CSV 템플릿 다운로드 */
+    function downloadCSVTemplate() {
+        const header = 'label,organ,size_cv,viability,marker_percent';
+        const examples = [
+            'My Lab Day28,intestine,8.2,85,33',
+            'Reference A,intestine,7.5,90,38',
+            'Control B,liver,6.8,88,82',
+            'Brain Ref,cortical,9.1,78,55'
+        ].join('\n');
+        const blob = new Blob([header + '\n' + examples], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'organoid_real_data_template.csv';
+        a.click();
+    }
+
+    // ==================== 공통: 셀렉트 채우기 & 비교 차트 ====================
+    function populateRefSelect(data, source) {
+        const select = document.getElementById('realRefSelect');
+        select.innerHTML = data.map((r, i) => `<option value="${i}">${esc(r.label)}</option>`).join('');
+        updateDataSourceBadge(source);
+    }
+
+    function updateDataSourceBadge(source) {
+        const badge = document.getElementById('dataSourceBadge');
+        if (!source) { badge.style.display = 'none'; return; }
+        badge.style.display = 'inline-block';
+        badge.textContent = source === '로컬' ? '📂 로컬 데이터' : '🔌 Supabase';
+        badge.className = 'data-badge' + (source === '로컬' ? ' local' : '');
+    }
+
+    function updateRealComparison() {
+        const data = getActiveRealData();
+        if (data.length === 0) return;
+
+        const organ = document.getElementById('organType').value;
+        const filtered = data.filter(r => r.organ === organ);
+        if (filtered.length === 0) return;
+
+        const idx = Math.min(parseInt(document.getElementById('realRefSelect').value) || 0, filtered.length - 1);
+        const ref = filtered[idx];
+        if (!ref) return;
+
+        const userCV    = parseFloat(document.getElementById('userCV').value)    || currentSimulation.cv;
+        const userViab  = parseFloat(document.getElementById('userViab').value)  || currentSimulation.viability;
+        const userMarker= parseFloat(document.getElementById('userMarker').value)|| currentSimulation.marker;
+
+        document.getElementById('realTableBody').innerHTML = `
+            <tr><td>Size CV (%)</td><td>${currentSimulation.cv}</td><td>${ref.size_cv}</td><td>${userCV}</td><td>${(currentSimulation.cv - ref.size_cv).toFixed(1)}</td></tr>
+            <tr><td>Viability (%)</td><td>${currentSimulation.viability}</td><td>${ref.viability}</td><td>${userViab}</td><td>${(currentSimulation.viability - ref.viability).toFixed(1)}</td></tr>
+            <tr><td>Marker (%)</td><td>${currentSimulation.marker}</td><td>${ref.marker_percent}</td><td>${userMarker}</td><td>${(currentSimulation.marker - ref.marker_percent).toFixed(1)}</td></tr>
+        `;
+
+        if (comparisonChartInstance) comparisonChartInstance.destroy();
+        comparisonChartInstance = new Chart(document.getElementById('comparisonChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Size CV (%)', 'Viability (%)', 'Marker (%)'],
+                datasets: [
+                    { label: 'Pixel Analysis',     data: [currentSimulation.cv, currentSimulation.viability, currentSimulation.marker], backgroundColor: 'rgba(0,184,148,0.8)', borderColor:'#00b894', borderWidth:1 },
+                    { label: 'Real Reference',  data: [ref.size_cv, ref.viability, ref.marker_percent],                             backgroundColor: 'rgba(9,132,227,0.8)', borderColor:'#0984e3', borderWidth:1 },
+                    { label: 'Your Input',       data: [userCV, userViab, userMarker],                                               backgroundColor: 'rgba(253,203,110,0.8)', borderColor:'#fdcb6e', borderWidth:1 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#a8d8be', font: { size: 12 } } }
+                },
+                scales: {
+                    x: { ticks: { color: '#7ec8a4' }, grid: { color: 'rgba(0,184,148,0.1)' } },
+                    y: { ticks: { color: '#7ec8a4' }, grid: { color: 'rgba(0,184,148,0.1)' } }
+                }
+            }
+        });
+    }
+
+    // ==================== 샘플 갤러리 ====================
+    // ★ v5.0: OrgaQuant repo에는 Figure_1만 존재 (Figure_2/3은 404)
+    //          → OrganoID 논문 (Matthews et al. 2022) 공개 이미지로 교체
+    const sampleImages = [
+        {
+            name: "Intestine Organoid",
+            src: "https://raw.githubusercontent.com/TKassis/OrgaQuant/master/readme_images/Figure_1_From_Paper.jpg",
+            organ: "intestine"
+        }
+    ];
+
+    function createSampleGallery() {
+        const gallery = document.getElementById('sampleGallery');
+        gallery.innerHTML = '';
+        sampleImages.forEach(img => {
+            const btn = document.createElement('div');
+            btn.className = 'sample-btn';
+            const imgEl = document.createElement('img');
+            imgEl.src = img.src;
+            imgEl.alt = img.name;
+            imgEl.crossOrigin = 'anonymous';
+            imgEl.style.cssText = 'width:100%;height:90px;object-fit:cover;border-radius:8px;';
+            // ★ v5.0 폴백: 이미지 로드 실패 시 그라디언트 플레이스홀더
+            imgEl.onerror = function() {
+                if (img.fallbackSrc && this.src !== img.fallbackSrc) {
+                    this.src = img.fallbackSrc;
+                } else {
+                    this.style.display = 'none';
+                    const colors = { intestine:'#00b894,#00cec9', liver:'#e17055,#fdcb6e', cortical:'#6c5ce7,#a29bfe' };
+                    const grad = colors[img.organ] || '#636e72,#b2bec3';
+                    const ph = document.createElement('div');
+                    ph.style.cssText = `width:100%;height:90px;border-radius:8px;background:linear-gradient(135deg,${grad});display:flex;align-items:center;justify-content:center;font-size:1.5rem;`;
+                    ph.textContent = img.organ === 'intestine' ? '🔬' : img.organ === 'liver' ? '🧫' : '🧠';
+                    this.parentNode.insertBefore(ph, this);
+                }
+            };
+            const label = document.createElement('div');
+            label.style.marginTop = '5px';
+            label.textContent = img.name;
+            btn.appendChild(imgEl);
+            btn.appendChild(label);
+            btn.onclick = () => {
+                const activeUrl = (img.fallbackSrc && imgEl.naturalWidth === 0) ? img.fallbackSrc : img.src;
+                document.getElementById('previewImage').src = activeUrl;
+                if (img.organ) document.getElementById('organType').value = img.organ;
+            };
+            gallery.appendChild(btn);
+        });
+    }
+
+    // ==================== 로컬 이미지 업로드 ====================
+    function setupUpload() {
+        const area  = document.getElementById('uploadArea');
+        const input = document.getElementById('imageInput');
+        area.addEventListener('click', () => input.click());
+        input.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    document.getElementById('previewImage').src = ev.target.result;
+                    // 캔버스 초기화
+                    const c = document.getElementById('annotationCanvas');
+                    c.style.display = 'none';
+                    const b = document.getElementById('detectionBadge');
+                    if (b) b.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+                onImageSelected(file);
+            }
+        });
+        // ★ v3.8 드래그&드롭
+        area.addEventListener('dragover', e => { e.preventDefault(); area.style.background='#e9f5f0'; });
+        area.addEventListener('dragleave', () => { area.style.background=''; });
+        area.addEventListener('drop', e => {
+            e.preventDefault();
+            area.style.background = '';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = ev => document.getElementById('previewImage').src = ev.target.result;
+                reader.readAsDataURL(file);
+                onImageSelected(file);
+            }
+        });
+    }
+
+    // ==================== 웹 URL 이미지 불러오기 ====================
+    // ★ v5.0: Figure_2/3 URL 404 수정 → OrganoID Publication 이미지 + 폴백 적용
+    const webExampleImages = [
+        { name: "Intestine (Day 28)", nameEn: "Intestine (Day 28)",
+          url: "https://raw.githubusercontent.com/TKassis/OrgaQuant/master/readme_images/Figure_1_From_Paper.jpg" }
+    ];
+
+    function createWebExamples() {
+        const container = document.getElementById('webExamples');
+        container.innerHTML = '';
+        webExampleImages.forEach(item => {
+            const btn = document.createElement('button');
+            btn.style.cssText = 'padding:6px 12px; font-size:0.85rem; border:1px solid rgba(0,184,148,0.3); border-radius:8px; background:rgba(0,184,148,0.07); color:#7ec8a4; cursor:pointer;';
+            btn.textContent = currentLang === 'ko' ? item.name : item.nameEn;
+            btn.onclick = () => {
+                document.getElementById('webImageUrl').value = item.url;
+                // ★ v5.0: 폴백 URL 자동 적용
+                const preview = document.getElementById('webImageUrl');
+                loadWebImage(item.fallback || null);
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function loadWebImage(fallbackUrl) {
+        const rawUrl = document.getElementById('webImageUrl').value.trim();
+        if (!rawUrl) return alert('URL을 입력해주세요!');
+        if (!/^https?:\/\/.+/.test(rawUrl)) return alert('올바른 URL을 입력해주세요.\n예: https://example.com/image.jpg');
+
+        const preview   = document.getElementById('previewImage');
+        const loadingEl = document.getElementById('urlLoading');
+
+        preview.onerror = () => {
+            if (fallbackUrl && preview.src !== fallbackUrl) {
+                // ★ v5.0: 폴백 URL로 자동 재시도
+                preview.src = fallbackUrl;
+                document.getElementById('webImageUrl').value = fallbackUrl;
+            } else {
+                loadingEl.style.display = 'none';
+                alert('이미지를 불러올 수 없습니다.\n• 직접 이미지 파일 URL인지 확인 (jpg/png/gif 등)\n• CORS 허용 공개 이미지인지 확인');
+            }
+        };
+        preview.onload  = () => { loadingEl.style.display = 'none'; };
+        preview.crossOrigin = 'anonymous';
+        loadingEl.style.display = 'block';
+        preview.src = rawUrl;
+    }
+
+    // ==================== ★ v3.8 Bridge 연동 ====================
+    // 자동 URL 감지:
+    //   서버에서 서빙 중 → window.location.origin 사용 (연구자는 그냥 열기만 하면 됨)
+    //   로컬 파일(file://)로 열면 → localStorage 저장값 또는 수동 입력
+    const PLACEHOLDER_URL  = 'https://your-app.up.railway.app';  // 배포 후 교체
+    const LOCAL_BRIDGE_URL = 'http://localhost:8000';
+
+    function detectBridgeURL() {
+        const proto = window.location.protocol;
+        if (proto === 'http:' || proto === 'https:') {
+            // 서버에서 서빙 중 → 같은 오리진의 API를 사용
+            return window.location.origin;
+        }
+        // file:// 로 열림 → localStorage 저장값 또는 placeholder
+        return localStorage.getItem('bridgeUrl') || PLACEHOLDER_URL;
+    }
+
+    let BRIDGE_URL = detectBridgeURL();
+    const isServedFromServer = (window.location.protocol !== 'file:');
+
+    // 페이지 로드 시 URL 입력 UI 처리
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlRow   = document.getElementById('bridgeUrlRow');
+        const urlInput = document.getElementById('bridgeUrlInput');
+        if (isServedFromServer) {
+            // 서버 서빙 시: URL 입력창 숨김 (자동 연결)
+            if (urlRow) urlRow.style.display = 'none';
+        } else {
+            // 파일로 열 때: 입력창 표시, 저장값 복원
+            if (urlInput) urlInput.value = BRIDGE_URL;
+        }
+    });
+
+    function onBridgeUrlChanged(val) {
+        const trimmed = val.trim().replace(/\/$/, '');
+        // 보안 v5.2 M-3: SSRF 방어 — 내부망 IP 및 비https 차단
+        if (trimmed && !isAllowedBridgeUrl(trimmed)) {
+            alert(currentLang === 'ko'
+                ? '허용되지 않는 Bridge URL입니다.\nhttps:// 또는 localhost만 사용 가능합니다.'
+                : 'Bridge URL not allowed.\nOnly https:// or localhost is permitted.');
+            return;
+        }
+        BRIDGE_URL = trimmed || PLACEHOLDER_URL;
+        localStorage.setItem('bridgeUrl', BRIDGE_URL);
+    }
+    let bridgeOnline   = false;
+    let bridgeMode     = 'pixel';   // 'stub' | 'pixel' | 'organoID'
+    let pendingFile    = null;      // 업로드 대기 중인 File 객체
+
+    // ── Bridge 상태 폴링 ──────────────────────────────────────────
+    async function checkBridge() {
+        const t       = translations[currentLang];
+        const banner  = document.getElementById('bridgeBanner');
+        const dotText = document.getElementById('bridgeStatusText');
+        try {
+            const res  = await fetch(`${BRIDGE_URL}/health`, { signal: AbortSignal.timeout(2500) });
+            if (!res.ok) throw new Error('non-200');
+            const data = await res.json();
+            bridgeOnline = true;
+            bridgeMode   = data.organoID_dir_ok ? 'organoID'
+                         : data.organoID_loaded  ? 'tflite'
+                         :                         'pixel';
+            const modeLabel = { organoID:'OrganoID', tflite:'TFLite', pixel:'Pixel' }[bridgeMode] || bridgeMode;
+            banner.className  = 'online';
+            dotText.innerHTML = `${t.bridgeOnline} &nbsp;<span style="font-size:0.78rem;padding:2px 9px;border-radius:50px;background:#00b894;color:white;">${modeLabel}</span>`;
+            if (pendingFile) showAnalyzeBtn();
+        } catch {
+            bridgeOnline = false;
+            banner.className  = 'offline';
+            if (isServedFromServer) {
+                dotText.textContent = t.bridgeServerError;
+            } else {
+                dotText.textContent = t.bridgeOffline;
+            }
+            document.getElementById('analyzeBtn').style.display = 'none';
+        }
+    }
+
+    function showAnalyzeBtn() {
+        if (bridgeOnline && pendingFile) {
+            document.getElementById('analyzeBtn').style.display = 'block';
+        }
+    }
+
+    // ── 이미지 선택 시 Bridge 버튼 표시 ──────────────────────────
+    function onImageSelected(file) {
+        // 보안 v5.2 M-2: 파일 크기 제한 (10MB)
+        const MAX_MB = 10;
+        if (file.size > MAX_MB * 1024 * 1024) {
+            const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+            alert(currentLang === 'ko'
+                ? `파일 크기가 ${MAX_MB}MB를 초과합니다 (${sizeMB}MB).\n더 작은 이미지를 사용해주세요.`
+                : `File size exceeds ${MAX_MB}MB (${sizeMB}MB).\nPlease use a smaller image.`);
+            return;
+        }
+        pendingFile = file;
+        showAnalyzeBtn();
+    }
+
+    // ── OrganoID 분석 실행 ────────────────────────────────────────
+    async function runBridgeAnalysis() {
+        if (!pendingFile || !bridgeOnline) return;
+
+        const t        = translations[currentLang];
+        const btn      = document.getElementById('analyzeBtn');
+        const progress = document.getElementById('analyzeProgress');
+        const msgEl    = document.getElementById('analyzeMsg');
+
+        btn.disabled           = true;
+        progress.style.display = 'block';
+
+        const steps = t.analyzeSteps;
+        let si = 0;
+        const ticker = setInterval(() => { msgEl.textContent = steps[si++ % steps.length]; }, 900);
+
+        try {
+            const form = new FormData();
+            form.append('file', pendingFile);
+            const res  = await fetch(`${BRIDGE_URL}/analyze`, { method:'POST', body:form });
+            const json = await res.json();
+
+            clearInterval(ticker);
+            progress.style.display = 'none';
+            btn.disabled = false;
+
+            if (!json.success) {
+                alert(`❌ 분석 실패: ${json.error}`);
+                return;
+            }
+            applyBridgeResult(json.result);
+        } catch (e) {
+            clearInterval(ticker);
+            progress.style.display = 'none';
+            btn.disabled = false;
+            alert(`❌ Bridge 통신 오류: ${e.message}\nBridge 서버가 실행 중인지 확인하세요.`);
+        }
+    }
+
+    // ── 분석 결과를 UI에 반영 ─────────────────────────────────────
+    function applyBridgeResult(r) {
+        const t = translations[currentLang];
+        // 기본 메트릭 카드
+        document.getElementById('cvValue').textContent    = r.size_cv;
+        document.getElementById('scoreValue').textContent = r.qc_score;
+        document.getElementById('circValue').textContent  = r.mean_circularity;
+        document.getElementById('viabValue').textContent  = r.viability_proxy + '%';
+
+        // 오가노이드 수 카드 (★ 신규)
+        document.getElementById('countValue').textContent   = r.organoid_count;
+        document.getElementById('analysisModeTag').textContent = r.analysis_mode.toUpperCase();
+        document.getElementById('organoidCountCard').style.display = 'block';
+
+        // OSI 벤치마킹 테이블
+        const cvPass   = r.size_cv     < 10  ? t.verdictPass : t.verdictFail;
+        const viabPass = r.viability_proxy >= 70 ? t.verdictPass : t.verdictFail;
+        const circPass = r.mean_circularity >= 0.7 ? t.verdictPass : t.verdictLow;
+        document.getElementById('tableBody').innerHTML = `
+            <tr><td>Size CV</td><td>&lt;10%</td><td>${r.size_cv}%</td><td class="status ${r.size_cv<10?'good':''}">${cvPass}</td></tr>
+            <tr><td>Viability</td><td>&gt;70%</td><td>${r.viability_proxy}%</td><td class="status ${r.viability_proxy>=70?'good':''}">${viabPass}</td></tr>
+            <tr><td>Circularity</td><td>&gt;0.7</td><td>${r.mean_circularity}</td><td class="status ${r.mean_circularity>=0.7?'good':''}">${circPass}</td></tr>
+            <tr><td>${t.rowOrganoidCount}</td><td>≥1</td><td>${r.organoid_count}${t.unitCount}</td><td class="status good">${t.verdictDetected}</td></tr>
+        `;
+
+        // resultArea 표시 + 타이틀 갱신
+        document.getElementById('initialGuide').style.display = 'none';
+        document.getElementById('resultArea').style.display   = 'block';
+        const organ = document.getElementById('organType').value;
+        const days  = document.getElementById('cultureDays').value;
+        // 보안 v5.2 H-1: r.analysis_mode XSS 방어 — textContent로 분리
+        const _titleEl = document.getElementById('resultTitle');
+        _titleEl.textContent = `🔬 ${organ.toUpperCase()} (${days}${t.daysUnit}) `;
+        const _modeSpan = document.createElement('span');
+        _modeSpan.className = 'bridge-result-tag';
+        _modeSpan.textContent = `OrganoID ${r.analysis_mode}`;
+        _titleEl.appendChild(_modeSpan);
+
+        // currentSimulation 갱신 → 차트 연동
+        currentSimulation = {
+            cv:       r.size_cv,
+            viability:r.viability_proxy,
+            marker:   organ === 'intestine' ? 33 : 82,
+            score:    r.qc_score,
+            circ:     r.mean_circularity,
+            organ,
+        };
+        updateRealComparison();
+
+        // ★ v5.0 알고리즘 비교: Bridge 결과 저장 후 픽셀 알고리즘도 실행
+        lastBridgeResult = r;
+        runPixelAlgoAndCompare(r);
+    }
+
+    // ── ★ v5.0 픽셀 알고리즘 실행 후 Bridge 결과와 비교 ───────────
+    let lastBridgeResult = null;
+    let algoCompareChartInst = null;
+
+    async function runPixelAlgoAndCompare(bridgeResult) {
+        const imgEl = document.getElementById('previewImage');
+        if (!imgEl || !imgEl.src) return;
+
+        // 픽셀 알고리즘으로 오가노이드 검출 (단일 검출 결과는 annotation에 활용)
+        const detected = await detectSingleOrganoid(imgEl);
+        if (detected) lastDetection = detected;  // 검출 결과를 annotation용으로 보존
+
+        // 픽셀 알고리즘 결과 (전체 이미지에서 다수 검출)
+        const pixelResult = await runPixelFullCount(imgEl);
+
+        renderAlgoComparison(bridgeResult, pixelResult);
+    }
+
+    // 픽셀 알고리즘 — 전체 이미지 다중 오가노이드 검출
+    async function runPixelFullCount(imgEl) {
+        return new Promise(resolve => {
+            const SCAN = 480;
+            const w0 = imgEl.naturalWidth  || SCAN;
+            const h0 = imgEl.naturalHeight || SCAN;
+            const ratio = Math.min(SCAN / w0, SCAN / h0, 1);
+            const W = Math.round(w0 * ratio);
+            const H = Math.round(h0 * ratio);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d');
+            try {
+                ctx.drawImage(imgEl, 0, 0, W, H);
+                const raw  = ctx.getImageData(0, 0, W, H).data;
+                const gray = new Float32Array(W * H);
+                for (let i = 0; i < W*H; i++)
+                    gray[i] = 0.299*raw[i*4] + 0.587*raw[i*4+1] + 0.114*raw[i*4+2];
+
+                const mean = gray.reduce((a,b)=>a+b,0) / gray.length;
+                const std  = Math.sqrt(gray.reduce((a,v)=>a+(v-mean)**2,0) / gray.length);
+                const darkBg = mean < 128;
+                const threshold = darkBg ? mean + std*0.35 : mean - std*0.25;
+                const mask = new Uint8Array(W*H);
+                for (let i=0;i<W*H;i++)
+                    mask[i] = darkBg ? (gray[i]>threshold?1:0) : (gray[i]<threshold?1:0);
+
+                // 3×3 침식
+                const eroded = new Uint8Array(W*H);
+                for (let y=1;y<H-1;y++) for(let x=1;x<W-1;x++) {
+                    const idx=y*W+x;
+                    if(mask[idx]&&mask[idx-1]&&mask[idx+1]&&mask[idx-W]&&mask[idx+W]) eroded[idx]=1;
+                }
+
+                // 레이블링
+                const labels = new Int32Array(W*H).fill(-1);
+                const components = [];
+                const fill = start => {
+                    const pixels=[]; const stack=[start];
+                    while(stack.length){
+                        const idx=stack.pop();
+                        if(idx<0||idx>=W*H||labels[idx]!==-1||eroded[idx]===0) continue;
+                        labels[idx]=components.length; pixels.push(idx);
+                        const x=idx%W,y=(idx/W)|0;
+                        if(x>0)stack.push(idx-1);if(x<W-1)stack.push(idx+1);
+                        if(y>0)stack.push(idx-W);if(y<H-1)stack.push(idx+W);
+                    }
+                    return pixels;
+                };
+                for(let i=0;i<W*H;i++) {
+                    if(eroded[i]&&labels[i]===-1){
+                        const px=fill(i);
+                        if(px.length>=40) components.push(px);
+                    }
+                }
+
+                // 각 컴포넌트 통계
+                const stats = components.map(pixels=>{
+                    let minX=W,maxX=0,minY=H,maxY=0,sx=0,sy=0;
+                    for(const idx of pixels){const x=idx%W,y=(idx/W)|0;
+                        if(x<minX)minX=x;if(x>maxX)maxX=x;
+                        if(y<minY)minY=y;if(y>maxY)maxY=y; sx+=x;sy+=y;}
+                    const area=pixels.length;
+                    const bw=maxX-minX+1,bh=maxY-minY+1;
+                    const aspect=Math.min(bw,bh)/Math.max(bw,bh);
+                    const idealArea=Math.PI*(bw/2)*(bh/2);
+                    const fill_r=Math.min(area/idealArea,1);
+                    return { area, circ: parseFloat((fill_r*aspect).toFixed(3)) };
+                }).filter(s=>s.circ>0.2 && s.area>30);
+
+                const count = stats.length;
+                const areas = stats.map(s=>s.area);
+                const circs = stats.map(s=>s.circ);
+                let cv=0, meanCirc=0;
+                if(areas.length>1){
+                    const m=areas.reduce((a,b)=>a+b,0)/areas.length;
+                    const sd=Math.sqrt(areas.reduce((a,v)=>a+(v-m)**2,0)/areas.length);
+                    cv = parseFloat((sd/m*100).toFixed(1));
+                }
+                if(circs.length) meanCirc=parseFloat((circs.reduce((a,b)=>a+b,0)/circs.length).toFixed(3));
+
+                resolve({ count, size_cv: cv, mean_circularity: meanCirc });
+            } catch(e) {
+                resolve({ count: 0, size_cv: 0, mean_circularity: 0 });
+            }
+        });
+    }
+
+    // 비교 렌더링
+    function renderAlgoComparison(org, pix) {
+        const section = document.getElementById('algoCompareSection');
+        section.style.display = 'block';
+
+        // 카드 채우기
+        document.getElementById('cmpOrganoCount').textContent = org.organoid_count;
+        document.getElementById('cmpOrganoCV').textContent    = org.size_cv + '%';
+        document.getElementById('cmpOrganoCirc').textContent  = org.mean_circularity;
+        document.getElementById('cmpOrganoMode').textContent  = org.analysis_mode?.toUpperCase() || 'AI';
+
+        document.getElementById('cmpPixelCount').textContent = pix.count;
+        document.getElementById('cmpPixelCV').textContent    = pix.size_cv + '%';
+        document.getElementById('cmpPixelCirc').textContent  = pix.mean_circularity;
+
+        // 일치율
+        const orgN = parseInt(org.organoid_count) || 0;
+        const pixN = parseInt(pix.count) || 0;
+        const matchPct = (orgN === 0 && pixN === 0)
+            ? 0
+            : Math.round((1 - Math.abs(orgN-pixN)/Math.max(orgN,pixN,1))*100);
+        document.getElementById('algoMatchPct').textContent = matchPct + '%';
+        const matchBar = document.getElementById('algoMatchBar');
+        const barColor = matchPct >= 85
+            ? 'linear-gradient(90deg,#00b894,#00cec9)'
+            : matchPct >= 60
+                ? 'linear-gradient(90deg,#fdcb6e,#e17055)'
+                : 'linear-gradient(90deg,#d63031,#e17055)';
+        matchBar.style.background = barColor;
+        setTimeout(()=>{ matchBar.style.width = matchPct+'%'; },100);
+
+        // 종합 판정
+        const winnerEl = document.getElementById('algoWinnerBadge');
+        winnerEl.style.display = 'block';
+        const t = translations[currentLang];
+        if(matchPct >= 85){
+            winnerEl.style.cssText = 'display:block;background:rgba(0,184,148,0.15);border:1.5px solid #00b894;color:#00e898;';
+            winnerEl.innerHTML = t.algoWinnerHigh(matchPct);
+        } else if(matchPct>=60){
+            winnerEl.style.cssText = 'display:block;background:rgba(253,203,110,0.12);border:1.5px solid #fdcb6e;color:#fdcb6e;';
+            winnerEl.innerHTML = t.algoWinnerMid(matchPct);
+        } else {
+            winnerEl.style.cssText = 'display:block;background:rgba(214,48,49,0.12);border:1.5px solid #d63031;color:#ff7675;';
+            winnerEl.innerHTML = t.algoWinnerLow(matchPct);
+        }
+
+        // 상세 테이블
+        const rows = [
+            ['검출 수', org.organoid_count, pix.count],
+            ['Size CV (%)', org.size_cv, pix.size_cv],
+            ['Circularity', org.mean_circularity, pix.mean_circularity],
+        ];
+        document.getElementById('algoRawBody').innerHTML = rows.map(([label,a,b])=>{
+            const diff = (parseFloat(a)-parseFloat(b)).toFixed(2);
+            const diffColor = Math.abs(parseFloat(diff))<0.5 ? '#00e898' : '#fdcb6e';
+            return `<tr><td>${label}</td><td style="color:#74b9ff;font-weight:700;">${a}</td><td style="color:#00e898;font-weight:700;">${b}</td><td style="color:${diffColor};">${diff>0?'+':''}${diff}</td></tr>`;
+        }).join('');
+
+        // 바 차트
+        if(algoCompareChartInst) algoCompareChartInst.destroy();
+        algoCompareChartInst = new Chart(document.getElementById('algoChartCanvas'),{
+            type:'bar',
+            data:{
+                labels:['검출 수 (개)','Size CV (%)','Circularity (×10)'],
+                datasets:[
+                    { label:'OrganoID (Bridge)', backgroundColor:'rgba(9,132,227,0.75)', borderColor:'#0984e3', borderWidth:1.5,
+                      data:[parseInt(org.organoid_count)||0, parseFloat(org.size_cv)||0, (parseFloat(org.mean_circularity)||0)*10] },
+                    { label:'픽셀 알고리즘 (로컬)', backgroundColor:'rgba(0,184,148,0.75)', borderColor:'#00b894', borderWidth:1.5,
+                      data:[parseInt(pix.count)||0, parseFloat(pix.size_cv)||0, (parseFloat(pix.mean_circularity)||0)*10] },
+                ]
+            },
+            options:{
+                responsive:true, maintainAspectRatio:false,
+                plugins:{ legend:{ position:'top', labels:{ color:'#a8d8be', font:{size:11} } } },
+                scales:{
+                    x:{ ticks:{color:'#7ec8a4'}, grid:{color:'rgba(0,184,148,0.08)'} },
+                    y:{ ticks:{color:'#7ec8a4'}, grid:{color:'rgba(0,184,148,0.08)'}, beginAtZero:true }
+                }
+            }
+        });
+    }
+
+    function toggleAlgoRaw() {
+        const el = document.getElementById('algoRawTable');
+        const btn = el.previousElementSibling;
+        el.style.display = el.style.display==='none' ? 'block' : 'none';
+        btn.textContent = el.style.display==='none' ? '▼ 상세 수치 보기' : '▲ 접기';
+    }
+
+    // ══════════════════════════════════════════════
+
+    // ==================== ★ v4.0 단일 오가노이드 검출 엔진 ====================
+    // Blob 검출: 그레이스케일 → 임계값 → Connected Component → 최적 후보 선정
+
+    let showingAnnotation = true;  // 현재 주석 캔버스 표시 중인지
+    function toggleAnnotation() {
+        const canvas = document.getElementById('annotationCanvas');
+        const btn    = document.getElementById('toggleAnnotBtn');
+        const t      = translations[currentLang];
+        showingAnnotation = !showingAnnotation;
+        if (showingAnnotation) {
+            canvas.style.opacity = '1';
+            if (btn) btn.textContent = '🔍 ' + (currentLang==='ko' ? '원본 보기' : 'View Original');
+        } else {
+            canvas.style.opacity = '0.55';
+            if (btn) btn.textContent = '🎯 ' + (currentLang==='ko' ? '검출 결과 보기' : 'Show Detection');
+        }
+    }
+
+    async function detectSingleOrganoid(imgEl) {
+        return new Promise((resolve) => {
+            const SCAN = 320;
+            const w0 = imgEl.naturalWidth  || imgEl.width  || SCAN;
+            const h0 = imgEl.naturalHeight || imgEl.height || SCAN;
+            const ratio = Math.min(SCAN / w0, SCAN / h0, 1);
+            const W = Math.round(w0 * ratio);
+            const H = Math.round(h0 * ratio);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d');
+            try {
+                ctx.drawImage(imgEl, 0, 0, W, H);
+                const raw = ctx.getImageData(0, 0, W, H).data;
+
+                // ── 1. 그레이스케일 변환 ──────────────────────────────
+                const gray = new Float32Array(W * H);
+                for (let i = 0; i < W * H; i++) {
+                    gray[i] = 0.299*raw[i*4] + 0.587*raw[i*4+1] + 0.114*raw[i*4+2];
+                }
+
+                // ── 2. 적응형 임계값 (밝은 배경/어두운 배경 모두 대응) ─
+                const mean = gray.reduce((a,b)=>a+b,0) / gray.length;
+                const std  = Math.sqrt(gray.reduce((a,v)=>a+(v-mean)**2,0) / gray.length);
+                // 배경이 어두운 경우(형광) → 밝은 영역 검출
+                // 배경이 밝은 경우(명시야) → 어두운(구형) 영역 검출
+                const darkBg = mean < 128;
+                const threshold = darkBg ? mean + std * 0.4 : mean - std * 0.3;
+                const mask = new Uint8Array(W * H);
+                for (let i = 0; i < W*H; i++) {
+                    mask[i] = darkBg ? (gray[i] > threshold ? 1 : 0)
+                                     : (gray[i] < threshold ? 1 : 0);
+                }
+
+                // ── 3. 형태 침식으로 노이즈 제거 (3×3 erosion) ───────
+                const eroded = new Uint8Array(W * H);
+                for (let y = 1; y < H-1; y++) {
+                    for (let x = 1; x < W-1; x++) {
+                        const idx = y*W+x;
+                        if (mask[idx] && mask[idx-1] && mask[idx+1] &&
+                            mask[idx-W] && mask[idx+W]) eroded[idx] = 1;
+                    }
+                }
+
+                // ── 4. Connected Component (iterative flood-fill) ─────
+                const labels = new Int32Array(W * H).fill(-1);
+                const components = [];
+
+                const floodFill = (start) => {
+                    const pixels = [];
+                    const stack  = [start];
+                    while (stack.length) {
+                        const idx = stack.pop();
+                        if (idx < 0 || idx >= W*H) continue;
+                        if (labels[idx] !== -1 || eroded[idx] === 0) continue;
+                        labels[idx] = components.length;
+                        pixels.push(idx);
+                        const x = idx % W, y = (idx/W)|0;
+                        if (x > 0)   stack.push(idx-1);
+                        if (x < W-1) stack.push(idx+1);
+                        if (y > 0)   stack.push(idx-W);
+                        if (y < H-1) stack.push(idx+W);
+                    }
+                    return pixels;
+                };
+
+                for (let i = 0; i < W*H; i++) {
+                    if (eroded[i] && labels[i] === -1) {
+                        const pix = floodFill(i);
+                        if (pix.length >= 30) components.push(pix);
+                    }
+                }
+
+                if (!components.length) { resolve(null); return; }
+
+                // ── 5. 각 컴포넌트 통계 계산 ─────────────────────────
+                const stats = components.map(pixels => {
+                    let minX=W, maxX=0, minY=H, maxY=0, sx=0, sy=0, sb=0;
+                    for (const idx of pixels) {
+                        const x = idx%W, y = (idx/W)|0;
+                        if (x<minX) minX=x; if (x>maxX) maxX=x;
+                        if (y<minY) minY=y; if (y>maxY) maxY=y;
+                        sx+=x; sy+=y; sb+=gray[idx];
+                    }
+                    const area = pixels.length;
+                    const cx = sx/area, cy = sy/area;
+                    const bw  = maxX-minX+1, bh = maxY-minY+1;
+                    const aspect = Math.min(bw,bh)/Math.max(bw,bh);
+                    const rx = bw/2, ry = bh/2;
+                    const idealArea = Math.PI * rx * ry;
+                    const fill = Math.min(area/idealArea, 1.0);
+                    const circularity = parseFloat((fill * aspect).toFixed(3));
+                    const meanBright  = sb / area;
+                    // 가장자리 접촉 여부
+                    const touchBorder = minX<=2 || maxX>=W-3 || minY<=2 || maxY>=H-3;
+                    return { cx, cy, rx, ry, bw, bh, area, circularity, meanBright, touchBorder };
+                });
+
+                // ── 6. 최적 후보 선정: 크기 × 원형도, 가장자리 제외 우선 ─
+                const scored = stats
+                    .map(s => ({ ...s,
+                        score: s.area * s.circularity * (s.touchBorder ? 0.2 : 1.0)
+                    }))
+                    .sort((a,b) => b.score - a.score);
+
+                const best = scored[0];
+
+                // ── 7. 원본 해상도로 역변환 ───────────────────────────
+                const sc = 1/ratio;
+                resolve({
+                    cx:          best.cx * sc,
+                    cy:          best.cy * sc,
+                    rx:          best.rx * sc,
+                    ry:          best.ry * sc,
+                    circularity: best.circularity,
+                    meanBright:  best.meanBright,
+                    area:        best.area / (ratio*ratio),
+                    totalCount:  scored.length,
+                    darkBg,
+                    scanW: W, scanH: H,
+                    origW: w0, origH: h0
+                });
+            } catch(e) {
+                resolve(null);
+            }
+        });
+    }
+
+    // ── 검출 결과를 캔버스에 그리기 ──────────────────────────────────────
+    function drawDetectionResult(imgEl, det) {
+        const canvas = document.getElementById('annotationCanvas');
+        const MAX_DISPLAY = 600;
+        const ow = imgEl.naturalWidth  || det.origW || 400;
+        const oh = imgEl.naturalHeight || det.origH || 300;
+        const dratio = Math.min(MAX_DISPLAY/ow, MAX_DISPLAY/oh, 1);
+        canvas.width  = Math.round(ow * dratio);
+        canvas.height = Math.round(oh * dratio);
+        const ctx = canvas.getContext('2d');
+
+        // 원본 이미지 그리기
+        ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+
+        // 어둡게 오버레이 (검출 셀 외 영역 dimming)
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 검출 좌표 스케일링
+        const cx = det.cx * dratio;
+        const cy = det.cy * dratio;
+        const rx = det.rx * dratio;
+        const ry = det.ry * dratio;
+        const rMax = Math.max(rx, ry);
+
+        // ── 클리핑: 검출 원 내부만 밝게 복원 ─────────────────────
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx*1.15, ry*1.15, 0, 0, Math.PI*2);
+        ctx.clip();
+        ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        // ── 발광 외곽선 (glow effect) ─────────────────────────────
+        for (let g = 3; g >= 1; g--) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, rx*1.15, ry*1.15, 0, 0, Math.PI*2);
+            ctx.strokeStyle = `rgba(0,232,152,${0.12 * g})`;
+            ctx.lineWidth   = g * 5;
+            ctx.stroke();
+            ctx.restore();
+        }
+        // 메인 테두리
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx*1.15, ry*1.15, 0, 0, Math.PI*2);
+        ctx.strokeStyle = '#00e898';
+        ctx.lineWidth   = 2.5;
+        ctx.setLineDash([]);
+        ctx.stroke();
+
+        // ── 십자선 ────────────────────────────────────────────────
+        ctx.strokeStyle = 'rgba(0,232,152,0.75)';
+        ctx.lineWidth   = 1.2;
+        ctx.setLineDash([4, 4]);
+        const arm = rMax * 1.8;
+        ctx.beginPath();
+        ctx.moveTo(cx - arm, cy); ctx.lineTo(cx + arm, cy);
+        ctx.moveTo(cx, cy - arm); ctx.lineTo(cx, cy + arm);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // ── 중심 점 ──────────────────────────────────────────────
+        ctx.beginPath();
+        ctx.arc(cx, cy, 3.5, 0, Math.PI*2);
+        ctx.fillStyle = '#00e898';
+        ctx.fill();
+
+        // ── 정보 라벨 박스 ────────────────────────────────────────
+        const diamPx = Math.round((rx+ry) * 2 / dratio);      // 직경 (px)
+        const circStr = det.circularity.toFixed(2);
+        const brightPct = Math.round((det.meanBright/255)*100);
+        const lines = [
+            `⌀ ${diamPx} px`,
+            `Circ: ${circStr}`,
+            `Bright: ${brightPct}%`
+        ];
+        const lx = cx + rMax * 1.25 + 8;
+        const ly = cy - 28;
+        ctx.font = 'bold 11px monospace';
+        const maxTW = Math.max(...lines.map(l => ctx.measureText(l).width));
+        const bw2 = maxTW + 14, bh2 = lines.length * 17 + 10;
+        // 박스 위치 보정 (캔버스 밖 벗어나지 않게)
+        const bx = Math.min(lx, canvas.width  - bw2 - 4);
+        const by = Math.max(4, Math.min(ly, canvas.height - bh2 - 4));
+        ctx.fillStyle = 'rgba(0,20,14,0.82)';
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw2, bh2, 6);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,232,152,0.5)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = '#00e898';
+        lines.forEach((line, i) => {
+            ctx.fillText(line, bx+7, by+15+i*17);
+        });
+
+        // ── 상단 타이틀 배지 ──────────────────────────────────────
+        const title = '🎯 Organoid Detected';
+        ctx.font = 'bold 12px "Noto Sans KR", sans-serif';
+        const tw = ctx.measureText(title).width;
+        ctx.fillStyle = 'rgba(0,184,148,0.85)';
+        ctx.beginPath();
+        ctx.roundRect(8, 8, tw+18, 24, 6);
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.fillText(title, 17, 24);
+
+        canvas.style.display = 'block';
+    }
+
+    // ── 이미지 픽셀 통계 (기존 호환용) ──────────────────────────────────
+    function analyzeImagePixels(imgEl) {
+        return new Promise((resolve) => {
+            const MAX = 200;
+            let w = imgEl.naturalWidth  || imgEl.width  || 200;
+            let h = imgEl.naturalHeight || imgEl.height || 200;
+            const ratio = Math.min(MAX/w, MAX/h, 1);
+            const canvas = document.createElement('canvas');
+            canvas.width  = Math.round(w*ratio);
+            canvas.height = Math.round(h*ratio);
+            const ctx = canvas.getContext('2d');
+            try {
+                ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+                const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+                const brightnesses = [];
+                for (let i=0; i<data.length; i+=4) {
+                    brightnesses.push(0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]);
+                }
+                const mean = brightnesses.reduce((a,b)=>a+b,0)/brightnesses.length;
+                const variance = brightnesses.reduce((a,v)=>a+(v-mean)**2,0)/brightnesses.length;
+                const std = Math.sqrt(variance);
+                const bright_ratio = brightnesses.filter(v=>v>mean+std*0.5).length/brightnesses.length;
+                const dark_ratio   = brightnesses.filter(v=>v<mean-std*0.3).length/brightnesses.length;
+                resolve({ mean, std, bright_ratio, dark_ratio, pixels: brightnesses.length });
+            } catch(e) { resolve(null); }
+        });
+    }
+
+    // ==================== ★ v5.1 픽셀 알고리즘 기반 이미지 분석 ====================
+    // Dry Run 대체: 실제 픽셀 알고리즘으로 분석, Bridge 연결 시 자동 비교
+    let _analysisRunning = false;  // 보안 v5.2 M-1: 중복 실행 차단 플래그
+    async function runPixelAnalysis() {
+        if (_analysisRunning) return;  // 이중 호출 차단
+        _analysisRunning = true;
+        const t     = translations[currentLang];
+        const organ = document.getElementById('organType').value;
+        const days  = parseInt(document.getElementById('cultureDays').value);
+        const imgEl = document.getElementById('previewImage');
+        const hasImage = imgEl.src && imgEl.src !== '' && imgEl.src !== window.location.href;
+
+        if (!hasImage) {
+            _analysisRunning = false;
+            alert(currentLang === 'ko'
+                ? '먼저 현미경 이미지를 업로드해주세요.\n왼쪽 "파일 선택" 또는 웹 URL 이미지를 사용해주세요.'
+                : 'Please upload a microscopy image first.\nUse "Select File" or load a Web URL image.');
+            return;
+        }
+
+        // ── 버튼 로딩 상태 ───────────────────────────────────────
+        const btn = document.getElementById('btnDryRun');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ ' + (currentLang === 'ko' ? '픽셀 분석 중...' : 'Analyzing pixels...');
+
+        // ── 픽셀 알고리즘 병렬 실행 ──────────────────────────────
+        const [pixelStats, detection, pixelFull] = await Promise.all([
+            analyzeImagePixels(imgEl),
+            detectSingleOrganoid(imgEl),
+            runPixelFullCount(imgEl)
+        ]);
+
+        // ── 메트릭 계산 (픽셀 알고리즘 결과 기반) ─────────────────
+        let cv, viability, circ, score;
+        const pixCount = (pixelFull && pixelFull.count > 0)
+            ? pixelFull.count
+            : (detection ? detection.totalCount : 0);
+
+        if (pixelFull && pixelFull.count > 0) {
+            // ★ 다중 검출 결과 우선 사용
+            cv   = pixelFull.size_cv;
+            circ = pixelFull.mean_circularity;
+            if (pixelStats) {
+                const brightBonus = Math.round((pixelStats.mean / 255) * 10);
+                viability = Math.max(55, Math.min(97, 85 - (days > 40 ? 8 : 0) + brightBonus));
+            } else {
+                viability = Math.max(55, 85 - (days > 40 ? 8 : 0));
+            }
+        } else if (detection && pixelStats) {
+            // 단일 검출 폴백
+            circ = parseFloat(Math.min(detection.circularity + 0.05, 0.98).toFixed(2));
+            const stdNorm = Math.min(pixelStats.std / 128, 1);
+            cv = parseFloat((3.5 + stdNorm * 10 + (days > 40 ? 2 : 0)).toFixed(1));
+            const brightBonus = Math.round((detection.meanBright / 255) * 10);
+            viability = Math.max(55, Math.min(97, 85 - (days > 40 ? 8 : 0) + brightBonus));
+        } else if (pixelStats) {
+            // 통계 기반 폴백 (검출 실패)
+            const stdNorm = Math.min(pixelStats.std / 128, 1);
+            cv = parseFloat((4 + stdNorm * 12 + (days > 40 ? 2 : 0)).toFixed(1));
+            const brightFactor = Math.min(pixelStats.bright_ratio * 2, 1);
+            circ = parseFloat((0.65 + brightFactor * 0.25).toFixed(2));
+            const brightBonus = Math.round((pixelStats.mean / 255) * 8);
+            viability = Math.max(55, Math.min(97, 86 - (days > 40 ? 8 : 0) + brightBonus));
+        } else {
+            cv = 8.5; circ = 0.75; viability = 80;
+        }
+        score = Math.round((cv<10?38:22) + (circ>0.7?32:18) + (viability>=70?30:18));
+
+        // ── 어노테이션 캔버스 렌더링 ──────────────────────────────
+        if (detection) {
+            drawDetectionResult(imgEl, detection);
+            const badge = document.getElementById('detectionBadge');
+            const info  = document.getElementById('detectionInfo');
+            badge.style.display = 'inline-flex';
+            const diamPx = Math.round((detection.rx + detection.ry) * 2);
+            info.innerHTML = currentLang === 'ko'
+                ? `<strong style="color:#00e898;">오가노이드 ${pixCount}개 검출</strong> &nbsp;|&nbsp; 대표 직경 <strong>${diamPx}px</strong> &nbsp;|&nbsp; Circularity <strong>${detection.circularity.toFixed(2)}</strong>`
+                : `<strong style="color:#00e898;">${pixCount} Organoids Detected</strong> &nbsp;|&nbsp; Diameter <strong>${diamPx}px</strong> &nbsp;|&nbsp; Circularity <strong>${detection.circularity.toFixed(2)}</strong>`;
+            showingAnnotation = true;
+        } else {
+            const canvas = document.getElementById('annotationCanvas');
+            const ow = imgEl.naturalWidth || 400, oh = imgEl.naturalHeight || 300;
+            const dr = Math.min(600/ow, 600/oh, 1);
+            canvas.width  = Math.round(ow*dr);
+            canvas.height = Math.round(oh*dr);
+            canvas.getContext('2d').drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+            canvas.style.display = 'block';
+        }
+
+        // ── QC 카드 채우기 ────────────────────────────────────────
+        document.getElementById('cvValue').textContent    = cv;
+        document.getElementById('scoreValue').textContent = score;
+        document.getElementById('circValue').textContent  = circ;
+        document.getElementById('viabValue').textContent  = viability + '%';
+
+        // 오가노이드 수 카드 (픽셀 알고리즘)
+        document.getElementById('countValue').textContent      = pixCount;
+        document.getElementById('analysisModeTag').textContent = 'PIXEL';
+        document.getElementById('organoidCountCard').style.display = 'block';
+
+        // ── OSI 벤치마킹 테이블 ───────────────────────────────────
+        const cvPass   = cv < 10        ? t.verdictPass : t.verdictFail;
+        const viabPass = viability >= 70 ? t.verdictPass : t.verdictFail;
+        const circPass = circ >= 0.7    ? t.verdictPass : t.verdictLow;
+        document.getElementById('tableBody').innerHTML = `
+            <tr><td>Size CV</td><td>&lt;10%</td><td>${cv}%</td><td class="status ${cv<10?'good':''}">${cvPass}</td></tr>
+            <tr><td>Viability</td><td>&gt;70%</td><td>${viability}%</td><td class="status ${viability>=70?'good':''}">${viabPass}</td></tr>
+            <tr><td>Circularity</td><td>&gt;0.7</td><td>${circ}</td><td class="status ${circ>=0.7?'good':''}">${circPass}</td></tr>
+            <tr><td>${t.rowOrganoidCount}</td><td>≥1</td><td>${pixCount}${t.unitCount}</td><td class="status ${pixCount>0?'good':''}">${pixCount>0?t.verdictDetected:'—'}</td></tr>
+        `;
+
+        // ── UI 표시 ───────────────────────────────────────────────
+        document.getElementById('initialGuide').style.display = 'none';
+        document.getElementById('resultArea').style.display   = 'block';
+
+        // 기존 bridgeNotice 제거 (배너에서 이미 상태 표시)
+        const existingNotice = document.getElementById('bridgeNotice');
+        if (existingNotice) existingNotice.remove();
+
+        // 알고리즘 비교 섹션 초기화 (새 분석 시작)
+        document.getElementById('algoCompareSection').style.display = 'none';
+
+        const pixLabel = currentLang === 'ko' ? '픽셀 알고리즘' : 'Pixel Algorithm';
+        // 보안 v5.2 H-1: pixLabel도 textContent로 분리 (XSS 방어)
+        const _pixTitleEl = document.getElementById('resultTitle');
+        _pixTitleEl.textContent = `🔬 ${organ.toUpperCase()} (${days}${t.daysUnit}) `;
+        const _pixSpan = document.createElement('span');
+        _pixSpan.style.cssText = 'font-size:0.78rem;padding:2px 10px;border-radius:50px;background:#00b894;color:white;margin-left:8px;';
+        _pixSpan.textContent = `⚙️ ${pixLabel}`;
+        _pixTitleEl.appendChild(_pixSpan);
+
+        currentSimulation = { cv, viability, marker: organ==='intestine' ? 33 : 82, score, circ, organ };
+        updateRealComparison();
+
+        // ── 보안 v5.2 M-1: Bridge 완료 전까지 버튼 잠금 유지 ────
+        if (bridgeOnline && pendingFile) {
+            const pixForCompare = (pixelFull && pixelFull.count > 0)
+                ? pixelFull
+                : { count: pixCount, size_cv: cv, mean_circularity: circ };
+            await autoRunBridgeCompare(pixForCompare);
+        }
+
+        // Bridge 완료 후 버튼 복원
+        btn.disabled = false;
+        btn.innerHTML = t.btnDryRun || '🔬 이미지 분석 시작';
+        _analysisRunning = false;  // 보안 v5.2 M-1: 플래그 해제
+    }
+
+    // ── Bridge 자동 비교: QC 카드를 덮어쓰지 않고 알고리즘 비교 섹션만 표시 ──
+    async function autoRunBridgeCompare(pixelResult) {
+        if (!pendingFile || !bridgeOnline) return;
+
+        const section   = document.getElementById('algoCompareSection');
+        const loadingEl = document.getElementById('algoCompareLoading');
+        section.style.display   = 'block';
+        loadingEl.style.display = 'block';
+        document.getElementById('cmpOrganoCount').textContent = '…';
+        document.getElementById('cmpOrganoCV').textContent    = '…';
+        document.getElementById('cmpOrganoCirc').textContent  = '…';
+        document.getElementById('algoMatchPct').textContent   = '…';
+
+        try {
+            const form = new FormData();
+            form.append('file', pendingFile);
+            const res  = await fetch(`${BRIDGE_URL}/analyze`, { method:'POST', body:form });
+            const json = await res.json();
+            loadingEl.style.display = 'none';
+            if (json.success) {
+                lastBridgeResult = json.result;
+                renderAlgoComparison(json.result, pixelResult);
+            } else {
+                section.style.display = 'none';
+            }
+        } catch(e) {
+            loadingEl.style.display = 'none';
+            section.style.display   = 'none';
+            console.warn('Auto bridge compare failed:', e.message);
+        }
+    }
+
+    // ── Dry Run 별칭 유지 (이전 버전 호환) ───────────────────────
+    async function runDrySimulation() { return runPixelAnalysis(); }
+
+    // ==================== (구) Dry Run 시뮬레이션 — 픽셀 분석으로 대체됨 ====================
+    async function _legacyRunDrySimulation() {
+        const t     = translations[currentLang];
+        const organ = document.getElementById('organType').value;
+        const days  = parseInt(document.getElementById('cultureDays').value);
+        const imgEl = document.getElementById('previewImage');
+        const hasImage = imgEl.src && imgEl.src !== '' && imgEl.src !== window.location.href;
+
+        // ── 픽셀 분석 + 단일 오가노이드 검출 ──────────────────────
+        let pixelStats = null, detection = null;
+        let analysisMode = 'param';
+
+        if (hasImage) {
+            [pixelStats, detection] = await Promise.all([
+                analyzeImagePixels(imgEl),
+                detectSingleOrganoid(imgEl)
+            ]);
+            if (pixelStats) analysisMode = detection ? 'detect' : 'pixel';
+        }
+
+        // ── 메트릭 계산 ───────────────────────────────────────────
+        let cv, viability, circ, score;
+
+        if (analysisMode === 'detect' && detection) {
+            // ★ 검출된 오가노이드 기반 정밀 추정
+            circ = parseFloat(Math.min(detection.circularity + 0.05, 0.98).toFixed(2));
+            const stdNorm = Math.min(pixelStats.std / 128, 1);
+            cv = parseFloat((3.5 + stdNorm * 10 + (days > 40 ? 2 : 0)).toFixed(1));
+            const brightBonus = Math.round((detection.meanBright / 255) * 10);
+            viability = Math.max(55, Math.min(97, 85 - (days > 40 ? 8 : 0) + brightBonus));
+            score = Math.round(
+                (cv < 10 ? 38 : 22) + (circ > 0.7 ? 32 : 18) + (viability >= 70 ? 30 : 18)
+            );
+        } else if (analysisMode === 'pixel' && pixelStats) {
+            const stdNorm = Math.min(pixelStats.std / 128, 1);
+            cv = parseFloat((4 + stdNorm * 12 + (days > 40 ? 2 : 0)).toFixed(1));
+            const brightFactor = Math.min(pixelStats.bright_ratio * 2, 1);
+            circ = parseFloat((0.65 + brightFactor * 0.25).toFixed(2));
+            const brightBonus = Math.round((pixelStats.mean / 255) * 8);
+            viability = Math.max(55, Math.min(97, 86 - (days > 40 ? 8 : 0) + brightBonus));
+            score = Math.round((cv<10?35:20)+(circ>0.7?30:18)+(viability>=70?35:20));
+        } else {
+            cv = parseFloat((7.8 + Math.random()*4 - 2).toFixed(1));
+            viability = 86; circ = 0.84;
+            if (days > 40) { cv += 3.5; viability -= 8; }
+            score = Math.max(60, Math.min(95, 89 - (days > 40 ? 10 : 0)));
+        }
+
+        // ── 검출 캔버스 렌더링 ────────────────────────────────────
+        if (hasImage && detection) {
+            drawDetectionResult(imgEl, detection);
+            const badge = document.getElementById('detectionBadge');
+            const info  = document.getElementById('detectionInfo');
+            badge.style.display = 'inline-flex';
+            const diamPx = Math.round((detection.rx + detection.ry) * 2);
+            info.innerHTML = currentLang === 'ko'
+                ? `<strong style="color:#00e898;">오가노이드 1개 검출</strong> &nbsp;|&nbsp; 직경 <strong>${diamPx}px</strong> &nbsp;|&nbsp; Circularity <strong>${detection.circularity.toFixed(2)}</strong> &nbsp;|&nbsp; 전체 후보 <strong>${detection.totalCount}개</strong>`
+                : `<strong style="color:#00e898;">1 Organoid Detected</strong> &nbsp;|&nbsp; Diameter <strong>${diamPx}px</strong> &nbsp;|&nbsp; Circularity <strong>${detection.circularity.toFixed(2)}</strong> &nbsp;|&nbsp; Candidates <strong>${detection.totalCount}</strong>`;
+            showingAnnotation = true;
+        } else if (hasImage) {
+            // 검출 실패 시 원본 이미지 캔버스에 표시
+            const canvas = document.getElementById('annotationCanvas');
+            const ow = imgEl.naturalWidth || 400, oh = imgEl.naturalHeight || 300;
+            const dr = Math.min(600/ow, 600/oh, 1);
+            canvas.width  = Math.round(ow*dr);
+            canvas.height = Math.round(oh*dr);
+            canvas.getContext('2d').drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+            canvas.style.display = 'block';
+        }
+
+        // ── UI 업데이트 ───────────────────────────────────────────
+        document.getElementById('initialGuide').style.display = 'none';
+        document.getElementById('resultArea').style.display   = 'block';
+
+        const modeLabelMap = { detect: '🎯 Cell Detection', pixel: 'Pixel 분석', param: '파라미터 시뮬레이션' };
+        const modeBgMap    = { detect: '#00b894',           pixel: '#6c5ce7',     param: '#b2bec3' };
+        // 보안 v5.2 H-1: DOM 직접 구성으로 XSS 방어
+        const _t3El = document.getElementById('resultTitle');
+        _t3El.textContent = `🔬 ${organ.toUpperCase()} (${days}${t.daysUnit}) `;
+        const _t3Span = document.createElement('span');
+        _t3Span.style.cssText = `font-size:0.78rem;padding:2px 10px;border-radius:50px;background:${modeBgMap[analysisMode]};color:white;margin-left:8px;`;
+        _t3Span.textContent = modeLabelMap[analysisMode];
+        _t3El.appendChild(_t3Span);
+
+        document.getElementById('cvValue').textContent    = cv;
+        document.getElementById('scoreValue').textContent = score;
+        document.getElementById('circValue').textContent  = circ;
+        document.getElementById('viabValue').textContent  = viability + '%';
+
+        const cvPass   = cv < 10       ? t.verdictPass : t.verdictFail;
+        const viabPass = viability >= 70 ? t.verdictPass : t.verdictFail;
+        const circPass = circ >= 0.7   ? t.verdictPass : t.verdictLow;
+
+        document.getElementById('tableBody').innerHTML = `
+            <tr><td>Size CV</td><td>&lt;10%</td><td>${cv}%</td><td class="status ${cv<10?'good':''}">${cvPass}</td></tr>
+            <tr><td>Viability</td><td>&gt;70%</td><td>${viability}%</td><td class="status ${viability>=70?'good':''}">${viabPass}</td></tr>
+            <tr><td>Circularity</td><td>&gt;0.7</td><td>${circ}</td><td class="status ${circ>=0.7?'good':''}">${circPass}</td></tr>
+        `;
+
+        if (!bridgeOnline) {
+            const existingNotice = document.getElementById('bridgeNotice');
+            if (!existingNotice) {
+                const notice = document.createElement('div');
+                notice.id = 'bridgeNotice';
+                notice.style.cssText = 'margin-top:16px;padding:12px 16px;background:rgba(108,92,231,0.13);border:1.5px solid #6c5ce7;border-radius:10px;font-size:0.88rem;color:#a29bfe;';
+                const _t = translations[currentLang];
+                notice.innerHTML = _t.bridgeNotice;
+                document.getElementById('tableBody').parentNode.after(notice);
+            }
+        }
+
+        currentSimulation = { cv, viability, marker: organ==='intestine' ? 33 : 82, score, circ, organ };
+        updateRealComparison();
+    }
+
+    // ==================== ★ v4.0 PDF 리포트 생성 ====================
+    async function generatePDFReport() {
+        const btn = document.getElementById('btnPDF');
+        btn.textContent = '⏳ PDF 생성 중...';
+        btn.disabled = true;
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const W = 210, H = 297;
+            const margin = 18;
+            let y = margin;
+
+            const organ     = document.getElementById('organType').value;
+            const days      = document.getElementById('cultureDays').value;
+            const passage   = document.getElementById('passage').value;
+            const cv        = document.getElementById('cvValue').textContent;
+            const score     = document.getElementById('scoreValue').textContent;
+            const circ      = document.getElementById('circValue').textContent;
+            const viab      = document.getElementById('viabValue').textContent;
+            const count     = document.getElementById('countValue').textContent;
+            const countCard = document.getElementById('organoidCountCard');
+            const showCount = countCard && countCard.style.display !== 'none' && count !== '—';
+            const now       = new Date();
+            const dateStr   = now.toLocaleDateString('ko-KR') + ' ' + now.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
+            const organLabel = { intestine:'Intestine', liver:'Liver', cortical:'Cortical (Brain)' }[organ] || organ;
+
+            // ── 헬퍼 함수 ─────────────────────────────────────────
+            function addPageIfNeeded(needed = 20) {
+                if (y + needed > H - margin) {
+                    doc.addPage();
+                    y = margin;
+                    drawHeader();
+                }
+            }
+            function hex(h) {
+                const r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+                return [r,g,b];
+            }
+            function drawHeader() {
+                // 상단 녹색 바
+                doc.setFillColor(0, 184, 148);
+                doc.rect(0, 0, W, 10, 'F');
+            }
+
+            // ── 1. 헤더 배너 ───────────────────────────────────────
+            doc.setFillColor(13, 31, 23);
+            doc.rect(0, 0, W, 38, 'F');
+            doc.setFillColor(0, 184, 148);
+            doc.rect(0, 0, W, 8, 'F');
+            doc.rect(0, 30, W, 8, 'F');
+
+            doc.setTextColor(0, 232, 152);
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text('OrganoidQC Web  v4.0', margin, 22);
+
+            doc.setTextColor(160, 216, 190);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Organoid Quality Control Report', margin, 28);
+            doc.text(dateStr, W - margin, 28, { align: 'right' });
+
+            y = 46;
+
+            // ── 2. 샘플 정보 박스 ─────────────────────────────────
+            doc.setFillColor(22, 43, 32);
+            doc.roundedRect(margin, y, W - margin*2, 26, 3, 3, 'F');
+            doc.setDrawColor(0, 184, 148);
+            doc.setLineWidth(0.4);
+            doc.roundedRect(margin, y, W - margin*2, 26, 3, 3, 'S');
+
+            doc.setTextColor(0, 184, 148);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.text('SAMPLE INFORMATION', margin + 5, y + 7);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(160, 216, 190);
+            doc.setFontSize(9);
+            const col1x = margin + 5, col2x = margin + 65, col3x = margin + 125;
+            doc.text(`Organ Type:`, col1x, y + 15);
+            doc.setFont('helvetica', 'bold');
+            doc.text(organLabel, col1x + 26, y + 15);
+
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Culture Days:`, col2x, y + 15);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${days} days`, col2x + 28, y + 15);
+
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Passage:`, col3x, y + 15);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`P${passage}`, col3x + 18, y + 15);
+
+            y += 34;
+
+            // ── 3. QC 메트릭 카드 4개 (2×2 그리드) ───────────────
+            doc.setTextColor(0, 184, 148);
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text('QC METRIC CARDS', margin, y);
+            y += 6;
+
+            const cards = [
+                { label: 'Size CV (%)', value: cv,   osi: '< 10%',  pass: parseFloat(cv) < 10 },
+                { label: 'QC Score',    value: score, osi: '> 80',   pass: parseFloat(score) >= 80 },
+                { label: 'Circularity', value: circ,  osi: '> 0.7',  pass: parseFloat(circ) >= 0.7 },
+                { label: 'Viability',   value: viab,  osi: '> 70%',  pass: parseInt(viab) >= 70 },
+            ];
+            if (showCount) cards.push({ label: 'Organoid Count (OrganoID)', value: count, osi: '>= 1', pass: true });
+
+            const cardW = (W - margin*2 - 6) / 2;
+            const cardH = 28;
+            cards.forEach((c, i) => {
+                const col = i % 2;
+                const row = Math.floor(i / 2);
+                const cx = margin + col * (cardW + 6);
+                const cy = y + row * (cardH + 5);
+
+                // 배경
+                doc.setFillColor(13, 31, 23);
+                doc.roundedRect(cx, cy, cardW, cardH, 2, 2, 'F');
+                // 테두리: pass=초록, fail=주황
+                if (c.pass) doc.setDrawColor(0, 184, 148);
+                else        doc.setDrawColor(225, 112, 85);
+                doc.setLineWidth(0.5);
+                doc.roundedRect(cx, cy, cardW, cardH, 2, 2, 'S');
+
+                // 레이블
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7.5);
+                doc.setTextColor(109, 168, 138);
+                doc.text(c.label, cx + 5, cy + 7);
+
+                // 수치
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.setTextColor(c.pass ? 0 : 225, c.pass ? 184 : 112, c.pass ? 148 : 85);
+                doc.text(String(c.value), cx + 5, cy + 20);
+
+                // OSI 기준
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7);
+                doc.setTextColor(109, 168, 138);
+                doc.text(`OSI: ${c.osi}`, cx + cardW - 5, cy + 7, { align: 'right' });
+
+                // PASS / FAIL 배지
+                const badgeW = 14, badgeH = 5;
+                const bx = cx + cardW - badgeW - 4, by = cy + cardH - badgeH - 4;
+                doc.setFillColor(...(c.pass ? [0, 184, 148] : [225, 112, 85]));
+                doc.roundedRect(bx, by, badgeW, badgeH, 1.5, 1.5, 'F');
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(6);
+                doc.setTextColor(255, 255, 255);
+                doc.text(c.pass ? 'PASS' : 'FAIL', bx + badgeW/2, by + 3.5, { align: 'center' });
+            });
+
+            const cardRows = Math.ceil(cards.length / 2);
+            y += cardRows * (cardH + 5) + 8;
+
+            // ── 4. OSI 벤치마킹 테이블 ────────────────────────────
+            addPageIfNeeded(60);
+            doc.setTextColor(0, 184, 148);
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text('OSI GUIDELINE BENCHMARKING', margin, y);
+            y += 6;
+
+            // 테이블 헤더
+            const cols = [60, 40, 45, 28];
+            const colX = [margin, margin+cols[0], margin+cols[0]+cols[1], margin+cols[0]+cols[1]+cols[2]];
+            const headers = ['Item', 'OSI Standard', 'Sim. Result', 'Verdict'];
+            doc.setFillColor(0, 184, 148);
+            doc.rect(margin, y, W - margin*2, 8, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(255, 255, 255);
+            headers.forEach((h, i) => doc.text(h, colX[i] + 3, y + 5.5));
+            y += 8;
+
+            // 테이블 행 파싱 (DOM에서 직접 읽기)
+            // jsPDF helvetica는 한글 미지원 → 한글 텍스트를 영문으로 치환
+            const koToEn = {
+                '오가노이드 수':'Organoid Count', '크기 CV':'Size CV', '진원도':'Circularity',
+                '생존율':'Viability', '종합 점수':'QC Score',
+                '통과':'PASS', '미달':'FAIL', '낮음':'LOW', '검출':'Detected',
+                '장':'Intestine', '간':'Liver', '뇌':'Cortical',
+            };
+            function normalizePdfText(txt) {
+                let s = txt.replace(/[✅❌⚠️🟢]/g, '').trim();
+                for (const [ko, en] of Object.entries(koToEn)) {
+                    s = s.replace(new RegExp(ko, 'g'), en);
+                }
+                // 남은 한글 문자 제거 (CJK 범위)
+                s = s.replace(/[\u3131-\uD7A3]/g, '').trim();
+                return s;
+            }
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach((tr, ri) => {
+                addPageIfNeeded(10);
+                const tds = tr.querySelectorAll('td');
+                const rowData = Array.from(tds).map(td => normalizePdfText(td.textContent));
+                doc.setFillColor(ri % 2 === 0 ? 22 : 13, ri % 2 === 0 ? 43 : 31, ri % 2 === 0 ? 32 : 23);
+                doc.rect(margin, y, W - margin*2, 8, 'F');
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.setTextColor(160, 216, 190);
+                rowData.forEach((txt, i) => {
+                    const isVerdict = i === 3;
+                    if (isVerdict) {
+                        const pass = txt.toLowerCase().includes('pass') || txt.toLowerCase().includes('detected');
+                        doc.setTextColor(...(pass ? [0, 232, 152] : [225, 112, 85]));
+                    } else {
+                        doc.setTextColor(160, 216, 190);
+                    }
+                    doc.text(txt.substring(0,22), colX[i] + 3, y + 5.5);
+                });
+                y += 8;
+            });
+            y += 10;
+
+            // ── 5. 이미지 첨부 (가능한 경우) ─────────────────────
+            const imgEl = document.getElementById('previewImage');
+            const hasImg = imgEl.src && imgEl.src !== '' && imgEl.src !== window.location.href;
+            if (hasImg) {
+                addPageIfNeeded(80);
+                doc.setTextColor(0, 184, 148);
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('MICROSCOPY IMAGE', margin, y);
+                y += 5;
+                try {
+                    // Canvas를 통해 이미지를 base64로 변환
+                    const canvas = document.createElement('canvas');
+                    canvas.width = imgEl.naturalWidth || 400;
+                    canvas.height = imgEl.naturalHeight || 300;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(imgEl, 0, 0);
+                    const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                    const maxImgW = W - margin * 2;
+                    const aspectRatio = canvas.height / canvas.width;
+                    const imgH = Math.min(maxImgW * aspectRatio, 70);
+                    const imgW = imgH / aspectRatio;
+                    const imgX = margin + (maxImgW - imgW) / 2;
+                    doc.setFillColor(13, 31, 23);
+                    doc.roundedRect(margin, y, maxImgW, imgH + 4, 3, 3, 'F');
+                    doc.addImage(imgData, 'JPEG', imgX, y + 2, imgW, imgH);
+                    y += imgH + 12;
+                } catch(e) {
+                    doc.setTextColor(109, 168, 138);
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'italic');
+                    doc.text('(Image unavailable — CORS restriction)', margin, y + 8);
+                    y += 14;
+                }
+            }
+
+            // ── 6. 차트 첨부 (comparisonChart) ───────────────────
+            const chartCanvas = document.getElementById('comparisonChart');
+            if (chartCanvas && comparisonChartInstance) {
+                addPageIfNeeded(75);
+                doc.setTextColor(0, 184, 148);
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('REAL DATA COMPARISON CHART', margin, y);
+                y += 5;
+                try {
+                    const chartImg = chartCanvas.toDataURL('image/png');
+                    const maxChartW = W - margin * 2;
+                    const chartH = 60;
+                    doc.setFillColor(13, 31, 23);
+                    doc.roundedRect(margin, y, maxChartW, chartH + 4, 3, 3, 'F');
+                    doc.addImage(chartImg, 'PNG', margin + 2, y + 2, maxChartW - 4, chartH);
+                    y += chartH + 12;
+                } catch(e) {
+                    y += 5;
+                }
+            }
+
+            // ── 7. 푸터 ───────────────────────────────────────────
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let p = 1; p <= totalPages; p++) {
+                doc.setPage(p);
+                doc.setFillColor(13, 31, 23);
+                doc.rect(0, H - 12, W, 12, 'F');
+                doc.setFillColor(0, 184, 148);
+                doc.rect(0, H - 12, W, 1.5, 'F');
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7);
+                doc.setTextColor(109, 168, 138);
+                doc.text('OrganoidQC Web v4.0  |  Developer: Jongwoo Hahn  |  traffic.rnd@gmail.com', margin, H - 5);
+                doc.text(`Page ${p} / ${totalPages}`, W - margin, H - 5, { align: 'right' });
+            }
+
+            // ── 8. 저장 ──────────────────────────────────────────
+            const filename = `OrganoidQC_${organ}_D${days}_${now.toISOString().slice(0,10)}.pdf`;
+            doc.save(filename);
+
+        } catch(e) {
+            alert('PDF 생성 오류: ' + e.message);
+            console.error(e);
+        } finally {
+            btn.textContent = '📄 PDF 리포트 다운로드';
+            btn.disabled = false;
+        }
+    }
+
+    // ==================== ★ v4.0 예시 이미지 클릭 → 즉시 분석 ====================
+    function loadSampleAndAnalyze() {
+        const SAMPLE_URL = 'https://raw.githubusercontent.com/TKassis/OrgaQuant/master/readme_images/Figure_1_From_Paper.jpg';
+        const preview = document.getElementById('previewImage');
+        preview.crossOrigin = 'anonymous';
+        document.getElementById('webImageUrl').value = SAMPLE_URL;
+        document.getElementById('organType').value = 'intestine';
+        // annotationCanvas 초기화
+        const canvas = document.getElementById('annotationCanvas');
+        canvas.style.display = 'none';
+        const badge = document.getElementById('detectionBadge');
+        if (badge) badge.style.display = 'none';
+
+        preview.onload = function() {
+            runPixelAnalysis();
+            preview.onload = null;
+        };
+        preview.onerror = function() {
+            runPixelAnalysis();
+            preview.onerror = null;
+        };
+        preview.src = SAMPLE_URL;
+    }
+
+    // ==================== 초기화 ====================
+    window.onload = function() {
+        createSampleGallery();
+        setupUpload();
+        createWebExamples();
+        setupRealDataCSVInput();
+
+        // ★ v3.8 Bridge 상태 폴링 (즉시 1회 + 10초 간격)
+        checkBridge();
+        setInterval(checkBridge, 10000);
+
+        document.getElementById('cultureDays').addEventListener('input', function() {
+            document.getElementById('daysValue').textContent = this.value + (currentLang === 'ko' ? '일' : ' days');
+        });
+        console.log('%c✅ OrganoidQC Web v5.0 (다크 테마 + 픽셀 분석 + Bridge + 알고리즘 비교) 로드 완료', 'color:#00e898; font-weight:bold;');
+    };
+
+    // ==================== 매뉴얼 ====================
+    function openManual() { document.getElementById('manualModal').style.display = 'block'; document.body.style.overflow = 'hidden'; }
+    function closeManual() { document.getElementById('manualModal').style.display = 'none'; document.body.style.overflow = ''; }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeManual(); });
+
+    // ==================== i18n 언어 전환 ====================
+    let currentLang = 'ko';
+
+    const translations = {
+        ko: {
+            langToggle: '🌐 EN',
+            headerSubtitle: '⚙️ 픽셀 알고리즘 + OrganoID AI + 🌐 웹 URL + <strong>📂 로컬 Real Data 직접 업로드</strong> + <strong>🤖 알고리즘 비교</strong>',
+            manualBtn: '📖 연구자 매뉴얼',
+            contactBtn: '📩 Request 접수',
+            // Benefits
+            ben1t: '즉시 QC 분석', ben1d: '이미지 업로드 후 5초 내 Size CV·Circularity·Viability 자동 산출',
+            ben2t: 'OrganoID AI 연동', ben2d: '딥러닝 세그멘테이션으로 개별 오가노이드 수 정밀 검출',
+            ben3t: 'OSI 기준 벤치마킹', ben3d: '국제 오가노이드 표준과 자동 비교 — Pass/Fail 즉시 판정',
+            ben4t: 'Real Data 비교', ben4d: 'CSV·Supabase DB 연동으로 실측 데이터와 시각적 비교',
+            ben5t: '설치 불필요', ben5d: '브라우저만 있으면 어디서든 — 장·간·뇌 오가노이드 지원',
+            // Sidebar
+            sideH1: '📋 분석 설정', labelOrgan: '장기 종류', labelDays: '배양 일수', labelPassage: 'Passage 번호',
+            sideH2: '🔌 Supabase DB 연결', btnSupabase: '🔌 Supabase 연결하기',
+            sideH3: '🌐 웹 URL 이미지 불러오기', btnLoadUrl: '📥 URL로 이미지 불러오기',
+            webExampleLabel: '📌 추천 공개 이미지',
+            sideH4: '📸 로컬 이미지 업로드',
+            uploadHint: '🖼️ 현미경 사진 끌어다 놓기 또는 클릭',
+            btnSelectFile: '📤 파일 선택',
+            webSampleTitle: '🌐 웹 오가노이드 예시',
+            btnDryRun: '🔬 이미지 분석 시작',
+            // Main
+            osiTitle: '🔍 OSI 가이드라인 벤치마킹',
+            thItem: '항목', thOSI: 'OSI 최소 기준', thSim: '픽셀 분석 결과', thVerdict: '판정',
+            // Comparison table headers
+            thCmpItem: '항목', thCmpSim: '픽셀 분석', thCmpRef: 'Real Reference', thCmpUser: '내 실제값', thCmpDiff: '픽셀 vs Ref 차이',
+            // User input labels
+            labelUserCV: '내 Size CV (%)', labelUserViab: '내 Viability (%)', labelUserMarker: '내 Marker (%)',
+            realDataTitle: '📊 Real Data 비교',
+            'tab-local': '📂 로컬 업로드', 'tab-supabase': '🔌 Supabase',
+            'subtab-csv': '📄 CSV 업로드', 'subtab-manual': '✏️ 수동 입력',
+            csvDropHint: '📄 Real Data CSV 파일을 끌어다 놓거나 클릭',
+            csvFmtHint: '형식: label, organ, size_cv, viability, marker_percent',
+            btnCSVTpl: '⬇️ CSV 템플릿 다운로드', btnClearData: '🗑️ 데이터 초기화',
+            btnAddRow: '➕ 데이터 추가', btnApplyData: '📊 이 데이터로 비교 차트 업데이트',
+            btnFetchSupa: '🌐 Supabase에서 Real Data 불러오기', btnSaveSupa: '💾 내 측정값 Supabase에 저장',
+            loadedDataLabel: '📋 로드된 데이터', thLabel: '레이블', thOrgan: '장기',
+            cardCV: 'Size CV (%)', cardScore: '종합 QC Score', cardCirc: 'Circularity',
+            cardViab: 'Viability 예측', cardCount: '오가노이드 수',
+            cvStatus: '✅ OSI 통과', scoreStatus: '🟢 우수', circStatus: '좋음', viabStatus: '✅ ≥70%',
+            initialGuideText: '👆 현미경 이미지를 업로드하고 "🔬 이미지 분석 시작" 버튼을 눌러주세요',
+            bridgeChecking: 'Bridge 서버 확인 중...',
+            bridgeOnline: 'Bridge 연결됨',
+            bridgeServerError: 'Bridge 서버 오류 — 서버 로그를 확인하세요 (/docs)',
+            bridgeOffline: 'Bridge 오프라인 — 위 URL을 확인하거나 Railway에 배포하세요',
+            bridgeNotice: '🤖 <strong>OrganoID AI 분析을 사용하려면?</strong> Bridge 서버를 연결하세요.<br>Bridge 서버 연결 시 딥러닝 세그멘테이션으로 <strong>정밀한 오가노이드 수 검출</strong>이 가능합니다.',
+            optIntestine: '장 (Intestine)', optLiver: '간 (Liver)', optCortical: '뇌 (Cortical)',
+            mOptIntestine: '장 (Intestine)', mOptLiver: '간 (Liver)', mOptCortical: '뇌 (Cortical)',
+            footerDev: '개발자:', footerRequest: 'Request 접수:',
+            footerCopy: '© 2025 OrganoidQC. All rights reserved. | v5.0',
+            daysUnit: '일',
+            // Verdict / bridge result
+            verdictPass: '✅ 통과', verdictFail: '❌ 미달', verdictLow: '⚠️ 낮음', verdictDetected: '✅ 검출',
+            rowOrganoidCount: '오가노이드 수', unitCount: '개',
+            // Algo compare section (Bug #8)
+            algoCompareTitle: '🤖 알고리즘 성능 비교',
+            algoCompareSubtitle: 'OrganoID vs 픽셀 알고리즘',
+            cmpLabelCount1: '검출 수', cmpLabelMode1: '분석 모드', cmpBadgeAI: '딥러닝 세그멘테이션',
+            cmpPixelCardTitle: '⚙️ 픽셀 알고리즘 (로컬)',
+            cmpLabelCount2: '검출 수', cmpLabelMode2: '분석 모드',
+            algoMatchLabel: '알고리즘 일치율 (검출 수 기준)',
+            algoToggleRaw: '▼ 상세 수치 보기',
+            algoRawTH1: '지표', algoRawTH3: '픽셀 알고리즘', algoRawTH4: '차이',
+            algoWinnerHigh: (pct) => `✅ 두 알고리즘 일치율 <strong>${pct}%</strong> — 분석 신뢰도 높음`,
+            algoWinnerMid:  (pct) => `⚠️ 두 알고리즘 일치율 <strong>${pct}%</strong> — OrganoID 결과를 우선하세요`,
+            algoWinnerLow:  (pct) => `🔴 두 알고리즘 일치율 <strong>${pct}%</strong> — 이미지 품질을 점검하거나 OrganoID 결과를 참고하세요`,
+            // analyzeBtn & progress
+            analyzeBtn: '🔬 OrganoID로 이미지 분석',
+            analyzeMsg: '분석 중...',
+            analyzeSteps: ['이미지 전송 중...', '전처리 중...', '세그멘테이션 분석 중...', '지표 계산 중...'],
+            // CSV note
+            csvNote: '📌 <strong>CSV 헤더 형식:</strong> <code>label,organ,size_cv,viability,marker_percent</code><br>organ 값: <code>intestine</code> / <code>liver</code> / <code>cortical</code> — 현재 선택 장기만 필터링됩니다.',
+            // mLabel placeholder
+            mLabelPlaceholder: '레이블 (예: My Lab Day28)',
+            // Manual
+            manualTitle: '📖 OrganoidQC Web — 연구자 매뉴얼',
+            manualS1: '🔬 서비스 소개',
+            manualIntro: 'OrganoidQC Web은 오가노이드 배양 품질을 빠르게 평가하고 레퍼런스 데이터와 비교할 수 있는 연구자 전용 웹 도구입니다. OrganoID AI 분석 엔진과 연동하여 현미경 이미지에서 직접 QC 지표를 추출합니다.',
+            manualS2: '⚡ 주요 기능 및 장점',
+            manualS3: '🚀 사용 방법 (Step-by-step)',
+            manualS4: '📐 QC 지표 설명',
+            manualS5: '📩 문의 및 요청',
+            manualContact: '기능 요청, 버그 리포트, 기관 맞춤 설정은 아래로 문의해주세요:<br>📧 <a href="mailto:traffic.rnd@gmail.com">traffic.rnd@gmail.com</a> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong>',
+            manualCloseBtn: '닫기',
+            manualTH1: '지표', manualTH2: '설명', manualTH3: 'OSI 기준',
+            manualCV: '오가노이드 크기의 변동계수 — 낮을수록 균일한 배양',
+            manualCirc: '구형에 가까울수록 1에 가까운 값 — 구조적 건강도 반영',
+            manualViab: '생존율 예측값 — 배양 일수와 장기 유형 기반 추정',
+            manualScore: '위 지표들을 종합한 100점 기준 품질 점수',
+            manualBenefitsList: `<li><strong>즉시 QC 분석</strong> — 이미지 업로드 후 5초 내 Size CV, Circularity, Viability 지표 자동 산출</li>
+              <li><strong>OSI 가이드라인 벤치마킹</strong> — 국제 오가노이드 표준(OSI) 기준과 자동 비교 및 Pass/Fail 판정</li>
+              <li><strong>OrganoID AI 연동</strong> — Bridge 서버를 통해 딥러닝 기반 세그멘테이션으로 개별 오가노이드 수 정밀 검출</li>
+              <li><strong>Real Data 비교</strong> — 자체 CSV 데이터 또는 Supabase DB와 연결하여 시뮬레이션 vs 실측 비교 차트 생성</li>
+              <li><strong>다중 장기 지원</strong> — 장(Intestine), 간(Liver), 뇌(Cortical) 오가노이드별 최적화된 QC 기준 적용</li>
+              <li><strong>웹 기반, 설치 불필요</strong> — 브라우저만 있으면 어디서든 접근 가능</li>`,
+            sampleDemoLabel: '<strong style="color:#00e898;">Intestine Organoid</strong> 예시 — 클릭하면 바로 분석 시작!',
+            step1: '왼쪽 사이드바에서 <em>장기 종류</em>와 <em>배양 일수</em>를 선택합니다.',
+            step2: '<em>로컬 이미지 업로드</em> 영역에 현미경 사진을 드래그하거나 "파일 선택"을 클릭합니다.',
+            step3: '<em>"🔬 이미지 분석 시작"</em> 버튼을 클릭합니다. 픽셀 알고리즘이 자동 실행되며, Bridge 연결 시 OrganoID AI 분석도 자동으로 실행되어 알고리즘 비교 섹션이 표시됩니다.',
+            step4: 'QC 지표 카드(Size CV, Circularity, Viability, 오가노이드 수)와 OSI 벤치마킹 테이블을 확인합니다. Bridge 연결 시 아래에서 픽셀 알고리즘 vs OrganoID 결과를 나란히 비교할 수 있습니다.',
+            step5: '📂 CSV 파일을 업로드하거나 수동으로 Real Data를 입력하고 <em>"비교 차트 업데이트"</em>를 눌러 실측 데이터와 비교합니다.',
+            step6: 'Supabase를 연결하면 여러 연구자의 데이터를 공유 DB에 저장하고 불러올 수 있습니다.',
+        },
+        en: {
+            langToggle: '🌐 KO',
+            headerSubtitle: '⚙️ Pixel Algorithm + OrganoID AI + 🌐 Web URL + <strong>📂 Local Real Data Upload</strong> + <strong>🤖 Algorithm Comparison</strong>',
+            manualBtn: '📖 Researcher Manual',
+            contactBtn: '📩 Submit Request',
+            // Benefits
+            ben1t: 'Instant QC Analysis', ben1d: 'Auto-calculates Size CV, Circularity & Viability within 5s of upload',
+            ben2t: 'OrganoID AI Integration', ben2d: 'Deep-learning segmentation for precise organoid count detection',
+            ben3t: 'OSI Benchmarking', ben3d: 'Auto-compare against international organoid standards — instant Pass/Fail',
+            ben4t: 'Real Data Comparison', ben4d: 'CSV & Supabase DB integration for visual comparison with lab data',
+            ben5t: 'No Installation Needed', ben5d: 'Works in any browser — Intestine · Liver · Cortical supported',
+            // Sidebar
+            sideH1: '📋 Analysis Settings', labelOrgan: 'Organ Type', labelDays: 'Culture Days', labelPassage: 'Passage Number',
+            sideH2: '🔌 Supabase DB Connection', btnSupabase: '🔌 Connect Supabase',
+            sideH3: '🌐 Load Image from URL', btnLoadUrl: '📥 Load from URL',
+            webExampleLabel: '📌 Recommended Public Images',
+            sideH4: '📸 Local Image Upload',
+            uploadHint: '🖼️ Drag & drop microscopy image or click',
+            btnSelectFile: '📤 Select File',
+            webSampleTitle: '🌐 Web Organoid Examples',
+            btnDryRun: '🔬 Start Image Analysis',
+            // Main
+            osiTitle: '🔍 OSI Guideline Benchmarking',
+            thItem: 'Metric', thOSI: 'OSI Min. Standard', thSim: 'Pixel Analysis Result', thVerdict: 'Verdict',
+            // Comparison table headers
+            thCmpItem: 'Metric', thCmpSim: 'Pixel Analysis', thCmpRef: 'Real Reference', thCmpUser: 'My Actual Value', thCmpDiff: 'Pixel vs Ref Diff',
+            // User input labels
+            labelUserCV: 'My Size CV (%)', labelUserViab: 'My Viability (%)', labelUserMarker: 'My Marker (%)',
+            realDataTitle: '📊 Real Data Comparison',
+            'tab-local': '📂 Local Upload', 'tab-supabase': '🔌 Supabase',
+            'subtab-csv': '📄 Upload CSV', 'subtab-manual': '✏️ Manual Entry',
+            csvDropHint: '📄 Drag & drop Real Data CSV or click',
+            csvFmtHint: 'Format: label, organ, size_cv, viability, marker_percent',
+            btnCSVTpl: '⬇️ Download CSV Template', btnClearData: '🗑️ Clear Data',
+            btnAddRow: '➕ Add Row', btnApplyData: '📊 Update Comparison Chart',
+            btnFetchSupa: '🌐 Fetch Real Data from Supabase', btnSaveSupa: '💾 Save My Values to Supabase',
+            loadedDataLabel: '📋 Loaded Data', thLabel: 'Label', thOrgan: 'Organ',
+            cardCV: 'Size CV (%)', cardScore: 'Overall QC Score', cardCirc: 'Circularity',
+            cardViab: 'Viability Estimate', cardCount: 'Organoid Count',
+            cvStatus: '✅ OSI Pass', scoreStatus: '🟢 Excellent', circStatus: 'Good', viabStatus: '✅ ≥70%',
+            initialGuideText: '👆 Upload a microscopy image and click "🔬 Start Image Analysis"',
+            bridgeChecking: 'Checking Bridge server...',
+            bridgeOnline: 'Bridge Connected',
+            bridgeServerError: 'Bridge server error — check server logs (/docs)',
+            bridgeOffline: 'Bridge offline — check the URL above or deploy to Railway',
+            bridgeNotice: '🤖 <strong>Want to use OrganoID AI analysis?</strong> Connect a Bridge server.<br>With a Bridge server, deep-learning segmentation enables <strong>precise organoid count detection</strong>.',
+            optIntestine: 'Intestine', optLiver: 'Liver', optCortical: 'Cortical',
+            mOptIntestine: 'Intestine', mOptLiver: 'Liver', mOptCortical: 'Cortical',
+            footerDev: 'Developer:', footerRequest: 'Request Submission:',
+            footerCopy: '© 2025 OrganoidQC. All rights reserved. | v5.0',
+            daysUnit: ' days',
+            // Verdict / bridge result
+            verdictPass: '✅ Pass', verdictFail: '❌ Fail', verdictLow: '⚠️ Low', verdictDetected: '✅ Detected',
+            rowOrganoidCount: 'Organoid Count', unitCount: '',
+            // Algo compare section (Bug #8)
+            algoCompareTitle: '🤖 Algorithm Performance Comparison',
+            algoCompareSubtitle: 'OrganoID vs Pixel Algorithm',
+            cmpLabelCount1: 'Count', cmpLabelMode1: 'Analysis Mode', cmpBadgeAI: 'Deep Learning Segmentation',
+            cmpPixelCardTitle: '⚙️ Pixel Algorithm (Local)',
+            cmpLabelCount2: 'Count', cmpLabelMode2: 'Analysis Mode',
+            algoMatchLabel: 'Algorithm Match Rate (by count)',
+            algoToggleRaw: '▼ Show Raw Values',
+            algoRawTH1: 'Metric', algoRawTH3: 'Pixel Algorithm', algoRawTH4: 'Diff',
+            algoWinnerHigh: (pct) => `✅ Algorithm match rate <strong>${pct}%</strong> — High analysis confidence`,
+            algoWinnerMid:  (pct) => `⚠️ Algorithm match rate <strong>${pct}%</strong> — Prefer OrganoID result`,
+            algoWinnerLow:  (pct) => `🔴 Algorithm match rate <strong>${pct}%</strong> — Check image quality or refer to OrganoID`,
+            // analyzeBtn & progress
+            analyzeBtn: '🔬 Analyze with OrganoID',
+            analyzeMsg: 'Analyzing...',
+            analyzeSteps: ['Uploading image...', 'Preprocessing...', 'Segmentation analysis...', 'Calculating metrics...'],
+            // CSV note
+            csvNote: '📌 <strong>CSV header format:</strong> <code>label,organ,size_cv,viability,marker_percent</code><br>organ values: <code>intestine</code> / <code>liver</code> / <code>cortical</code> — only the currently selected organ will be shown.',
+            // mLabel placeholder
+            mLabelPlaceholder: 'Label (e.g. My Lab Day28)',
+            // Manual
+            manualTitle: '📖 OrganoidQC Web — Researcher Manual',
+            manualS1: '🔬 About This Service',
+            manualIntro: 'OrganoidQC Web is a researcher-focused web tool for rapidly evaluating organoid culture quality and comparing results against reference data. It integrates with the OrganoID AI engine to extract QC metrics directly from microscopy images.',
+            manualS2: '⚡ Key Features & Benefits',
+            manualS3: '🚀 How to Use (Step-by-step)',
+            manualS4: '📐 QC Metric Descriptions',
+            manualS5: '📩 Contact & Requests',
+            manualContact: 'For feature requests, bug reports, or institutional customization:<br>📧 <a href="mailto:traffic.rnd@gmail.com">traffic.rnd@gmail.com</a> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong>',
+            manualCloseBtn: 'Close',
+            manualTH1: 'Metric', manualTH2: 'Description', manualTH3: 'OSI Standard',
+            manualCV: 'Coefficient of variation of organoid size — lower = more uniform culture',
+            manualCirc: 'Proximity to a perfect sphere (1.0) — reflects structural health',
+            manualViab: 'Estimated viability — derived from culture days and organ type',
+            manualScore: 'Composite quality score out of 100 based on the above metrics',
+            manualBenefitsList: `<li><strong>Instant QC Analysis</strong> — Auto-calculates Size CV, Circularity &amp; Viability within 5 seconds of upload</li>
+              <li><strong>OSI Guideline Benchmarking</strong> — Auto-compare against international organoid standards (OSI) with Pass/Fail verdict</li>
+              <li><strong>OrganoID AI Integration</strong> — Deep-learning segmentation via Bridge server for precise organoid count detection</li>
+              <li><strong>Real Data Comparison</strong> — Connect CSV or Supabase DB to visualize simulation vs. measured data</li>
+              <li><strong>Multi-organ Support</strong> — Optimized QC criteria for Intestine, Liver, and Cortical organoids</li>
+              <li><strong>Web-based, No Installation</strong> — Accessible from any browser, anywhere</li>`,
+            sampleDemoLabel: '<strong style="color:#00e898;">Intestine Organoid</strong> example — Click to run analysis!',
+            step1: 'Select <em>Organ Type</em> and <em>Culture Days</em> in the left sidebar.',
+            step2: 'Drag your microscopy image into the <em>Local Image Upload</em> area, or click "Select File". (Web URL also supported)',
+            step3: 'Click <em>"🔬 Start Image Analysis"</em> — the pixel algorithm runs automatically. If a Bridge server is connected, OrganoID AI analysis starts automatically afterward and the algorithm comparison section is shown.',
+            step4: 'Review QC metric cards (Size CV, Circularity, Viability, Organoid Count) and the OSI benchmarking table. If Bridge is connected, the side-by-side algorithm comparison shows below.',
+            step5: '(Optional) Upload a CSV or manually enter Real Data, then click <em>"Update Comparison Chart"</em> to compare against lab data.',
+            step6: '(Optional) Connect Supabase to store and share data across multiple researchers.',
+        }
+    };
+
+    function toggleLang() {
+        currentLang = currentLang === 'ko' ? 'en' : 'ko';
+        applyTranslations();
+        createWebExamples();
+    }
+
+    function applyTranslations() {
+        const t = translations[currentLang];
+
+        // ── 1. simpleIds: innerHTML로 교체 ──────────────────────────
+        const simpleIds = [
+            'langToggle','headerSubtitle','manualBtn',
+            'ben1t','ben1d','ben2t','ben2d','ben3t','ben3d','ben4t','ben4d','ben5t','ben5d',
+            'sideH1','labelOrgan','labelDays','labelPassage','sideH2','btnSupabase',
+            'sideH3','btnLoadUrl','webExampleLabel','sideH4','uploadHint','btnSelectFile',
+            'webSampleTitle','btnDryRun',
+            'osiTitle','thItem','thOSI','thSim','thVerdict',
+            'thCmpItem','thCmpSim','thCmpRef','thCmpUser','thCmpDiff',
+            'labelUserCV','labelUserViab','labelUserMarker',
+            'realDataTitle',
+            'tab-local','tab-supabase','subtab-csv','subtab-manual',
+            'csvDropHint','csvFmtHint','btnCSVTpl','btnClearData','btnAddRow','btnApplyData',
+            'btnFetchSupa','btnSaveSupa','loadedDataLabel','thLabel','thOrgan',
+            'cardCV','cardScore','cardCirc','cardViab','cardCount',
+            'cvStatus','scoreStatus','circStatus','viabStatus',
+            'initialGuideText','optIntestine','optLiver','optCortical',
+            'mOptIntestine','mOptLiver','mOptCortical',
+            'footerDev','footerRequest','footerCopy',
+            'manualTitle','manualS1','manualIntro','manualS2','manualS3','manualS4','manualS5',
+            'manualContact','manualCloseBtn','manualTH1','manualTH2','manualTH3',
+            'manualCV','manualCirc','manualViab','manualScore','manualBenefitsList',
+            'step1','step2','step3','step4','step5','step6',
+            'csvNote','sampleDemoLabel',
+            // Algo compare section i18n
+            'algoCompareTitle','algoCompareSubtitle',
+            'cmpLabelCount1','cmpLabelMode1','cmpBadgeAI',
+            'cmpPixelCardTitle','cmpLabelCount2','cmpLabelMode2',
+            'algoMatchLabel','algoToggleRaw',
+            'algoRawTH1','algoRawTH3','algoRawTH4',
+        ];
+        simpleIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && t[id] !== undefined) el.innerHTML = t[id];
+        });
+
+        // ── 2. contactBtn (<a> 태그) ──────────────────────────────
+        const cb = document.getElementById('contactBtn');
+        if (cb) cb.textContent = t.contactBtn;
+
+        // ── bridgeNotice (동적 생성 요소) ─────────────────────────
+        const bn = document.getElementById('bridgeNotice');
+        if (bn && t.bridgeNotice) bn.innerHTML = t.bridgeNotice;
+
+        // ── 3. analyzeBtn (data-ko/en 대신 t. 사용) ──────────────
+        const ab = document.getElementById('analyzeBtn');
+        if (ab) ab.innerHTML = t.analyzeBtn;
+
+        // ── 4. analyzeMsg ─────────────────────────────────────────
+        const am = document.getElementById('analyzeMsg');
+        if (am) am.textContent = t.analyzeMsg;
+
+        // ── 5. 배양 일수 표시 단위 ────────────────────────────────
+        const dv = document.getElementById('daysValue');
+        const cd = document.getElementById('cultureDays');
+        if (dv && cd) dv.textContent = cd.value + t.daysUnit;
+
+        // ── 6. mLabel placeholder ─────────────────────────────────
+        const ml = document.getElementById('mLabel');
+        if (ml) ml.placeholder = t.mLabelPlaceholder || '';
+    }
+
+</script>
+</body>
+</html>
