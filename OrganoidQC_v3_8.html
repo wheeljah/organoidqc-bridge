@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrganoidQC Web v3.7 - 로컬 Real Data 업로드</title>
+    <title>OrganoidQC Web v3.9</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -83,50 +83,160 @@
         td { padding:9px 10px; border-bottom:1px solid #f0f0f0; font-size:0.9rem; }
 
         .template-note { font-size:0.82rem; color:#636e72; margin:10px 0 0; background:#fff3cd; padding:10px 12px; border-radius:8px; border-left:3px solid #ffc107; }
+
+        /* ── Language Toggle ── */
+        #langToggle { position:fixed; top:18px; right:20px; z-index:1000; background:white; border:2px solid var(--primary); color:var(--primary); padding:7px 16px; border-radius:50px; font-size:0.9rem; font-weight:700; cursor:pointer; box-shadow:0 2px 12px rgba(0,184,148,0.2); transition:all 0.2s; }
+        #langToggle:hover { background:var(--primary); color:white; }
+
+        /* ── Benefits Banner ── */
+        .benefits-banner { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:28px; }
+        .benefit-card { background:white; border-radius:14px; padding:18px 20px; box-shadow:0 3px 16px rgba(0,184,148,0.1); border-top:3px solid var(--primary); display:flex; align-items:flex-start; gap:12px; transition:transform 0.2s; }
+        .benefit-card:hover { transform:translateY(-3px); box-shadow:0 6px 24px rgba(0,184,148,0.18); }
+        .benefit-icon { font-size:1.8rem; flex-shrink:0; }
+        .benefit-card h4 { margin:0 0 4px; font-size:0.95rem; color:#2d3436; }
+        .benefit-card p { margin:0; font-size:0.82rem; color:#636e72; line-height:1.5; }
+
+        /* ── Manual Modal ── */
+        #manualModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:2000; overflow-y:auto; padding:30px 20px; }
+        #manualBox { background:white; border-radius:20px; max-width:760px; margin:0 auto; padding:40px; box-shadow:0 20px 60px rgba(0,0,0,0.25); position:relative; }
+        #manualBox h2 { color:var(--primary); margin-top:0; }
+        #manualBox h3 { color:#2d3436; border-bottom:2px solid #e9f5f0; padding-bottom:8px; margin-top:28px; }
+        #manualBox ul { padding-left:20px; line-height:1.9; }
+        #manualBox .step { background:#f8f9fa; border-radius:10px; padding:14px 18px; margin-bottom:12px; border-left:4px solid var(--primary); }
+        #manualBox .step strong { color:var(--primary); }
+        .close-modal { position:absolute; top:16px; right:20px; font-size:1.6rem; cursor:pointer; color:#636e72; background:none; border:none; line-height:1; }
+        .close-modal:hover { color:#2d3436; }
+
+        /* ── Footer ── */
+        footer { text-align:center; margin-top:40px; padding:24px; background:white; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.06); font-size:0.88rem; color:#636e72; }
+        footer strong { color:#2d3436; }
+        footer a { color:var(--primary); text-decoration:none; font-weight:600; }
+        footer a:hover { text-decoration:underline; }
+        .footer-grid { display:flex; justify-content:center; align-items:center; gap:30px; flex-wrap:wrap; }
     </style>
 </head>
 <body>
+
+<!-- 언어 토글 버튼 -->
+<button id="langToggle" onclick="toggleLang()">🌐 EN</button>
+
+<!-- 매뉴얼 모달 -->
+<div id="manualModal" onclick="if(event.target===this)closeManual()">
+  <div id="manualBox">
+    <button class="close-modal" onclick="closeManual()">✕</button>
+    <h2 id="manualTitle">📖 OrganoidQC Web — 연구자 매뉴얼</h2>
+
+    <h3 id="manualS1">🔬 서비스 소개</h3>
+    <p id="manualIntro">OrganoidQC Web은 오가노이드 배양 품질을 빠르게 평가하고 레퍼런스 데이터와 비교할 수 있는 연구자 전용 웹 도구입니다. OrganoID AI 분석 엔진과 연동하여 현미경 이미지에서 직접 QC 지표를 추출합니다.</p>
+
+    <h3 id="manualS2">⚡ 주요 기능 및 장점</h3>
+    <ul id="manualBenefitsList">
+      <li><strong>즉시 QC 분석</strong> — 이미지 업로드 후 5초 내 Size CV, Circularity, Viability 지표 자동 산출</li>
+      <li><strong>OSI 가이드라인 벤치마킹</strong> — 국제 오가노이드 표준(OSI) 기준과 자동 비교 및 Pass/Fail 판정</li>
+      <li><strong>OrganoID AI 연동</strong> — Bridge 서버를 통해 딥러닝 기반 세그멘테이션으로 개별 오가노이드 수 정밀 검출</li>
+      <li><strong>Real Data 비교</strong> — 자체 CSV 데이터 또는 Supabase DB와 연결하여 시뮬레이션 vs 실측 비교 차트 생성</li>
+      <li><strong>다중 장기 지원</strong> — 장(Intestine), 간(Liver), 뇌(Cortical) 오가노이드별 최적화된 QC 기준 적용</li>
+      <li><strong>웹 기반, 설치 불필요</strong> — 브라우저만 있으면 어디서든 접근 가능</li>
+    </ul>
+
+    <h3 id="manualS3">🚀 사용 방법 (Step-by-step)</h3>
+    <div class="step"><strong>Step 1.</strong> <span id="step1">왼쪽 사이드바에서 <em>장기 종류</em>와 <em>배양 일수</em>를 선택합니다.</span></div>
+    <div class="step"><strong>Step 2.</strong> <span id="step2"><em>로컬 이미지 업로드</em> 영역에 현미경 사진을 드래그하거나 "파일 선택"을 클릭합니다. (또는 웹 URL 이미지 사용)</span></div>
+    <div class="step"><strong>Step 3 (선택).</strong> <span id="step3">Bridge 서버가 연결된 경우 <em>"OrganoID로 이미지 분석"</em> 버튼을 눌러 AI 분석을 실행합니다.</span></div>
+    <div class="step"><strong>Step 4.</strong> <span id="step4"><em>"Dry Run + Real Data 비교 시작"</em> 버튼을 클릭하면 QC 지표 카드와 OSI 벤치마킹 테이블이 표시됩니다.</span></div>
+    <div class="step"><strong>Step 5 (선택).</strong> <span id="step5">📂 CSV 파일을 업로드하거나 수동으로 Real Data를 입력하고 <em>"비교 차트 업데이트"</em>를 눌러 실측 데이터와 비교합니다.</span></div>
+    <div class="step"><strong>Step 6 (선택).</strong> <span id="step6">Supabase를 연결하면 여러 연구자의 데이터를 공유 DB에 저장하고 불러올 수 있습니다.</span></div>
+
+    <h3 id="manualS4">📐 QC 지표 설명</h3>
+    <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+      <thead><tr style="background:#e9f5f0;"><th style="padding:8px 12px; text-align:left;" id="manualTH1">지표</th><th style="padding:8px 12px;" id="manualTH2">설명</th><th style="padding:8px 12px;" id="manualTH3">OSI 기준</th></tr></thead>
+      <tbody>
+        <tr><td style="padding:8px 12px; font-weight:600;">Size CV (%)</td><td style="padding:8px 12px;" id="manualCV">오가노이드 크기의 변동계수 — 낮을수록 균일한 배양</td><td style="padding:8px 12px; color:var(--primary);">&lt; 10%</td></tr>
+        <tr style="background:#f8f9fa;"><td style="padding:8px 12px; font-weight:600;">Circularity</td><td style="padding:8px 12px;" id="manualCirc">구형에 가까울수록 1에 가까운 값 — 구조적 건강도 반영</td><td style="padding:8px 12px; color:var(--primary);">&gt; 0.7</td></tr>
+        <tr><td style="padding:8px 12px; font-weight:600;">Viability (%)</td><td style="padding:8px 12px;" id="manualViab">생존율 예측값 — 배양 일수와 장기 유형 기반 추정</td><td style="padding:8px 12px; color:var(--primary);">&gt; 70%</td></tr>
+        <tr style="background:#f8f9fa;"><td style="padding:8px 12px; font-weight:600;">QC Score</td><td style="padding:8px 12px;" id="manualScore">위 지표들을 종합한 100점 기준 품질 점수</td><td style="padding:8px 12px; color:var(--primary);">&gt; 80</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="manualS5">📩 문의 및 요청</h3>
+    <p id="manualContact">기능 요청, 버그 리포트, 기관 맞춤 설정은 아래로 문의해주세요:<br>
+    📧 <a href="mailto:traffic.rnd@gmail.com">traffic.rnd@gmail.com</a> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong></p>
+
+    <div style="text-align:right; margin-top:30px;">
+      <button onclick="closeManual()" style="background:var(--primary); color:white; border:none; padding:12px 32px; border-radius:50px; font-size:1rem; font-weight:700; cursor:pointer;" id="manualCloseBtn">닫기</button>
+    </div>
+  </div>
+</div>
+
 <div class="container">
     <header>
-        <h1>🧬 OrganoidQC Web v3.7</h1>
-        <p class="subtitle">Dry Run + Supabase + 🌐 웹 URL + <strong>📂 로컬 Real Data 직접 업로드</strong></p>
+        <h1>🧬 OrganoidQC Web <span style="font-size:1.2rem; opacity:0.7;">v3.9</span></h1>
+        <p class="subtitle" id="headerSubtitle">Dry Run + OrganoID AI + 🌐 웹 URL + <strong>📂 로컬 Real Data 직접 업로드</strong></p>
+        <div style="margin-top:14px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+          <button onclick="openManual()" style="background:white; border:2px solid var(--primary); color:var(--primary); padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='var(--primary)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='var(--primary)'" id="manualBtn">📖 연구자 매뉴얼</button>
+          <a href="mailto:traffic.rnd@gmail.com" style="background:white; border:2px solid #0984e3; color:#0984e3; padding:9px 22px; border-radius:50px; font-size:0.92rem; font-weight:700; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.background='#0984e3';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='#0984e3'" id="contactBtn">📩 Request 접수</a>
+        </div>
     </header>
+
+    <!-- Benefits Banner -->
+    <div class="benefits-banner" id="benefitsBanner">
+      <div class="benefit-card">
+        <div class="benefit-icon">⚡</div>
+        <div><h4 id="ben1t">즉시 QC 분석</h4><p id="ben1d">이미지 업로드 후 5초 내 Size CV·Circularity·Viability 자동 산출</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">🤖</div>
+        <div><h4 id="ben2t">OrganoID AI 연동</h4><p id="ben2d">딥러닝 세그멘테이션으로 개별 오가노이드 수 정밀 검출</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">📊</div>
+        <div><h4 id="ben3t">OSI 기준 벤치마킹</h4><p id="ben3d">국제 오가노이드 표준과 자동 비교 — Pass/Fail 즉시 판정</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">📂</div>
+        <div><h4 id="ben4t">Real Data 비교</h4><p id="ben4d">CSV·Supabase DB 연동으로 실측 데이터와 시각적 비교</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">🌐</div>
+        <div><h4 id="ben5t">설치 불필요</h4><p id="ben5d">브라우저만 있으면 어디서든 — 장(Intestine)·간(Liver)·뇌(Cortical) 지원</p></div>
+      </div>
+    </div>
 
     <div class="dashboard">
         <!-- 사이드바 -->
         <div class="sidebar">
-            <h3>📋 Dry Run 설정</h3>
-            <label style="display:block; margin:15px 0 5px; font-weight:500;">장기 종류</label>
+            <h3 id="sideH1">📋 Dry Run 설정</h3>
+            <label style="display:block; margin:15px 0 5px; font-weight:500;" id="labelOrgan">장기 종류</label>
             <select id="organType" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
-                <option value="intestine">장 (Intestine)</option>
-                <option value="liver">간 (Liver)</option>
-                <option value="cortical">뇌 (Cortical)</option>
+                <option value="intestine" id="optIntestine">장 (Intestine)</option>
+                <option value="liver" id="optLiver">간 (Liver)</option>
+                <option value="cortical" id="optCortical">뇌 (Cortical)</option>
             </select>
-            <label style="display:block; margin:20px 0 5px; font-weight:500;">배양 일수</label>
+            <label style="display:block; margin:20px 0 5px; font-weight:500;" id="labelDays">배양 일수</label>
             <input type="range" id="cultureDays" min="7" max="60" value="28" style="width:100%;">
             <span id="daysValue" style="font-size:1.1rem; font-weight:600;">28일</span>
-            <label style="display:block; margin:20px 0 5px; font-weight:500;">Passage 번호</label>
+            <label style="display:block; margin:20px 0 5px; font-weight:500;" id="labelPassage">Passage 번호</label>
             <input type="number" id="passage" value="4" min="1" max="12" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
 
             <hr style="margin:25px 0;">
-            <h3>🔌 Supabase DB 연결</h3>
+            <h3 id="sideH2">🔌 Supabase DB 연결</h3>
             <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co" style="width:100%; padding:10px; margin-bottom:8px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
             <input type="password" id="supabaseKey" placeholder="anon public key" style="width:100%; padding:10px; margin-bottom:8px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-            <button onclick="initSupabase()" class="btn" style="margin-top:5px;">🔌 Supabase 연결하기</button>
+            <button onclick="initSupabase()" class="btn" style="margin-top:5px;" id="btnSupabase">🔌 Supabase 연결하기</button>
             <p id="supabaseStatus" style="font-size:0.85rem; margin-top:8px; color:#00b894;"></p>
 
             <hr style="margin:25px 0;">
-            <h3>🌐 웹 URL 이미지 불러오기</h3>
+            <h3 id="sideH3">🌐 웹 URL 이미지 불러오기</h3>
             <div class="url-section">
                 <input type="text" id="webImageUrl" placeholder="https://example.com/organoid.jpg">
-                <button onclick="loadWebImage()" class="btn" style="margin-top:0; padding:10px 20px; font-size:0.95rem;">📥 URL로 이미지 불러오기</button>
-                <div id="urlLoading" class="url-loading">⏳ 이미지 불러오는 중...</div>
-                <p style="font-size:0.85rem; margin:12px 0 8px; color:#636e72;">📌 추천 공개 이미지</p>
+                <button onclick="loadWebImage()" class="btn" style="margin-top:0; padding:10px 20px; font-size:0.95rem;" id="btnLoadUrl">📥 URL로 이미지 불러오기</button>
+                <div id="urlLoading" class="url-loading" id="urlLoadingTxt">⏳ 이미지 불러오는 중...</div>
+                <p style="font-size:0.85rem; margin:12px 0 8px; color:#636e72;" id="webExampleLabel">📌 추천 공개 이미지</p>
                 <div id="webExamples" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
             </div>
 
             <hr style="margin:25px 0;">
-            <h3>📸 로컬 이미지 업로드</h3>
+            <h3 id="sideH4">📸 로컬 이미지 업로드</h3>
 
             <!-- ★ v3.8 Bridge URL 설정 (file:// 로 열 때만 표시) -->
             <div id="bridgeUrlRow" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -145,19 +255,19 @@
             </div>
 
             <div id="uploadArea" class="upload-area">
-                <p style="margin:0 0 15px; font-size:1.1rem;">🖼️ 현미경 사진 끌어다 놓기 또는 클릭</p>
+                <p style="margin:0 0 15px; font-size:1.1rem;" id="uploadHint">🖼️ 현미경 사진 끌어다 놓기 또는 클릭</p>
                 <input type="file" id="imageInput" accept="image/*" style="display:none;">
-                <button onclick="document.getElementById('imageInput').click()" class="btn" style="width:auto; padding:12px 28px; margin:0 auto; display:block;">📤 파일 선택</button>
+                <button onclick="document.getElementById('imageInput').click()" class="btn" style="width:auto; padding:12px 28px; margin:0 auto; display:block;" id="btnSelectFile">📤 파일 선택</button>
             </div>
 
             <!-- ★ v3.8 OrganoID 분석 버튼 (Bridge 연결 시 표시) -->
-            <button id="analyzeBtn" onclick="runBridgeAnalysis()">🔬 OrganoID로 이미지 분석</button>
+            <button id="analyzeBtn" onclick="runBridgeAnalysis()" data-ko="🔬 OrganoID로 이미지 분석" data-en="🔬 Analyze with OrganoID">🔬 OrganoID로 이미지 분석</button>
             <div id="analyzeProgress"><span class="spinner">⏳</span> <span id="analyzeMsg">분석 중...</span></div>
 
-            <h4 style="margin:20px 0 10px;">🌐 웹 오가노이드 예시</h4>
+            <h4 style="margin:20px 0 10px;" id="webSampleTitle">🌐 웹 오가노이드 예시</h4>
             <div class="sample-gallery" id="sampleGallery"></div>
 
-            <button onclick="runDrySimulation()" class="btn" style="margin-top:30px;">🚀 Dry Run + Real Data 비교 시작</button>
+            <button onclick="runDrySimulation()" class="btn" style="margin-top:30px;" id="btnDryRun">🚀 Dry Run + Real Data 비교 시작</button>
         </div>
 
         <!-- 메인 -->
@@ -170,20 +280,20 @@
                 </div>
 
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
-                    <div class="card"><div>Size CV (%)</div><div id="cvValue" class="metric">7.8</div><span class="status good">✅ OSI 통과</span></div>
-                    <div class="card"><div>종합 QC Score</div><div id="scoreValue" class="metric">91</div><span class="status good">🟢 우수</span></div>
-                    <div class="card"><div>Circularity</div><div id="circValue" class="metric">0.84</div><span class="status good">좋음</span></div>
-                    <div class="card"><div>Viability 예측</div><div id="viabValue" class="metric">87%</div><span class="status good">✅ ≥70%</span></div>
+                    <div class="card"><div id="cardCV">Size CV (%)</div><div id="cvValue" class="metric">7.8</div><span class="status good" id="cvStatus">✅ OSI 통과</span></div>
+                    <div class="card"><div id="cardScore">종합 QC Score</div><div id="scoreValue" class="metric">91</div><span class="status good" id="scoreStatus">🟢 우수</span></div>
+                    <div class="card"><div id="cardCirc">Circularity</div><div id="circValue" class="metric">0.84</div><span class="status good" id="circStatus">좋음</span></div>
+                    <div class="card"><div id="cardViab">Viability 예측</div><div id="viabValue" class="metric">87%</div><span class="status good" id="viabStatus">✅ ≥70%</span></div>
                     <!-- ★ v3.8 OrganoID 검출 수 카드 -->
-                    <div class="card" id="organoidCountCard"><div>오가노이드 수 <span class="bridge-result-tag">OrganoID</span></div><div id="countValue" class="metric">—</div><span id="analysisModeTag" class="status" style="background:#0984e3;color:white;font-size:0.78rem;">pixel</span></div>
+                    <div class="card" id="organoidCountCard"><div id="cardCount">오가노이드 수 <span class="bridge-result-tag">OrganoID</span></div><div id="countValue" class="metric">—</div><span id="analysisModeTag" class="status" style="background:#0984e3;color:white;font-size:0.78rem;">pixel</span></div>
                 </div>
 
-                <h3 style="margin:25px 0 10px;">🔍 OSI 가이드라인 벤치마킹</h3>
-                <table><thead><tr><th>항목</th><th>OSI 최소 기준</th><th>시뮬레이션 결과</th><th>판정</th></tr></thead><tbody id="tableBody"></tbody></table>
+                <h3 style="margin:25px 0 10px;" id="osiTitle">🔍 OSI 가이드라인 벤치마킹</h3>
+                <table><thead><tr><th id="thItem">항목</th><th id="thOSI">OSI 최소 기준</th><th id="thSim">시뮬레이션 결과</th><th id="thVerdict">판정</th></tr></thead><tbody id="tableBody"></tbody></table>
 
                 <!-- ★ v3.7 Real Data 비교 섹션 (탭 구조) -->
                 <div class="comparison-section">
-                    <h3>📊 Real Data 비교
+                    <h3 id="realDataTitle">📊 Real Data 비교
                         <span id="dataSourceBadge" class="data-badge" style="display:none;"></span>
                     </h3>
 
@@ -193,10 +303,8 @@
                         <button class="tab-btn" onclick="switchTab('supabase')" id="tab-supabase">🔌 Supabase</button>
                     </div>
 
-                    <!-- 탭 1: 로컬 Real Data 업로드 (★ 신규) -->
+                    <!-- 탭 1: 로컬 Real Data 업로드 -->
                     <div class="tab-panel active" id="panel-local">
-
-                        <!-- 소탭: CSV / 수동입력 -->
                         <div style="display:flex; gap:8px; margin-bottom:14px;">
                             <button class="tab-btn active" style="flex:1; font-size:0.85rem;" onclick="switchSubTab('csv')" id="subtab-csv">📄 CSV 업로드</button>
                             <button class="tab-btn" style="flex:1; font-size:0.85rem;" onclick="switchSubTab('manual')" id="subtab-manual">✏️ 수동 입력</button>
@@ -205,15 +313,15 @@
                         <!-- CSV 업로드 -->
                         <div id="subpanel-csv">
                             <div class="local-upload-box" onclick="document.getElementById('realDataCsvInput').click()" style="cursor:pointer; text-align:center;">
-                                <p style="margin:0 0 8px; font-size:1.1rem;">📄 Real Data CSV 파일을 끌어다 놓거나 클릭</p>
-                                <p style="margin:0; font-size:0.85rem; color:#636e72;">형식: label, organ, size_cv, viability, marker_percent</p>
+                                <p style="margin:0 0 8px; font-size:1.1rem;" id="csvDropHint">📄 Real Data CSV 파일을 끌어다 놓거나 클릭</p>
+                                <p style="margin:0; font-size:0.85rem; color:#636e72;" id="csvFmtHint">형식: label, organ, size_cv, viability, marker_percent</p>
                                 <input type="file" id="realDataCsvInput" accept=".csv,.txt" style="display:none;">
                             </div>
                             <div style="display:flex; gap:8px; margin-top:10px;">
-                                <button class="btn-sm" style="background:#6c5ce7;" onclick="downloadCSVTemplate()">⬇️ CSV 템플릿 다운로드</button>
-                                <button class="btn-sm" style="background:#b2bec3;" onclick="clearLocalData()">🗑️ 데이터 초기화</button>
+                                <button class="btn-sm" style="background:#6c5ce7;" onclick="downloadCSVTemplate()" id="btnCSVTpl">⬇️ CSV 템플릿 다운로드</button>
+                                <button class="btn-sm" style="background:#b2bec3;" onclick="clearLocalData()" id="btnClearData">🗑️ 데이터 초기화</button>
                             </div>
-                            <div class="template-note">
+                            <div class="template-note" id="csvNote">
                                 📌 <strong>CSV 헤더 형식:</strong> <code>label,organ,size_cv,viability,marker_percent</code><br>
                                 organ 값: <code>intestine</code> / <code>liver</code> / <code>cortical</code> — 현재 선택 장기만 필터링됩니다.
                             </div>
@@ -224,9 +332,9 @@
                             <div class="manual-entry-grid">
                                 <input id="mLabel" placeholder="레이블 (예: My Lab Day28)" style="grid-column:1/-1;">
                                 <select id="mOrgan">
-                                    <option value="intestine">장 (Intestine)</option>
-                                    <option value="liver">간 (Liver)</option>
-                                    <option value="cortical">뇌 (Cortical)</option>
+                                    <option value="intestine" id="mOptIntestine">장 (Intestine)</option>
+                                    <option value="liver" id="mOptLiver">간 (Liver)</option>
+                                    <option value="cortical" id="mOptCortical">뇌 (Cortical)</option>
                                 </select>
                                 <div></div>
                                 <input id="mCV" type="number" step="0.1" placeholder="Size CV (%)">
@@ -234,28 +342,28 @@
                                 <input id="mMarker" type="number" placeholder="Marker (%)">
                                 <div></div>
                             </div>
-                            <button class="btn" style="margin-top:10px; padding:10px; font-size:0.95rem;" onclick="addManualRecord()">➕ 데이터 추가</button>
+                            <button class="btn" style="margin-top:10px; padding:10px; font-size:0.95rem;" onclick="addManualRecord()" id="btnAddRow">➕ 데이터 추가</button>
                         </div>
 
                         <!-- 로드된 데이터 미리보기 -->
                         <div id="localDataPreviewWrap" style="display:none; margin-top:15px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <strong style="font-size:0.9rem;">📋 로드된 데이터 <span id="localDataCount" class="data-badge local">0건</span></strong>
+                                <strong style="font-size:0.9rem;" id="loadedDataLabel">📋 로드된 데이터 <span id="localDataCount" class="data-badge local">0건</span></strong>
                             </div>
                             <div class="data-preview">
                                 <table>
-                                    <thead><tr><th>레이블</th><th>장기</th><th>Size CV</th><th>Viability</th><th>Marker</th><th></th></tr></thead>
+                                    <thead><tr><th id="thLabel">레이블</th><th id="thOrgan">장기</th><th>Size CV</th><th>Viability</th><th>Marker</th><th></th></tr></thead>
                                     <tbody id="localDataTableBody"></tbody>
                                 </table>
                             </div>
-                            <button class="btn" style="margin-top:12px; padding:10px; font-size:0.95rem; background:#e17055;" onclick="applyLocalData()">📊 이 데이터로 비교 차트 업데이트</button>
+                            <button class="btn" style="margin-top:12px; padding:10px; font-size:0.95rem; background:#e17055;" onclick="applyLocalData()" id="btnApplyData">📊 이 데이터로 비교 차트 업데이트</button>
                         </div>
                     </div>
 
                     <!-- 탭 2: Supabase -->
                     <div class="tab-panel" id="panel-supabase">
-                        <button onclick="fetchRealDataFromSupabase()" class="btn" style="width:auto; padding:10px 24px; font-size:0.95rem; margin-bottom:15px;">🌐 Supabase에서 Real Data 불러오기</button>
-                        <button onclick="saveToSupabase()" class="btn" style="width:auto; padding:10px 24px; font-size:0.95rem; margin-bottom:15px; margin-left:10px; background:#0984e3;">💾 내 측정값 Supabase에 저장</button>
+                        <button onclick="fetchRealDataFromSupabase()" class="btn" style="width:auto; padding:10px 24px; font-size:0.95rem; margin-bottom:15px;" id="btnFetchSupa">🌐 Supabase에서 Real Data 불러오기</button>
+                        <button onclick="saveToSupabase()" class="btn" style="width:auto; padding:10px 24px; font-size:0.95rem; margin-bottom:15px; margin-left:10px; background:#0984e3;" id="btnSaveSupa">💾 내 측정값 Supabase에 저장</button>
                     </div>
 
                     <!-- 공통: 레퍼런스 선택 + 사용자 입력 + 차트 -->
@@ -279,10 +387,20 @@
             </div>
 
             <div id="initialGuide" style="text-align:center; padding:80px 20px; color:#636e72;">
-                <h3>👆 이미지를 업로드하고 "Dry Run + Real Data 비교 시작" 버튼을 눌러주세요</h3>
+                <h3 id="initialGuideText">👆 이미지를 업로드하고 "Dry Run + Real Data 비교 시작" 버튼을 눌러주세요</h3>
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-grid">
+        <div>🧬 <strong>OrganoidQC Web v3.9</strong></div>
+        <div>👤 <strong id="footerDev">개발자:</strong> Jongwoo Hahn</div>
+        <div>📩 <strong id="footerRequest">Request 접수:</strong> <a href="mailto:traffic.rnd@gmail.com">traffic.rnd@gmail.com</a></div>
+        <div style="color:#b2bec3; font-size:0.82rem;" id="footerCopy">© 2025 OrganoidQC. All rights reserved.</div>
+      </div>
+    </footer>
 </div>
 
 <script>
@@ -568,9 +686,9 @@
 
     // ==================== 샘플 갤러리 ====================
     const sampleImages = [
-        { name: "Intestine Organoid", src: "https://picsum.photos/id/1015/300/180" },
-        { name: "Liver Organoid",     src: "https://picsum.photos/id/133/300/180"  },
-        { name: "Cortical Organoid",  src: "https://picsum.photos/id/201/300/180"  }
+        { name: "Intestine Organoid", src: "https://github.com/TKassis/OrgaQuant/raw/master/readme_images/Figure_1_From_Paper.jpg" },
+        { name: "Liver Organoid",     src: "https://github.com/541435721/Orga-DATA/raw/main/images/detection.png"                  },
+        { name: "Cortical Organoid",  src: "https://github.com/541435721/Orga-DATA/raw/main/images/tracking.png"                   }
     ];
 
     function createSampleGallery() {
@@ -617,11 +735,10 @@
 
     // ==================== 웹 URL 이미지 불러오기 ====================
     const webExampleImages = [
-        { name: "Intestine (Day 28)", url: "https://picsum.photos/id/1015/800/600" },
-        { name: "Liver Organoid",     url: "https://picsum.photos/id/133/800/600"  },
-        { name: "Cortical Brain",     url: "https://picsum.photos/id/201/800/600"  },
-        { name: "MultiOrg Dataset",   url: "https://picsum.photos/id/251/800/600"  },
-        { name: "Mouse Organoid",     url: "https://picsum.photos/id/1005/800/600" }
+        { name: "Intestine (Day 28)", nameEn: "Intestine (Day 28)", url: "https://github.com/TKassis/OrgaQuant/raw/master/readme_images/Figure_1_From_Paper.jpg" },
+        { name: "간 오가노이드",       nameEn: "Liver Organoid",     url: "https://github.com/541435721/Orga-DATA/raw/main/images/detection.png"                  },
+        { name: "뇌 오가노이드",       nameEn: "Cortical Organoid",  url: "https://github.com/541435721/Orga-DATA/raw/main/images/tracking.png"                   },
+        { name: "검출 파이프라인",     nameEn: "Detection Pipeline", url: "https://github.com/541435721/Orga-DATA/raw/main/images/pipline.jpg"                    }
     ];
 
     function createWebExamples() {
@@ -630,7 +747,7 @@
         webExampleImages.forEach(item => {
             const btn = document.createElement('button');
             btn.style.cssText = 'padding:6px 12px; font-size:0.85rem; border:1px solid #ddd; border-radius:8px; background:white; cursor:pointer;';
-            btn.textContent = item.name;
+            btn.textContent = currentLang === 'ko' ? item.name : item.nameEn;
             btn.onclick = () => { document.getElementById('webImageUrl').value = item.url; loadWebImage(); };
             container.appendChild(btn);
         });
@@ -847,17 +964,212 @@
         createSampleGallery();
         setupUpload();
         createWebExamples();
-        setupRealDataCSVInput();   // ★ v3.7 신규
+        setupRealDataCSVInput();
 
         // ★ v3.8 Bridge 상태 폴링 (즉시 1회 + 10초 간격)
         checkBridge();
         setInterval(checkBridge, 10000);
 
         document.getElementById('cultureDays').addEventListener('input', function() {
-            document.getElementById('daysValue').textContent = this.value + '일';
+            document.getElementById('daysValue').textContent = this.value + (currentLang === 'ko' ? '일' : ' days');
         });
-        console.log('%c✅ OrganoidQC Web v3.8 (Bridge fetch 연동) 로드 완료', 'color:#00b894; font-weight:bold;');
+        console.log('%c✅ OrganoidQC Web v3.9 (i18n + Manual + Bridge) 로드 완료', 'color:#00b894; font-weight:bold;');
     };
+
+    // ==================== 매뉴얼 ====================
+    function openManual() { document.getElementById('manualModal').style.display = 'block'; document.body.style.overflow = 'hidden'; }
+    function closeManual() { document.getElementById('manualModal').style.display = 'none'; document.body.style.overflow = ''; }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeManual(); });
+
+    // ==================== i18n 언어 전환 ====================
+    let currentLang = 'ko';
+
+    const translations = {
+        ko: {
+            langBtn: '🌐 EN',
+            headerSubtitle: 'Dry Run + OrganoID AI + 🌐 웹 URL + <strong>📂 로컬 Real Data 직접 업로드</strong>',
+            manualBtn: '📖 연구자 매뉴얼',
+            contactBtn: '📩 Request 접수',
+            // Benefits
+            ben1t: '즉시 QC 분석', ben1d: '이미지 업로드 후 5초 내 Size CV·Circularity·Viability 자동 산출',
+            ben2t: 'OrganoID AI 연동', ben2d: '딥러닝 세그멘테이션으로 개별 오가노이드 수 정밀 검출',
+            ben3t: 'OSI 기준 벤치마킹', ben3d: '국제 오가노이드 표준과 자동 비교 — Pass/Fail 즉시 판정',
+            ben4t: 'Real Data 비교', ben4d: 'CSV·Supabase DB 연동으로 실측 데이터와 시각적 비교',
+            ben5t: '설치 불필요', ben5d: '브라우저만 있으면 어디서든 — 장·간·뇌 오가노이드 지원',
+            // Sidebar
+            sideH1: '📋 Dry Run 설정', labelOrgan: '장기 종류', labelDays: '배양 일수', labelPassage: 'Passage 번호',
+            sideH2: '🔌 Supabase DB 연결', btnSupabase: '🔌 Supabase 연결하기',
+            sideH3: '🌐 웹 URL 이미지 불러오기', btnLoadUrl: '📥 URL로 이미지 불러오기',
+            webExampleLabel: '📌 추천 공개 이미지',
+            sideH4: '📸 로컬 이미지 업로드',
+            uploadHint: '🖼️ 현미경 사진 끌어다 놓기 또는 클릭',
+            btnSelectFile: '📤 파일 선택',
+            webSampleTitle: '🌐 웹 오가노이드 예시',
+            btnDryRun: '🚀 Dry Run + Real Data 비교 시작',
+            // Main
+            osiTitle: '🔍 OSI 가이드라인 벤치마킹',
+            thItem: '항목', thOSI: 'OSI 최소 기준', thSim: '시뮬레이션 결과', thVerdict: '판정',
+            realDataTitle: '📊 Real Data 비교',
+            'tab-local': '📂 로컬 업로드', 'tab-supabase': '🔌 Supabase',
+            'subtab-csv': '📄 CSV 업로드', 'subtab-manual': '✏️ 수동 입력',
+            csvDropHint: '📄 Real Data CSV 파일을 끌어다 놓거나 클릭',
+            csvFmtHint: '형식: label, organ, size_cv, viability, marker_percent',
+            btnCSVTpl: '⬇️ CSV 템플릿 다운로드', btnClearData: '🗑️ 데이터 초기화',
+            btnAddRow: '➕ 데이터 추가', btnApplyData: '📊 이 데이터로 비교 차트 업데이트',
+            btnFetchSupa: '🌐 Supabase에서 Real Data 불러오기', btnSaveSupa: '💾 내 측정값 Supabase에 저장',
+            loadedDataLabel: '📋 로드된 데이터', thLabel: '레이블', thOrgan: '장기',
+            cardCV: 'Size CV (%)', cardScore: '종합 QC Score', cardCirc: 'Circularity',
+            cardViab: 'Viability 예측', cardCount: '오가노이드 수',
+            cvStatus: '✅ OSI 통과', scoreStatus: '🟢 우수', circStatus: '좋음', viabStatus: '✅ ≥70%',
+            initialGuideText: '👆 이미지를 업로드하고 "Dry Run + Real Data 비교 시작" 버튼을 눌러주세요',
+            bridgeChecking: 'Bridge 서버 확인 중...',
+            optIntestine: '장 (Intestine)', optLiver: '간 (Liver)', optCortical: '뇌 (Cortical)',
+            mOptIntestine: '장 (Intestine)', mOptLiver: '간 (Liver)', mOptCortical: '뇌 (Cortical)',
+            footerDev: '개발자:', footerRequest: 'Request 접수:',
+            daysUnit: '일',
+            // Manual
+            manualTitle: '📖 OrganoidQC Web — 연구자 매뉴얼',
+            manualS1: '🔬 서비스 소개',
+            manualIntro: 'OrganoidQC Web은 오가노이드 배양 품질을 빠르게 평가하고 레퍼런스 데이터와 비교할 수 있는 연구자 전용 웹 도구입니다. OrganoID AI 분석 엔진과 연동하여 현미경 이미지에서 직접 QC 지표를 추출합니다.',
+            manualS2: '⚡ 주요 기능 및 장점',
+            manualS3: '🚀 사용 방법 (Step-by-step)',
+            manualS4: '📐 QC 지표 설명',
+            manualS5: '📩 문의 및 요청',
+            manualContact: '기능 요청, 버그 리포트, 기관 맞춤 설정은 아래로 문의해주세요:<br>📧 <a href="mailto:traffic.rnd@gmail.com">traffic.rnd@gmail.com</a> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong>',
+            manualCloseBtn: '닫기',
+            manualTH1: '지표', manualTH2: '설명', manualTH3: 'OSI 기준',
+            manualCV: '오가노이드 크기의 변동계수 — 낮을수록 균일한 배양',
+            manualCirc: '구형에 가까울수록 1에 가까운 값 — 구조적 건강도 반영',
+            manualViab: '생존율 예측값 — 배양 일수와 장기 유형 기반 추정',
+            manualScore: '위 지표들을 종합한 100점 기준 품질 점수',
+            step1: '왼쪽 사이드바에서 <em>장기 종류</em>와 <em>배양 일수</em>를 선택합니다.',
+            step2: '<em>로컬 이미지 업로드</em> 영역에 현미경 사진을 드래그하거나 "파일 선택"을 클릭합니다.',
+            step3: 'Bridge 서버가 연결된 경우 <em>"OrganoID로 이미지 분석"</em> 버튼을 눌러 AI 분석을 실행합니다.',
+            step4: '<em>"Dry Run + Real Data 비교 시작"</em> 버튼을 클릭하면 QC 지표 카드와 OSI 벤치마킹 테이블이 표시됩니다.',
+            step5: '📂 CSV 파일을 업로드하거나 수동으로 Real Data를 입력하고 <em>"비교 차트 업데이트"</em>를 눌러 실측 데이터와 비교합니다.',
+            step6: 'Supabase를 연결하면 여러 연구자의 데이터를 공유 DB에 저장하고 불러올 수 있습니다.',
+        },
+        en: {
+            langBtn: '🌐 KO',
+            headerSubtitle: 'Dry Run + OrganoID AI + 🌐 Web URL + <strong>📂 Local Real Data Upload</strong>',
+            manualBtn: '📖 Researcher Manual',
+            contactBtn: '📩 Submit Request',
+            // Benefits
+            ben1t: 'Instant QC Analysis', ben1d: 'Auto-calculates Size CV, Circularity & Viability within 5s of upload',
+            ben2t: 'OrganoID AI Integration', ben2d: 'Deep-learning segmentation for precise organoid count detection',
+            ben3t: 'OSI Benchmarking', ben3d: 'Auto-compare against international organoid standards — instant Pass/Fail',
+            ben4t: 'Real Data Comparison', ben4d: 'CSV & Supabase DB integration for visual comparison with lab data',
+            ben5t: 'No Installation Needed', ben5d: 'Works in any browser — Intestine · Liver · Cortical supported',
+            // Sidebar
+            sideH1: '📋 Dry Run Settings', labelOrgan: 'Organ Type', labelDays: 'Culture Days', labelPassage: 'Passage Number',
+            sideH2: '🔌 Supabase DB Connection', btnSupabase: '🔌 Connect Supabase',
+            sideH3: '🌐 Load Image from URL', btnLoadUrl: '📥 Load from URL',
+            webExampleLabel: '📌 Recommended Public Images',
+            sideH4: '📸 Local Image Upload',
+            uploadHint: '🖼️ Drag & drop microscopy image or click',
+            btnSelectFile: '📤 Select File',
+            webSampleTitle: '🌐 Web Organoid Examples',
+            btnDryRun: '🚀 Start Dry Run + Real Data Comparison',
+            // Main
+            osiTitle: '🔍 OSI Guideline Benchmarking',
+            thItem: 'Metric', thOSI: 'OSI Min. Standard', thSim: 'Simulation Result', thVerdict: 'Verdict',
+            realDataTitle: '📊 Real Data Comparison',
+            'tab-local': '📂 Local Upload', 'tab-supabase': '🔌 Supabase',
+            'subtab-csv': '📄 Upload CSV', 'subtab-manual': '✏️ Manual Entry',
+            csvDropHint: '📄 Drag & drop Real Data CSV or click',
+            csvFmtHint: 'Format: label, organ, size_cv, viability, marker_percent',
+            btnCSVTpl: '⬇️ Download CSV Template', btnClearData: '🗑️ Clear Data',
+            btnAddRow: '➕ Add Row', btnApplyData: '📊 Update Comparison Chart',
+            btnFetchSupa: '🌐 Fetch Real Data from Supabase', btnSaveSupa: '💾 Save My Values to Supabase',
+            loadedDataLabel: '📋 Loaded Data', thLabel: 'Label', thOrgan: 'Organ',
+            cardCV: 'Size CV (%)', cardScore: 'Overall QC Score', cardCirc: 'Circularity',
+            cardViab: 'Viability Estimate', cardCount: 'Organoid Count',
+            cvStatus: '✅ OSI Pass', scoreStatus: '🟢 Excellent', circStatus: 'Good', viabStatus: '✅ ≥70%',
+            initialGuideText: '👆 Upload an image and click "Start Dry Run + Real Data Comparison"',
+            bridgeChecking: 'Checking Bridge server...',
+            optIntestine: 'Intestine', optLiver: 'Liver', optCortical: 'Cortical',
+            mOptIntestine: 'Intestine', mOptLiver: 'Liver', mOptCortical: 'Cortical',
+            footerDev: 'Developer:', footerRequest: 'Request Submission:',
+            daysUnit: ' days',
+            // Manual
+            manualTitle: '📖 OrganoidQC Web — Researcher Manual',
+            manualS1: '🔬 About This Service',
+            manualIntro: 'OrganoidQC Web is a researcher-focused web tool for rapidly evaluating organoid culture quality and comparing results against reference data. It integrates with the OrganoID AI engine to extract QC metrics directly from microscopy images.',
+            manualS2: '⚡ Key Features & Benefits',
+            manualS3: '🚀 How to Use (Step-by-step)',
+            manualS4: '📐 QC Metric Descriptions',
+            manualS5: '📩 Contact & Requests',
+            manualContact: 'For feature requests, bug reports, or institutional customization:<br>📧 <a href="mailto:traffic.rnd@gmail.com">traffic.rnd@gmail.com</a> &nbsp;|&nbsp; 👤 Developer: <strong>Jongwoo Hahn</strong>',
+            manualCloseBtn: 'Close',
+            manualTH1: 'Metric', manualTH2: 'Description', manualTH3: 'OSI Standard',
+            manualCV: 'Coefficient of variation of organoid size — lower = more uniform culture',
+            manualCirc: 'Proximity to a perfect sphere (1.0) — reflects structural health',
+            manualViab: 'Estimated viability — derived from culture days and organ type',
+            manualScore: 'Composite quality score out of 100 based on the above metrics',
+            step1: 'Select <em>Organ Type</em> and <em>Culture Days</em> in the left sidebar.',
+            step2: 'Drag your microscopy image into the <em>Local Image Upload</em> area, or click "Select File". (Web URL also supported)',
+            step3: '(Optional) If a Bridge server is connected, click <em>"Analyze with OrganoID"</em> for AI-based analysis.',
+            step4: 'Click <em>"Start Dry Run + Real Data Comparison"</em> to view QC metric cards and the OSI benchmarking table.',
+            step5: '(Optional) Upload a CSV or manually enter Real Data, then click <em>"Update Comparison Chart"</em> to compare against lab data.',
+            step6: '(Optional) Connect Supabase to store and share data across multiple researchers.',
+        }
+    };
+
+    function toggleLang() {
+        currentLang = currentLang === 'ko' ? 'en' : 'ko';
+        applyTranslations();
+        createWebExamples(); // rebuild example buttons with new lang
+    }
+
+    function applyTranslations() {
+        const t = translations[currentLang];
+        // Apply all simple text translations by element ID
+        const simpleIds = [
+            'langBtn','headerSubtitle','manualBtn',
+            'ben1t','ben1d','ben2t','ben2d','ben3t','ben3d','ben4t','ben4d','ben5t','ben5d',
+            'sideH1','labelOrgan','labelDays','labelPassage','sideH2','btnSupabase',
+            'sideH3','btnLoadUrl','webExampleLabel','sideH4','uploadHint','btnSelectFile',
+            'webSampleTitle','btnDryRun',
+            'osiTitle','thItem','thOSI','thSim','thVerdict','realDataTitle',
+            'tab-local','tab-supabase','subtab-csv','subtab-manual',
+            'csvDropHint','csvFmtHint','btnCSVTpl','btnClearData','btnAddRow','btnApplyData',
+            'btnFetchSupa','btnSaveSupa','loadedDataLabel','thLabel','thOrgan',
+            'cardCV','cardScore','cardCirc','cardViab','cardCount',
+            'cvStatus','scoreStatus','circStatus','viabStatus',
+            'initialGuideText','optIntestine','optLiver','optCortical',
+            'mOptIntestine','mOptLiver','mOptCortical',
+            'footerDev','footerRequest',
+            'manualTitle','manualS1','manualIntro','manualS2','manualS3','manualS4','manualS5',
+            'manualContact','manualCloseBtn','manualTH1','manualTH2','manualTH3',
+            'manualCV','manualCirc','manualViab','manualScore',
+            'step1','step2','step3','step4','step5','step6',
+        ];
+        simpleIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && t[id] !== undefined) el.innerHTML = t[id];
+        });
+
+        // contactBtn is an <a> tag
+        const cb = document.getElementById('contactBtn');
+        if (cb) cb.textContent = t.contactBtn;
+
+        // Days display unit
+        const dv = document.getElementById('daysValue');
+        const cd = document.getElementById('cultureDays');
+        if (dv && cd) dv.textContent = cd.value + t.daysUnit;
+
+        // Bridge banner if in checking state
+        const bst = document.getElementById('bridgeStatusText');
+        if (bst && document.getElementById('bridgeBanner').classList.contains('checking'))
+            bst.textContent = t.bridgeChecking;
+
+        // Analyze button
+        const ab = document.getElementById('analyzeBtn');
+        if (ab) ab.textContent = currentLang === 'ko' ? '🔬 OrganoID로 이미지 분석' : '🔬 Analyze with OrganoID';
+
+        // html lang attribute
+        document.documentElement.lang = currentLang;
+    }
 </script>
 </body>
 </html>
