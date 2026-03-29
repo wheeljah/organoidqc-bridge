@@ -149,6 +149,76 @@
         p.subtitle { color:#6da88a; }
         #initialGuide { color:#6da88a !important; }
 
+        /* ── ★ v5.3 검증 예시 비교표 스타일 ── */
+        .val-compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+            font-size: 0.78rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .val-compare-table thead tr {
+            background: rgba(255,255,255,0.05);
+        }
+        .val-compare-table th {
+            padding: 6px 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .val-compare-table th.th-metric { color: #6da88a; text-align: left; }
+        .val-compare-table th.th-pixel  { color: #00e898; }
+        .val-compare-table th.th-organo { color: #74b9ff; }
+        .val-compare-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #a8d8be;
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .val-compare-table td.td-metric {
+            text-align: left;
+            color: #6da88a;
+            font-weight: 600;
+        }
+        .val-compare-table td.td-pixel  { color: #00e898; font-weight: 700; }
+        .val-compare-table td.td-organo { color: #74b9ff; font-weight: 700; }
+        .val-compare-table td.td-match-good  { color: #00b894; }
+        .val-compare-table td.td-match-warn  { color: #fdcb6e; }
+        .val-compare-table td.td-match-bad   { color: #ff7675; }
+        .val-compare-table tr:last-child td  { border-bottom: none; }
+        .val-compare-table tr:hover td       { background: rgba(255,255,255,0.03); }
+        .val-compare-header {
+            display: flex; align-items: center; gap: 8px;
+            margin-top: 14px; margin-bottom: 6px;
+        }
+        .val-compare-header span {
+            font-size: 0.68rem; font-weight: 700;
+            letter-spacing: 0.05em; text-transform: uppercase; color: #6da88a;
+        }
+        .val-compare-header .badge-pixel {
+            font-size: 0.65rem; padding: 2px 7px; border-radius: 50px;
+            background: rgba(0,184,148,0.15); color: #00e898;
+            border: 1px solid rgba(0,232,152,0.3);
+        }
+        .val-compare-header .badge-organo {
+            font-size: 0.65rem; padding: 2px 7px; border-radius: 50px;
+            background: rgba(9,132,227,0.15); color: #74b9ff;
+            border: 1px solid rgba(116,185,255,0.3);
+        }
+        .val-compare-note {
+            font-size: 0.67rem; color: #4a8a6a; margin-top: 6px;
+            padding: 5px 8px; border-radius: 6px;
+            background: rgba(0,184,148,0.04);
+            border-left: 2px solid rgba(0,184,148,0.2);
+            line-height: 1.4;
+        }
+
         /* ── ★ v5.3 알고리즘 이미지 비교 패널 ── */
         #algoImageCompare {
             display: none;
@@ -373,6 +443,15 @@
             .req-type-grid { grid-template-columns:1fr 1fr; }
             .req-actions { flex-direction:column; }
             .req-cancel-btn { text-align:center; }
+        }
+
+        /* ── Validation Section Mobile ── */
+        @media (max-width: 900px) {
+            #validationGrid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 480px) {
+            #validationGrid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+            .val-card div[style*="padding:14px"] { padding: 10px 12px !important; }
         }
     </style>
 </head>
@@ -879,6 +958,404 @@
             </div>
         </div>
     </div>
+
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- ★ v5.3 검증 예시 섹션: Castiglione et al. 2025 Fig.3  -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div id="validationSection" style="margin-top:40px; border-top:2px solid rgba(0,184,148,0.25); padding-top:36px;">
+
+      <!-- 섹션 헤더 -->
+      <div style="text-align:center; margin-bottom:28px;">
+        <div style="display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,rgba(0,184,148,0.12),rgba(9,132,227,0.08)); border:1.5px solid rgba(0,184,148,0.3); border-radius:50px; padding:8px 22px; margin-bottom:14px;">
+          <span style="font-size:1rem;">🔬</span>
+          <span style="font-size:0.82rem; font-weight:700; color:#00e898; letter-spacing:0.05em; text-transform:uppercase;">Published Data 검증</span>
+        </div>
+        <h2 style="margin:0 0 8px; font-size:1.5rem; color:#a8d8be; font-weight:700;">
+          🧠 Cerebral Cortical Organoid — QC 검증 예시
+        </h2>
+        <p style="margin:0; font-size:0.88rem; color:#6da88a; line-height:1.6;">
+          Castiglione et al. (2025) <em>Scientific Reports</em> Fig. 3 &nbsp;·&nbsp; H₂O₂ Stress Test 기반 3단계 QC
+        </p>
+        <a href="https://doi.org/10.1038/s41598-025-14425-x" target="_blank"
+           style="display:inline-block; margin-top:10px; font-size:0.8rem; color:var(--primary); text-decoration:none; border-bottom:1px dotted var(--primary);">
+          → doi:10.1038/s41598-025-14425-x ↗
+        </a>
+        <!-- ★ 전체 분석 버튼 -->
+        <div style="margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+          <button onclick="runAllValAnalysis()"
+            style="padding:9px 24px; border:2px solid rgba(0,184,148,0.4); border-radius:50px;
+                   background:rgba(0,184,148,0.08); color:#00e898; font-size:0.88rem; font-weight:700;
+                   cursor:pointer; transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(0,184,148,0.2)'"
+            onmouseout="this.style.background='rgba(0,184,148,0.08)'">
+            ⚙️ 픽셀 알고리즘 — 전체 분석
+          </button>
+          <button id="valBridgeAllBtn" onclick="runAllValAnalysis(true)" disabled
+            style="padding:9px 24px; border:2px solid rgba(9,132,227,0.3); border-radius:50px;
+                   background:rgba(9,132,227,0.06); color:#4a8aaa; font-size:0.88rem; font-weight:700;
+                   cursor:not-allowed; transition:all 0.2s; opacity:0.5;"
+            title="Bridge 서버 연결 후 활성화됩니다">
+            🤖 OrganoID 포함 — 전체 분석
+          </button>
+        </div>
+        <div id="valAllProgress" style="display:none; margin-top:10px; font-size:0.83rem; color:#7ec8a4; text-align:center;">
+          <span style="display:inline-block; animation:spin 0.8s linear infinite;">⏳</span>
+          &nbsp;<span id="valAllProgressMsg">분석 준비 중...</span>
+        </div>
+      </div>
+
+      <!-- 4장 카드 그리드 -->
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;" id="validationGrid">
+
+        <!-- ① Control -->
+        <div class="val-card" style="background:linear-gradient(160deg,#162b20,#0f2218); border-radius:16px; overflow:hidden; border:1.5px solid rgba(0,184,148,0.3); box-shadow:0 4px 20px rgba(0,0,0,0.35);">
+          <div style="aspect-ratio:1/1; overflow:hidden; background:#0a1a10; display:flex; align-items:center; justify-content:center;">
+            <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAC4AK8DASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5p+Ef7COt/EP4d2HjXxB4y8M+ANC1STy9NfXrgJJdk5wVXjAODjnJHOMUmqfs66d+yv8AtFeGNK+Naw6l4Pdf7RM2kr50d/AM4UDggb9oYHt65r6m+F/wF0nwH+zn8K/Fvgz4Q2/xm8S69Gk99danfZttMLqC2YiSuFbj7v8ACckZxR/wUM+EGu/G79or4JeD9Igt4LzUtEaFpoB/osCiQGRgR/AqgkevA70gOu+Afxf+Hn7XXxC8YfDeL4P6Ba/DW0053tdUitEiuIkUgK7nHy56jByO+cV+XHirS7TR/FGtWNmfMs7W+nggYndmNZGVTnvwBzX60/Eb9lv4lfCn4QJ8MPgDoWnWltqFuP7f8XXmoJBfXrEEMi8ZA5Iz2DYHOTX5G6zpdxoWrX2m3QC3VnPJbyhTkB0Yq2D3GQaYiqFXP3R+VP8Ak/uj8qdp9hdapdRW1nBJc3EjBUjiUszE9ABX3H+zT/wTD8U/ESO11vx3K3hfRXAdbZhuuZR7L/D9TXPUrQp6PfsjaFJyXNsj4p0nQb3XbpLews5LqdztWONCxJ9OK+qPg9/wTV+KPxKFvdajYR+GtNk+bztQBVseydf5V+p3wl/Zr+HPwPsY4vDfh23W7UANfXCiSd/fcen4V6c+pFcADiseWvU3fKvvf+RXNThsr/kfEHgH/glD8PdASCTxJrN9rFyvLpCBFGT+pr3Xwz+xf8GPCOx7bwfa3Ui9Gu/3p/WvXrq58zvg9ah84spBan9Vp7yu/Vk+3n009DNsPhx4P0eJUsfDOk28a9BHZoP6Vpto+j7Ao0qyVfT7OmP5UxJirHJOKnkdZI+DzWkcPSjtBfcZupN7yZzmv/DPwT4kt2i1Xwpo17G3USWMefzAzXjPjD9g34PeLPMkt9Fl0C5bpJpspVR/wA5Fe/OhWljbmujkh2Iuz88/il/wTR8QaTHLd+D9SttegUEraTKIZ/pz8rfmK+RvGXw017wFqUlhr2j3GmXSHmO4iKH689a/c+NjxzWP43+Hvhv4laO+meJdHttWtWBC+cg3ofVW6g/SuaWH6wZop9z8Gbq0T5vkUH6Vi3Vmo7DH0r9AP2kv+Ceep+GYbrXvh68mt6WmXk02T/j6gHX5f+eg/X2r4Z1bTpbKeSCeJ4pUYqyOpUgjggg9K5k5RlaRrpLY5GSEKeg/Kq7KvoPyrbubUsCR1rHuIWVuldcZXMZKxCVU/wAI/Ki3jDXcfAxz29jSdM061P8ApUf1P8jWqJNLw78VPGvhjwxeeHdI8V6xpmg3hJuNNtb144JcjByoOOa6G2/aF+J1rJpcsXj3xBHNpcLW9jIt8+62jKhSiHPyghVGPYV53DH2qRlxRcZ6p/w1l8Z+h+KPio/9xOT/ABrL+E/wd8X/ALQXjYaZoNnPqWoXcpluLuTJVdxy0kjfUk10P7M/7Nev/tH+OodH0yN4dPjw97fsvyQR55J9z2FftF8EfgL4T/Z58Ix6J4atFWRlBur1xmW4fHJJ7D2rjqVpzn7Kjv1fb/gnVGEYR56nyXf/AIB5f+y/+wz4L/Z5sLXUtRt4df8AFxUNJezruSBvSMHp9a+lZLjzDw3HaqlxcE981WDNnNdNKjClqtW931ZhOpKbuy9IW45JqJqntZxtwRmp5LMzEFfStrmRmSKxPTinG2dV3Y4rSWxK/eHFaEcMUkYTg8UgOajVpGwATViS1kjUHFaQhS3uMAVZuAODjgii4HPlW24NCxnNanlRu/PFLJYorZBouBUSEoAT0okYtyDUl0jeXx1FRRt5e4OPvU7iGrcOjAg8184ftRfsXaD8ddOuNZ0OKDRfGSKWEyKFhvCB92QDox/vfnX0VcfKMip7Gb5cHiplFSVmNScdUfgn468D6v8AD/xDfaJrljLp+pWjmOaCZcEH19wfWuKulB3Yr9r/ANrb9lPSP2jPCMtxZxQ2fjKyjJs70cecBz5Uh7g9j2r8Y/GXhnVPBevX+jatayWWoWczQzwSLhlYHkVzqLi7GrlzK5y0ylTTbNj9qjHuf5Gpp/mFVrbK3kf1P8jXQiCOLC9a7D4Y/DjVfil4y0rw5o1sbnUdQnEMSduepJ7ADJJ9BXIWNrJfXKQxKWYnoK/Wj/gm/wDs3xeAfBbfEDWbMLreqK0diJl5ht+7D3Yjr6Csat+W0d2XHTU+i/2ffgXoX7O/w5s/Dukxq94VD399j57iYj5iT6DoB6CvQJLjLdc1FNMeaqrIWbNFOmqUeWIpScndlyQ5xU0aBlwKhC/KKtxqFjFakk1rbfLnORV6OQxnge1QWTjpVnIdjilcRZWTzIcHgmqrwtCu4H8jUzY+XJwKWRVkA2ODj3pcwigWdmyasGdWj206RSqnNQLCWXg07iG59KdDI0jgHpT47c7eeDUZnS1Y7nA/Gi4FtrcMpOcVm3Ay2OuKs/2hHMfLDdab5Pei4FLyyxXuD+lWGhEMWe9WYbcjJIxUEu6Zii8YqrgVYXkWTg4r41/4KHfsqw/ELwtN8Q/D1kP+Eg0yLOoRRLzdQD+Pjqyj8x9K+zvJaJwTU5WOSJo5kEsTgq6MMhgeoIpPVAtGfzlX1qbeQq3BrPVit1H9T/I19Xft7fs8N8FfincTafAw8OavuvLF9vCZPzxZ/wBkn8iK+UF+a6T6n+RqlsO56p+yZ8P5viv8atA8MwxlxeTgzMBnZCvzSN+Cgmv3Wt7G00TTbXTbCMQ2drEsMUa9FRRgD8hX5t/8Ejfheu7xd8RLqI749uk2LMOOQHmI/DYPxNfo61z5jZrNS5tS3oJI+44qSOP5RVYZLVL9o8tQuKYi2HFSrJmqUbFhmpl45pCZpWzbunBrE8dfEGw8BaZ51wfMunGIbcdWPr9K0xdR2FnNdzv5cESF3Y9gOTXxx8TvH83izxFd3hkbyy5WJf7qDoKznK2iHFXOm8RfGjXdavWkfUZII8/LDA2xRVTT/jBrthJui1W4+jtuH615SbxmPJz+NAu/U1CV9xs+k/Dv7R17HhdSgjuk7sh2tXaxftA6I0YJimXI9OlfHsOo7e/61PJrDiPbu7VoQz6d179oaDyWjsUw+fvyHpXnWr/F7UdTuC0t62ztGvAFeLSahKzHL0R3bnvWvKYuR7h4f+Ltxpd4LgzNIwGMSMSDXruifHzR7q3jF1FNHIR87KoYA18dR3hH8Vb+mak0aghuKmSsXF3PsjR/ilomrXKpHcNGWbavmrtzXSyTLD84Oc+lfGOl6+Y7tAHwG619FfDfXn1bQzDI5eSA9WOTtPSsYy1sa8uh3/29G+8eaUXSN8ueayW+UZp8MyrnJ5rYg8i/bM+DsXxi+COqRJB52raSpvrIj7xwPnX8V/UCvxB17SZNF1preT7wY4/I1/RTGySxlJAHjcFWU9wRgivw0/bC+Hcnwz/aA8S6JtYWkV001qW7wyAsn4YOPwrSL6E9bn6VfsM+GV8C/s1+DdPaMQ3F1a/bp+MEvKd/PuAQPwr6ByMEk4rzvw/BH4f0PT7SFfLjtoY4go9FUD+ldHZeIBcnawK/jWK2Ro9zaW6JfHarassmPWsj7Ui85qaG43EMp4qhXNTcE6VPExZeazEkLN61oWrhsCgDgP2hvFknhv4fi2hba+oP5TN3Cjk/yr46uL4yMcnJzXvn7YWtLDeaJpqt8ywtMy+mTgV8x/bCxNYS1ka7I2WusdCKZ9sIrLF1TWujmtEZM2Fvtvela93CsX7VS/avyqyDXW53GrCTD1rCW6OamjuC1WjNxNxJfete3mxHwa5q1mLGtu0f5BnrWc5JGkYmvYSNJdRgHnNfU3wd0u4tfD011LlUmYBFI64718y+FLcSaxaSMgkjEq7lPcZr7PtZI4dNhSGNY41UBUUYA4rKKu7m0tFYJH3UIaqmXk05ZsVsYl5WPFfnH/wVg8Fx2PijwV4rii4v7eSyncDq8eCuf+Atj8K/RSF9zYr5d/4KZeE18Q/s7Wt6E3T6Zq9vIG/uo6ujfqVp35XdBvoeo3Th8AcA1LaN5KjBqKSE4HtUkdvIy5A4qI6IvqadvOZmznOKuXmpLYwrt6msm3fy8jGKjaPzslyTzxVEnT6XfGWHe3U1u6XKskmSa4W2uGjwinitg6kdP0m6mB+ZImf8gaA6nyF+0N4qfxJ8R9WuN5aGKT7PF7InH+NeXrMaueKtRkvNXuZJDlncsfqaxhPtHNcsWbz3LbTdeajFzyeaqNN3zUTTVqiDSF1680ouM1lCY05Z/eqJsa6THtVqGfnBrFjnParcMx71Vxcp1FjW7YxtK20DNcrY3Xyj1r6R/Zt8H2Ovx3V7qFqs8cbALu9hyP1FYyjzOxtHRXM/4WeDbrVdTjeSFhboQzt0/KvpT/UW6Rbs7RjnrSoLPTYzHaQRwj0QYqlNcbSWNaxio6IzlLmHM3zelKrbj1qp9o8w+1KZNoJqzI1I32815b+1xoreKP2efEVigzK0lq64Hpcx/wBM16DbXHm4wc1zXx4uUtfhHrbyHCgwZP8A23jqJaK41uZMl5hiOoDY4rSt7qIQjjn6159omuJrGh6bqMLl47q2jmDDvuUHP61qW+oSbtp6VGpo9DqPODN2AqdY0kBwea5yO83HDcVehvvKU4atCGXG3Rv9K0UjfUNNuICP9bEyD8RWRHqCq4djmtWw1SORgV4xSYI+B/F1rNpuvXdtMNskchQg+oOKwZJT617f+1P4LOi+KF1i3j22eoDeSBwJP4h/X8a8FL571zfCzplr7yJJJj61EZj601+tMNVcklWTNSLJ05qqvWnhuafMHKX45KuQyVlxt71dgJqrisbtm+NvNfXn7K0zSeGdSXedqyZxt9R6/hXx1B90V9U/skah+71e2LjG1H25+oNJS1G/hZ7XNdFJW3dM1De3g+z7lYAd2ana0c5KDNZVtIk+6GQhlbqprc5i9ZTHzijEZxnirkm4qaoW9qsUwYcduKmmvWjukhETMjDO4djSAdZt5FwVbPzcivJP20fFjeG/2b/Elyr7ZDLaRp9Tcxn+QNexW2XCyPHsOelfJ3/BUbxbb6R8BNG0ZJFS61bWYiFB5ZIo3ZvwyyUpaqwR3KH7HnjSPxt+zv4Wl80Nd2MJsJxnJDRHaM+5UA/jXsKXBhkw3NfAn/BN34mR2GreIvBVy+PtQGoWgJ43KAsgHuQVP0U195TfN8wPBoXZmsu5pLqAyABVyO63D3rn4p1VhzzUtxfMuNvFUZm6dzGrFrK0PIPNYcOpvIoycGrC3TdSeKBFz4ieE4fiZ4FvNNIzfwgzWpz/ABgdPxHH5V8I6jYS6bfTW8yNHLE5RlYcgg196aXqPlyAqcdjXzb+0v4NXSfFg1a3j22+oL5hwOA4+9/j+NYVI6XOmm7rlZ4o1Rl/UU9iaiZia5rmvKSBu9LvGM1EzHFNZsrVJhYtRSZNadrWNCfmGK2LU4FaXJsakRx3xX0f+ylmGbVrgsdgRUK+uTXzdD87ACvqH9m+zFn4b1WY8M7oMY9jSg7yCStG57nc3EckTe9c+wKyccVBe6hM0MiRNh8fLmq9vcXHLTlegAArrOI3be+2rtPX1pkV5M05PHB9axpLsnocU+2umRsk5FInmOvt7pZMKetfmF/wVO8eprHxh8J+FYJt8ejWL3E6D+GWbp/44q/nX6Pza1bWFnLcTyLHFChkkcn7qgZJ/Svw/wDjt8RJvit8b/EfiiXdsvL2QQqTnbEoKoB7YA/Okvel6Fw7nKfDPxzd/DTx/o3iOyYrJZXAd1BxvjPDr+Kkiv1y8JfECx8R6JZ39s/mWl3Es0T9cqwyK/GeWvtH9hn4uRarYT+BdUnIvLUNNpzu334+rRj3B5HsTRLR3NXqfcouopMMsikGrCyLt9q5KGN4+j5A7U7UL64WylSJzHIykK/XB9aadzKWm51DXHksrZ+U1Yj1QMdueK8+8J293ZxyjU9UkvWc/KHzhfpXQK6KfkfI9jV2MuZHYWd0FcEGsj4ueH18ZeCJ4VXfdWv76H146j8qy476QKwViCtamm6+6KBMd31qGuZWNIy5WmfH2oWjWszoy4wcGqXl17h8XPh9Gsj6xpce60mbLoo/1bd/wrxma1eNiCMV50ouLsz0l7y5lsVGj+XrTAvNXBAT24pUtwx6UXLtcLWL5hWnEhpltae1aEFqzMFC9aXMLlL+i2DXVwihS3PQV9d+FbceGPCNnpoULJt8yQqMEsea8d+EHgcyXUep3ce22gO5d38bDoK9ivb6NiW3fN711UI6cxzV5290nS/LHkn8aJL3b1NYrXwY/eH50n2gsfvZH1rqscXMbcV4GOM1oBFng27tp6iuYhmIfOCKfqPiS30XT7m9vJ0trS3jaWWaQ4VFUZJJ+gqJaEWPKP2wPiHbfDz4X3lkbof2lrSNBGiHawQD52PfGCB+Nfk3LIJdYDKMAsx/Q16d+0n8fLz42fErUNVjkdNJhP2Wwh3cCFScN9W+8frXllipkvI2PPX+RrSCsvU2irGa/Q1P4f8AEF/4R16x1nS52tr+zlWaKRexH9D0/GoWHWoGUc0jY/Uv4JfGew+L/g221a1ZUvUAivbXPzQygc/geoPpXpH2gOozX5PfCH4sar8IPFkWq6exltnwl1aFsLNHnkfUdjX6S/Df4laP8RfD9tq2kXi3FvKPmjJAkibujDsRXPKPKLRncybCucgmqjSPDnaWFDTBvan8NWsajSszKVOLKkOtTQk/NnnvU3/CSt3x+dQNaoJCMcGq82kq3IyBWqnFmTpW6m1Z+MIFheCeISwyDa6N0IrlNf8Ah/Ya0zXGkSrub/l3Y/MPp606fS27HNU3t7iA5VypHTFROEJ+pvTnOnotUcpeeBr6zkKvA649RUdv4Vnd8CJifpXar4l1izUL53mKOgkUN/Ol/wCE41WNiQIQfaFf8K5fq8u52qvHqjH0/wCH+oXTIsdtISePu16D4Y+FMGnbbnV5FTByIFILH/CuTk+IGsum37S0Y9EG3+VU/wDhMb/PzSux7kk1pDCxTvKRjPEytaET3RdWhhiSG3VYYYxhUXoKjmv4ZhgzJn614fJ4uuyPvt+dRx+JrtmyWb867ORdGec+du7R7HNcxxtzMv51Wk1toZAEZWFeXw+JLjcN3zfU5qxJrk0i4A2n2ptaAoyuen/8JcYovmKCvij9tb9pZ9Uhk8AeHrrKtg6pcRHjHaEH9T+ArW/aE/aA/wCEF02TRdJuFl8QXCYZlORaqf4j/tegr4q2yXMzzzSNLLIxZnc5ZiepJ7ms1T6s2UWtyCC12qPl5rQs49txH+P8jSxx4Ap0JH2qMe5/kaL6low2G7momWpFbrSsOKk0KjLzXXfDX4pa38K9dS/0qdvJbAuLRifLmX39D6GuYZagkj2kGjcD9Fvhf8frH4haWs1ldK06gefZzEebEfcdx7ivTbTxlbuMSIVOOo6V+U+i61qHh3Uor/TbqSzu4jlZI2wf/rivpP4a/tVW90sVl4rj+yz/AHRfwjMbf7y9V/CsHTtsB9rReILOUD96taNvfQyqMyD868S03xFa6xapc2N1FdW7jKyQsGU/iKvx6rNHwsh/Os7NAeztbxN0cc1E2mCXurV5bbeLL63XAmJ+prQh+IN/ERuCuKaqOPQLHZXmhyFvlVdtZ02ispIKGs2P4lNt/eQZPtTz8RoW+9bt+daKt3QWHTaG/BAIqt/YcvocfSrS/EC1P/LE/iad/wAJ3ZP1tz+dP2q7DsVV0Nm4xk/SpY/Drt/DTpPHFluytsR7g1x/jP4/aB4Jt2l1C6ihkx8luh3yt9Fpqr2FyncR6EY13MMAc5rwr4sfHh4dUXwh8PraXX/FV0/2dWsozN5bn+GMDO9/YcCvFPit+1J4m+ISTadprSaLoz8NHGT5so/2mHQewrz34Y+K5fAfj7QfEe69VdOvI7l/sMvlSuqsGKBuwbGD7E1vGV/iJMfUWvbzUbuS/wDOe981hcNNnfvBIYNnvkGmRwleSMV7p4J/aA0XwlFcxSeEV1OKbWZdTLXKxl2je5tpjExKn+GCRPTEp9TnI+Jfxq07x74SbSYfDEOnXIlikjukVAUC9R8qjqMflTcrknkUkgUdeaba5N1Gfr/KmGORuqkfUVLZoVuoweDz/I1n1KijAXdnO0j8Kkw2Oh/KiimWKq+oNRvGW7GiimBE0bdgfyphhJ6g0UUAbXhrxdrfg+487SNQns2P3lRvlb6qeDXsPhf9qzULTy4te0pbxBw1xanY/wBdp4J/EUUVPKmI9R0P9onwbrW1WvpNPkPVbuIqB+PIrsLPx94f1BQbfWrGUH+7Ov8AU0UVjKKKLv8AwkGnsQVv7Vv+2y/41FP4m0uHJk1K0T/enUf1oorNIRjah8VvCmlxsZ9cs8r1VJNzfkK4XXv2o/DdgjDTbe71GUDj5PLTPuTz+QoorRQQ+h5X4q/aP8V+IUaG0dNGgbtbZMhHu5/oBXA6Rr11pviKz1iULqFzbzrcbLzMiysrZw4zyD3ooraMVHYg+sY/+CjHiJuT8Lfhnn/sCP8A/HamT/gov4h7/C74aD/uCP8A/HaKKoQH/go14hXOPhf8Nf8AwSP/APHaT/h434ibr8L/AIZ/+CR//jtFFIBP+HjniL/ol3w0/DRX/wDjteGfFz4wXXxq8dR+Ib3RdG0GfyVg+y6HbGCDCg/NtLHk+uaKKRaP/9k=" alt="Control (a2)" id="valImg-0" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div style="padding:14px 16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <span style="font-size:0.72rem; font-weight:700; background:rgba(0,184,148,0.18); color:#00e898; padding:3px 10px; border-radius:50px; border:1px solid rgba(0,184,148,0.35);">High-Quality</span>
+              <span style="font-size:0.72rem; color:#6da88a;">Fig. 3 a2</span>
+            </div>
+            <div style="font-size:0.95rem; font-weight:700; color:#cde8da; margin-bottom:4px;">0% H₂O₂ Control</div>
+            <div style="font-size:0.78rem; color:#7ec8a4; margin-bottom:12px; line-height:1.5;">Intact neuroepithelium<br>Optimal morphology</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+              <div style="background:rgba(0,184,148,0.08); border-radius:8px; padding:7px 8px; border:1px solid rgba(0,184,148,0.15);">
+                <div style="font-size:0.68rem; color:#6da88a; margin-bottom:2px;">Morphology</div>
+                <div style="font-size:0.82rem; font-weight:700; color:#00e898;">✅ Pass</div>
+              </div>
+              <div style="background:rgba(0,184,148,0.08); border-radius:8px; padding:7px 8px; border:1px solid rgba(0,184,148,0.15);">
+                <div style="font-size:0.68rem; color:#6da88a; margin-bottom:2px;">QC Score</div>
+                <div style="font-size:0.82rem; font-weight:700; color:#00e898;">95 ✅</div>
+              </div>
+            </div>
+            <!-- 스코어 바 -->
+            <div style="margin-top:10px; height:5px; border-radius:3px; background:rgba(255,255,255,0.07); overflow:hidden;">
+              <div style="height:100%; width:95%; background:linear-gradient(90deg,#00b894,#00e898); border-radius:3px;"></div>
+            </div>
+
+            <!-- ★ 픽셀 vs OrganoID 비교표 -->
+            <div class="val-compare-header">
+              <span>분석 비교</span>
+              <span class="badge-pixel">⚙️ Pixel</span>
+              <span class="badge-organo">🤖 OrganoID</span>
+            </div>
+            <table class="val-compare-table">
+              <thead><tr>
+                <th class="th-metric">지표</th>
+                <th class="th-pixel">픽셀 알고리즘</th>
+                <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td class="td-metric">검출 수</td>
+                  <td class="td-pixel" id="valPxCount-0">—</td>
+                  <td class="td-organo" id="valOiCount-0">— 연결 필요</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Size CV (%)</td>
+                  <td class="td-pixel" id="valPxCV-0">—</td>
+                  <td class="td-organo" id="valOiCV-0">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Circularity</td>
+                  <td class="td-pixel" id="valPxCirc-0">—</td>
+                  <td class="td-organo" id="valOiCirc-0">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Viability 예측</td>
+                  <td class="td-pixel" id="valPxViab-0">—</td>
+                  <td class="td-organo" id="valOiViab-0">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">QC 판정</td>
+                  <td id="valPxVerdict-0" class="td-pixel" style="color:#6da88a;">—</td>
+                  <td id="valOiVerdict-0" class="td-organo" style="color:#6da88a;">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">알고리즘 일치도</td>
+                  <td colspan="2" id="valMatchCell-0" style="font-weight:700; color:#6da88a; text-align:center;">— 분석 후 표시</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="val-compare-note" id="valNote-0">* 이미지 분석 버튼을 누르거나 Bridge 서버를 연결해주세요.</div>
+            <button id="valAnalyzeBtn-0" onclick="runValAnalysis(0)"
+              style="margin-top:10px; width:100%; padding:8px; border:none; border-radius:8px;
+                     background:linear-gradient(135deg,rgba(0,184,148,0.15),rgba(9,132,227,0.1));
+                     color:#00e898; font-size:0.8rem; font-weight:700; cursor:pointer;
+                     border:1px solid rgba(0,184,148,0.3); transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(0,184,148,0.25)'"
+              onmouseout="this.style.background='linear-gradient(135deg,rgba(0,184,148,0.15),rgba(9,132,227,0.1))'">
+              🔬 이미지 분석
+            </button>
+          </div>
+        </div>
+
+        <!-- ② Pre-stress -->
+        <div class="val-card" style="background:linear-gradient(160deg,#162b20,#0f2218); border-radius:16px; overflow:hidden; border:1.5px solid rgba(9,132,227,0.3); box-shadow:0 4px 20px rgba(0,0,0,0.35);">
+          <div style="aspect-ratio:1/1; overflow:hidden; background:#0a1216; display:flex; align-items:center; justify-content:center;">
+            <img src="data:image/jpeg;base64,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" alt="Pre-stress (c1)" id="valImg-1" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div style="padding:14px 16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <span style="font-size:0.72rem; font-weight:700; background:rgba(9,132,227,0.15); color:#74b9ff; padding:3px 10px; border-radius:50px; border:1px solid rgba(9,132,227,0.35);">Before Stress</span>
+              <span style="font-size:0.72rem; color:#6da88a;">Fig. 3 c1</span>
+            </div>
+            <div style="font-size:0.95rem; font-weight:700; color:#cde8da; margin-bottom:4px;">0.25% H₂O₂ Pre</div>
+            <div style="font-size:0.78rem; color:#7ec8a4; margin-bottom:12px; line-height:1.5;">Optimal morphology<br>before H₂O₂ exposure</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+              <div style="background:rgba(9,132,227,0.08); border-radius:8px; padding:7px 8px; border:1px solid rgba(9,132,227,0.15);">
+                <div style="font-size:0.68rem; color:#6da88a; margin-bottom:2px;">Morphology</div>
+                <div style="font-size:0.82rem; font-weight:700; color:#74b9ff;">✅ Pass</div>
+              </div>
+              <div style="background:rgba(9,132,227,0.08); border-radius:8px; padding:7px 8px; border:1px solid rgba(9,132,227,0.15);">
+                <div style="font-size:0.68rem; color:#6da88a; margin-bottom:2px;">QC Score</div>
+                <div style="font-size:0.82rem; font-weight:700; color:#74b9ff;">92 ✅</div>
+              </div>
+            </div>
+            <div style="margin-top:10px; height:5px; border-radius:3px; background:rgba(255,255,255,0.07); overflow:hidden;">
+              <div style="height:100%; width:92%; background:linear-gradient(90deg,#0984e3,#74b9ff); border-radius:3px;"></div>
+            </div>
+
+            <!-- ★ 픽셀 vs OrganoID 비교표 -->
+            <div class="val-compare-header">
+              <span>분석 비교</span>
+              <span class="badge-pixel">⚙️ Pixel</span>
+              <span class="badge-organo">🤖 OrganoID</span>
+            </div>
+            <table class="val-compare-table">
+              <thead><tr>
+                <th class="th-metric">지표</th>
+                <th class="th-pixel">픽셀 알고리즘</th>
+                <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td class="td-metric">검출 수</td>
+                  <td class="td-pixel" id="valPxCount-1">—</td>
+                  <td class="td-organo" id="valOiCount-1">— 연결 필요</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Size CV (%)</td>
+                  <td class="td-pixel" id="valPxCV-1">—</td>
+                  <td class="td-organo" id="valOiCV-1">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Circularity</td>
+                  <td class="td-pixel" id="valPxCirc-1">—</td>
+                  <td class="td-organo" id="valOiCirc-1">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Viability 예측</td>
+                  <td class="td-pixel" id="valPxViab-1">—</td>
+                  <td class="td-organo" id="valOiViab-1">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">QC 판정</td>
+                  <td id="valPxVerdict-1" class="td-pixel" style="color:#6da88a;">—</td>
+                  <td id="valOiVerdict-1" class="td-organo" style="color:#6da88a;">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">알고리즘 일치도</td>
+                  <td colspan="2" id="valMatchCell-1" style="font-weight:700; color:#6da88a; text-align:center;">— 분석 후 표시</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="val-compare-note" id="valNote-1">* 이미지 분석 버튼을 누르거나 Bridge 서버를 연결해주세요.</div>
+            <button id="valAnalyzeBtn-1" onclick="runValAnalysis(1)"
+              style="margin-top:10px; width:100%; padding:8px; border:none; border-radius:8px;
+                     background:linear-gradient(135deg,rgba(0,184,148,0.15),rgba(9,132,227,0.1));
+                     color:#00e898; font-size:0.8rem; font-weight:700; cursor:pointer;
+                     border:1px solid rgba(0,184,148,0.3); transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(0,184,148,0.25)'"
+              onmouseout="this.style.background='linear-gradient(135deg,rgba(0,184,148,0.15),rgba(9,132,227,0.1))'">
+              🔬 이미지 분석
+            </button>
+          </div>
+        </div>
+
+        <!-- ③ Mild -->
+        <div class="val-card" style="background:linear-gradient(160deg,#1e200f,#181a0a); border-radius:16px; overflow:hidden; border:1.5px solid rgba(253,203,110,0.35); box-shadow:0 4px 20px rgba(0,0,0,0.35);">
+          <div style="aspect-ratio:1/1; overflow:hidden; background:#141208; display:flex; align-items:center; justify-content:center;">
+            <img src="data:image/jpeg;base64,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" alt="Mild damage (c2)" id="valImg-2" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div style="padding:14px 16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <span style="font-size:0.72rem; font-weight:700; background:rgba(253,203,110,0.12); color:#fdcb6e; padding:3px 10px; border-radius:50px; border:1px solid rgba(253,203,110,0.3);">Minor Damage</span>
+              <span style="font-size:0.72rem; color:#6da88a;">Fig. 3 c2</span>
+            </div>
+            <div style="font-size:0.95rem; font-weight:700; color:#cde8da; margin-bottom:4px;">0.25% H₂O₂ Post</div>
+            <div style="font-size:0.78rem; color:#7ec8a4; margin-bottom:12px; line-height:1.5;">Mild morphological change<br>QC still passes</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+              <div style="background:rgba(253,203,110,0.07); border-radius:8px; padding:7px 8px; border:1px solid rgba(253,203,110,0.15);">
+                <div style="font-size:0.68rem; color:#6da88a; margin-bottom:2px;">Morphology</div>
+                <div style="font-size:0.82rem; font-weight:700; color:#fdcb6e;">⚠️ Border</div>
+              </div>
+              <div style="background:rgba(253,203,110,0.07); border-radius:8px; padding:7px 8px; border:1px solid rgba(253,203,110,0.15);">
+                <div style="font-size:0.68rem; color:#6da88a; margin-bottom:2px;">QC Score</div>
+                <div style="font-size:0.82rem; font-weight:700; color:#fdcb6e;">78 ⚠️</div>
+              </div>
+            </div>
+            <div style="margin-top:10px; height:5px; border-radius:3px; background:rgba(255,255,255,0.07); overflow:hidden;">
+              <div style="height:100%; width:78%; background:linear-gradient(90deg,#e17055,#fdcb6e); border-radius:3px;"></div>
+            </div>
+
+            <!-- ★ 픽셀 vs OrganoID 비교표 -->
+            <div class="val-compare-header">
+              <span>분석 비교</span>
+              <span class="badge-pixel">⚙️ Pixel</span>
+              <span class="badge-organo">🤖 OrganoID</span>
+            </div>
+            <table class="val-compare-table">
+              <thead><tr>
+                <th class="th-metric">지표</th>
+                <th class="th-pixel">픽셀 알고리즘</th>
+                <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td class="td-metric">검출 수</td>
+                  <td class="td-pixel" id="valPxCount-2">—</td>
+                  <td class="td-organo" id="valOiCount-2">— 연결 필요</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Size CV (%)</td>
+                  <td class="td-pixel" id="valPxCV-2">—</td>
+                  <td class="td-organo" id="valOiCV-2">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Circularity</td>
+                  <td class="td-pixel" id="valPxCirc-2">—</td>
+                  <td class="td-organo" id="valOiCirc-2">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Viability 예측</td>
+                  <td class="td-pixel" id="valPxViab-2">—</td>
+                  <td class="td-organo" id="valOiViab-2">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">QC 판정</td>
+                  <td id="valPxVerdict-2" class="td-pixel" style="color:#6da88a;">—</td>
+                  <td id="valOiVerdict-2" class="td-organo" style="color:#6da88a;">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">알고리즘 일치도</td>
+                  <td colspan="2" id="valMatchCell-2" style="font-weight:700; color:#6da88a; text-align:center;">— 분석 후 표시</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="val-compare-note" id="valNote-2">* 이미지 분석 버튼을 누르거나 Bridge 서버를 연결해주세요.</div>
+            <button id="valAnalyzeBtn-2" onclick="runValAnalysis(2)"
+              style="margin-top:10px; width:100%; padding:8px; border:none; border-radius:8px;
+                     background:linear-gradient(135deg,rgba(0,184,148,0.15),rgba(9,132,227,0.1));
+                     color:#00e898; font-size:0.8rem; font-weight:700; cursor:pointer;
+                     border:1px solid rgba(0,184,148,0.3); transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(0,184,148,0.25)'"
+              onmouseout="this.style.background='linear-gradient(135deg,rgba(0,184,148,0.15),rgba(9,132,227,0.1))'">
+              🔬 이미지 분석
+            </button>
+          </div>
+        </div>
+
+        <!-- ④ Severe -->
+        <div class="val-card" style="background:linear-gradient(160deg,#200f0f,#180a0a); border-radius:16px; overflow:hidden; border:1.5px solid rgba(255,118,117,0.35); box-shadow:0 4px 20px rgba(0,0,0,0.35);">
+          <div style="aspect-ratio:1/1; overflow:hidden; background:#120808; display:flex; align-items:center; justify-content:center;">
+            <img src="data:image/jpeg;base64,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" alt="Severe damage (f2)" id="valImg-3" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div style="padding:14px 16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <span style="font-size:0.72rem; font-weight:700; background:rgba(214,48,49,0.15); color:#ff7675; padding:3px 10px; border-radius:50px; border:1px solid rgba(255,118,117,0.35);">Severe Damage</span>
+              <span style="font-size:0.72rem; color:#6da88a;">Fig. 3 f2</span>
+            </div>
+            <div style="font-size:0.95rem; font-weight:700; color:#cde8da; margin-bottom:4px;">5% H₂O₂ Post</div>
+            <div style="font-size:0.78rem; color:#7ec8a4; margin-bottom:12px; line-height:1.5;">Severe disaggregation<br>&amp; loss of integrity</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+              <div style="background:rgba(214,48,49,0.08); border-radius:8px; padding:7px 8px; border:1px solid rgba(255,118,117,0.2);">
+                <div style="font-size:0.68rem; color:#6da88a; margin-bottom:2px;">Morphology</div>
+                <div style="font-size:0.82rem; font-weight:700; color:#ff7675;">❌ Fail</div>
+              </div>
+              <div style="background:rgba(214,48,49,0.08); border-radius:8px; padding:7px 8px; border:1px solid rgba(255,118,117,0.2);">
+                <div style="font-size:0.68rem; color:#6da88a; margin-bottom:2px;">QC Score</div>
+                <div style="font-size:0.82rem; font-weight:700; color:#ff7675;">58 ❌</div>
+              </div>
+            </div>
+            <div style="margin-top:10px; height:5px; border-radius:3px; background:rgba(255,255,255,0.07); overflow:hidden;">
+              <div style="height:100%; width:58%; background:linear-gradient(90deg,#d63031,#ff7675); border-radius:3px;"></div>
+            </div>
+
+            <!-- ★ 픽셀 vs OrganoID 비교표 -->
+            <div class="val-compare-header">
+              <span>분석 비교</span>
+              <span class="badge-pixel">⚙️ Pixel</span>
+              <span class="badge-organo">🤖 OrganoID</span>
+            </div>
+            <table class="val-compare-table">
+              <thead><tr>
+                <th class="th-metric">지표</th>
+                <th class="th-pixel">픽셀 알고리즘</th>
+                <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td class="td-metric">검출 수</td>
+                  <td class="td-pixel" id="valPxCount-3">—</td>
+                  <td class="td-organo" id="valOiCount-3">— 연결 필요</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Size CV (%)</td>
+                  <td class="td-pixel" id="valPxCV-3">—</td>
+                  <td class="td-organo" id="valOiCV-3">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Circularity</td>
+                  <td class="td-pixel" id="valPxCirc-3">—</td>
+                  <td class="td-organo" id="valOiCirc-3">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">Viability 예측</td>
+                  <td class="td-pixel" id="valPxViab-3">—</td>
+                  <td class="td-organo" id="valOiViab-3">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">QC 판정</td>
+                  <td id="valPxVerdict-3" class="td-pixel" style="color:#6da88a;">—</td>
+                  <td id="valOiVerdict-3" class="td-organo" style="color:#6da88a;">—</td>
+                </tr>
+                <tr>
+                  <td class="td-metric">알고리즘 일치도</td>
+                  <td colspan="2" id="valMatchCell-3" style="font-weight:700; color:#6da88a; text-align:center;">— 분석 후 표시</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="val-compare-note" id="valNote-3">* 이미지 분석 버튼을 누르거나 Bridge 서버를 연결해주세요.</div>
+            <button id="valAnalyzeBtn-3" onclick="runValAnalysis(3)"
+              style="margin-top:10px; width:100%; padding:8px; border:none; border-radius:8px;
+                     background:linear-gradient(135deg,rgba(0,184,148,0.15),rgba(9,132,227,0.1));
+                     color:#00e898; font-size:0.8rem; font-weight:700; cursor:pointer;
+                     border:1px solid rgba(0,184,148,0.3); transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(0,184,148,0.25)'"
+              onmouseout="this.style.background='linear-gradient(135deg,rgba(0,184,148,0.15),rgba(9,132,227,0.1))'">
+              🔬 이미지 분석
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /validationGrid -->
+
+      <!-- CC BY 4.0 Attribution -->
+      <div style="margin-top:20px; padding:14px 18px; border-radius:12px; background:rgba(0,184,148,0.04); border:1px solid rgba(0,184,148,0.12); font-size:0.75rem; color:#6da88a; text-align:center; line-height:1.8;">
+        Images adapted from <strong style="color:#a8d8be;">Fig. 3</strong> of
+        Castiglione et al. (2025) <em>"Towards a quality control framework for cerebral cortical organoids"</em>,
+        <strong style="color:#a8d8be;">Scientific Reports</strong>.
+        Licensed under
+        <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" style="color:var(--primary); text-decoration:none;">CC BY 4.0</a>.
+        Changes: cropped &amp; resized for demonstration.
+        <a href="https://doi.org/10.1038/s41598-025-14425-x" target="_blank" style="color:var(--primary); text-decoration:none; margin-left:8px;">doi:10.1038/s41598-025-14425-x ↗</a>
+      </div>
+
+    </div>
+    <!-- ══ /검증 섹션 ══ -->
 
     <!-- Footer -->
     <footer>
@@ -1419,6 +1896,246 @@
         if (bridgeOnline && pendingFile) {
             document.getElementById('analyzeBtn').style.display = 'block';
         }
+        // Bridge 연결 시 검증 섹션 전체 분석 버튼 활성화
+        if (bridgeOnline) {
+            const btn = document.getElementById('valBridgeAllBtn');
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.color = '#74b9ff';
+                btn.style.borderColor = 'rgba(9,132,227,0.5)';
+                btn.style.background = 'rgba(9,132,227,0.08)';
+                btn.onmouseover = () => btn.style.background = 'rgba(9,132,227,0.2)';
+                btn.onmouseout  = () => btn.style.background = 'rgba(9,132,227,0.08)';
+                // OrganoID 셀 "연결 필요" → "— 분석 대기" 로 업데이트
+                for (let i = 0; i < 4; i++) {
+                    const el = document.getElementById(`valOiCount-${i}`);
+                    if (el && el.textContent.includes('연결 필요')) el.textContent = '— 분석 대기';
+                }
+            }
+        }
+    }
+
+    // ── ★ v5.3 검증 카드 개별 분석 ─────────────────────────────────
+    async function runValAnalysis(idx) {
+        const imgEl = document.getElementById(`valImg-${idx}`);
+        const btn   = document.getElementById(`valAnalyzeBtn-${idx}`);
+        if (!imgEl) return;
+
+        // 버튼 로딩 상태
+        if (btn) { btn.disabled = true; btn.textContent = '⏳ 분석 중...'; }
+
+        try {
+            // ① 픽셀 알고리즘 실행
+            const pixResult = await runValPixelAnalysis(imgEl);
+            updateValPixelCells(idx, pixResult);
+
+            // ② Bridge 연결 시 OrganoID 분석
+            if (bridgeOnline) {
+                updateValOiCells(idx, null, true); // 로딩 표시
+                try {
+                    const blob = await base64ImgToBlob(imgEl.src);
+                    const form = new FormData();
+                    form.append('file', blob, `val_${idx}.jpg`);
+                    const res  = await fetch(`${BRIDGE_URL}/analyze`, { method: 'POST', body: form });
+                    const json = await res.json();
+                    if (json.success) {
+                        updateValOiCells(idx, json.result, false);
+                    } else {
+                        updateValOiCells(idx, null, false, `❌ ${json.error}`);
+                    }
+                } catch(e) {
+                    updateValOiCells(idx, null, false, '❌ Bridge 오류');
+                }
+            } else {
+                // Bridge 미연결 시 OrganoID 셀 안내 유지
+                for (const key of ['Count','CV','Circ','Viab','Verdict']) {
+                    const el = document.getElementById(`valOi${key}-${idx}`);
+                    if (el) { el.style.color = '#4a8a6a'; el.textContent = '— 연결 필요'; }
+                }
+            }
+
+            // 일치도 계산 (Bridge 연결 여부와 무관하게 픽셀 결과로 먼저 표시)
+            updateValMatchCell(idx, pixResult, null);
+
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '🔬 이미지 분석'; }
+        }
+    }
+
+    // 전체 4장 순차 분석
+    async function runAllValAnalysis(includeBridge = false) {
+        const progress = document.getElementById('valAllProgress');
+        const msgEl    = document.getElementById('valAllProgressMsg');
+        if (progress) progress.style.display = 'block';
+
+        for (let i = 0; i < 4; i++) {
+            const labels = ['Control (a2)', 'Pre-stress (c1)', 'Mild (c2)', 'Severe (f2)'];
+            if (msgEl) msgEl.textContent = `[${i+1}/4] ${labels[i]} 분석 중...`;
+            await runValAnalysis(i);
+        }
+
+        if (progress) progress.style.display = 'none';
+    }
+
+    // 픽셀 알고리즘 — img 엘리먼트 직접 분석
+    async function runValPixelAnalysis(imgEl) {
+        return new Promise(resolve => {
+            // 이미지가 이미 로드되어 있으면 바로 처리
+            const process = () => {
+                const SCAN = 480;
+                const w0 = imgEl.naturalWidth  || SCAN;
+                const h0 = imgEl.naturalHeight || SCAN;
+                const ratio = Math.min(SCAN/w0, SCAN/h0, 1);
+                const W = Math.round(w0*ratio), H = Math.round(h0*ratio);
+                const canvas = document.createElement('canvas');
+                canvas.width = W; canvas.height = H;
+                const ctx = canvas.getContext('2d');
+                try {
+                    ctx.drawImage(imgEl, 0, 0, W, H);
+                    const raw  = ctx.getImageData(0, 0, W, H).data;
+                    const gray = new Float32Array(W*H);
+                    for (let i=0;i<W*H;i++)
+                        gray[i] = 0.299*raw[i*4]+0.587*raw[i*4+1]+0.114*raw[i*4+2];
+                    const mean = gray.reduce((a,b)=>a+b,0)/gray.length;
+                    const std  = Math.sqrt(gray.reduce((a,v)=>a+(v-mean)**2,0)/gray.length);
+                    const darkBg = mean < 128;
+                    const thr  = darkBg ? mean+std*0.35 : mean-std*0.25;
+                    const mask = new Uint8Array(W*H);
+                    for (let i=0;i<W*H;i++)
+                        mask[i] = darkBg?(gray[i]>thr?1:0):(gray[i]<thr?1:0);
+                    const eroded = new Uint8Array(W*H);
+                    for (let y=1;y<H-1;y++) for(let x=1;x<W-1;x++){
+                        const idx=y*W+x;
+                        if(mask[idx]&&mask[idx-1]&&mask[idx+1]&&mask[idx-W]&&mask[idx+W]) eroded[idx]=1;
+                    }
+                    const labels2=new Int32Array(W*H).fill(-1);
+                    const components=[];
+                    const fill=start=>{
+                        const px=[],st=[start];
+                        while(st.length){const idx=st.pop();if(idx<0||idx>=W*H||labels2[idx]!==-1||eroded[idx]===0)continue;
+                            labels2[idx]=components.length;px.push(idx);const x=idx%W,y=(idx/W)|0;
+                            if(x>0)st.push(idx-1);if(x<W-1)st.push(idx+1);if(y>0)st.push(idx-W);if(y<H-1)st.push(idx+W);}
+                        return px;
+                    };
+                    for(let i=0;i<W*H;i++){if(eroded[i]&&labels2[i]===-1){const p=fill(i);if(p.length>=40)components.push(p);}}
+                    const stats=components.map(pxs=>{
+                        let minX=W,maxX=0,minY=H,maxY=0;
+                        for(const idx of pxs){const x=idx%W,y=(idx/W)|0;if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}
+                        const area=pxs.length,bw=maxX-minX+1,bh=maxY-minY+1;
+                        const aspect=Math.min(bw,bh)/Math.max(bw,bh);
+                        const idealArea=Math.PI*(bw/2)*(bh/2);
+                        const fill_r=Math.min(area/idealArea,1);
+                        return {area, circ:parseFloat((fill_r*aspect).toFixed(3))};
+                    }).filter(s=>s.circ>0.2&&s.area>30);
+                    const count=stats.length;
+                    const areas=stats.map(s=>s.area);
+                    const circs=stats.map(s=>s.circ);
+                    let cv=0,meanCirc=0;
+                    if(areas.length>1){const m=areas.reduce((a,b)=>a+b,0)/areas.length;
+                        const sd=Math.sqrt(areas.reduce((a,v)=>a+(v-m)**2,0)/areas.length);
+                        cv=parseFloat((sd/m*100).toFixed(1));}
+                    if(circs.length) meanCirc=parseFloat((circs.reduce((a,b)=>a+b,0)/circs.length).toFixed(3));
+                    const viab = Math.min(100, Math.round(meanCirc * 100 + (cv < 10 ? 5 : cv < 20 ? -5 : -15)));
+                    resolve({count, size_cv:cv, mean_circularity:meanCirc, viability_proxy:Math.max(0,viab)});
+                } catch(e) { resolve({count:0,size_cv:0,mean_circularity:0,viability_proxy:0}); }
+            };
+            if (imgEl.complete && imgEl.naturalWidth) process();
+            else { imgEl.onload = process; }
+        });
+    }
+
+    // Base64 img src → Blob 변환
+    async function base64ImgToBlob(src) {
+        const res = await fetch(src);
+        return await res.blob();
+    }
+
+    // 픽셀 결과를 표 셀에 반영
+    function updateValPixelCells(idx, r) {
+        const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+        set(`valPxCount-${idx}`, r.count + ' 개');
+        set(`valPxCV-${idx}`,    r.size_cv + ' %');
+        set(`valPxCirc-${idx}`,  r.mean_circularity);
+        set(`valPxViab-${idx}`,  r.viability_proxy + ' %');
+        const vEl = document.getElementById(`valPxVerdict-${idx}`);
+        if (vEl) {
+            if (r.size_cv < 10 && r.mean_circularity >= 0.7 && r.viability_proxy >= 70) {
+                vEl.textContent = '✅ Pass'; vEl.className = 'td-pixel td-match-good';
+            } else if (r.size_cv < 20 && r.mean_circularity >= 0.55) {
+                vEl.textContent = '⚠️ Border'; vEl.className = 'td-pixel td-match-warn';
+            } else {
+                vEl.textContent = '❌ Fail'; vEl.className = 'td-pixel td-match-bad';
+            }
+        }
+        const noteEl = document.getElementById(`valNote-${idx}`);
+        if (noteEl) noteEl.textContent = '✅ 픽셀 분석 완료' + (bridgeOnline ? ' | OrganoID 분석 중...' : ' | Bridge 연결 시 OrganoID 분석 가능');
+    }
+
+    // OrganoID 결과를 표 셀에 반영
+    function updateValOiCells(idx, r, loading = false, errMsg = null) {
+        const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+        if (loading) {
+            for (const key of ['Count','CV','Circ','Viab']) set(`valOi${key}-${idx}`, '⏳');
+            const vEl = document.getElementById(`valOiVerdict-${idx}`);
+            if (vEl) { vEl.textContent = '⏳ 분석 중'; vEl.className = 'td-organo'; }
+            return;
+        }
+        if (errMsg || !r) {
+            const msg = errMsg || '— 오류';
+            for (const key of ['Count','CV','Circ','Viab']) set(`valOi${key}-${idx}`, msg);
+            return;
+        }
+        set(`valOiCount-${idx}`, r.organoid_count + ' 개');
+        set(`valOiCV-${idx}`,    r.size_cv + ' %');
+        set(`valOiCirc-${idx}`,  r.mean_circularity);
+        set(`valOiViab-${idx}`,  r.viability_proxy + ' %');
+        const vEl = document.getElementById(`valOiVerdict-${idx}`);
+        if (vEl) {
+            if (r.size_cv < 10 && r.mean_circularity >= 0.7 && r.viability_proxy >= 70) {
+                vEl.textContent = '✅ Pass'; vEl.className = 'td-organo td-match-good';
+            } else if (r.size_cv < 20 && r.mean_circularity >= 0.55) {
+                vEl.textContent = '⚠️ Border'; vEl.className = 'td-organo td-match-warn';
+            } else {
+                vEl.textContent = '❌ Fail'; vEl.className = 'td-organo td-match-bad';
+            }
+        }
+        // 일치도 재계산 (OrganoID 결과까지 나왔을 때)
+        const pxCountEl = document.getElementById(`valPxCount-${idx}`);
+        if (pxCountEl && pxCountEl.textContent !== '—') {
+            const pxN  = parseInt(pxCountEl.textContent) || 0;
+            const oiN  = parseInt(r.organoid_count) || 0;
+            updateValMatchCell(idx, {count: pxN}, r);
+        }
+        const noteEl = document.getElementById(`valNote-${idx}`);
+        if (noteEl) noteEl.textContent = `✅ 픽셀 + OrganoID(${r.analysis_mode?.toUpperCase()||'AI'}) 분석 완료`;
+    }
+
+    // 일치도 셀 업데이트
+    function updateValMatchCell(idx, pix, org) {
+        const matchEl = document.getElementById(`valMatchCell-${idx}`);
+        if (!matchEl) return;
+        if (!org) {
+            matchEl.textContent = `⚙️ 픽셀: ${pix.count}개 검출 | Bridge 연결 시 OrganoID 비교 가능`;
+            matchEl.style.color = '#7ec8a4';
+            return;
+        }
+        const pxN = parseInt(pix.count) || 0;
+        const oiN = parseInt(org.organoid_count) || 0;
+        const pct = (pxN===0&&oiN===0)?0 : Math.round((1-Math.abs(pxN-oiN)/Math.max(pxN,oiN,1))*100);
+        if (pct >= 85) {
+            matchEl.textContent = `🟢 높음 — 일치율 ${pct}%`;
+            matchEl.className   = 'td-match-good';
+        } else if (pct >= 60) {
+            matchEl.textContent = `🟡 중간 — 일치율 ${pct}%`;
+            matchEl.className   = 'td-match-warn';
+        } else {
+            matchEl.textContent = `🔴 낮음 — 일치율 ${pct}%`;
+            matchEl.className   = 'td-match-bad';
+        }
+        matchEl.style.fontWeight = '700';
+        matchEl.style.textAlign  = 'center';
     }
 
     // ── 이미지 선택 시 Bridge 버튼 표시 ──────────────────────────
