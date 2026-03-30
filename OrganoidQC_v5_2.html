@@ -1544,17 +1544,19 @@
            style="display:inline-block; margin-top:10px; font-size:0.8rem; color:var(--primary); text-decoration:none; border-bottom:1px dotted var(--primary);">
           → doi:10.1038/s41598-025-14425-x ↗
         </a>
-        <!-- ★ 전체 분석 버튼 (통합) -->
-        <div style="margin-top:20px; display:flex; justify-content:center;">
-          <button onclick="runAllValAnalysis()"
+        <!-- ★ 통합 분석 버튼 (단일) -->
+        <div style="margin-top:20px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+          <button id="valAllBtn"
+            onclick="runAllValAnalysis(bridgeOnline, profilerOnline)"
             style="padding:12px 36px; border:2px solid rgba(0,184,148,0.5); border-radius:50px;
                    background:linear-gradient(135deg,rgba(0,184,148,0.12),rgba(9,132,227,0.08));
                    color:#00e898; font-size:1rem; font-weight:700;
                    cursor:pointer; transition:all 0.2s; letter-spacing:0.02em;"
-            onmouseover="this.style.background='rgba(0,184,148,0.25)';this.style.boxShadow='0 6px 24px rgba(0,184,148,0.3)'"
-            onmouseout="this.style.background='linear-gradient(135deg,rgba(0,184,148,0.12),rgba(9,132,227,0.08))';this.style.boxShadow='none'">
+            onmouseover="this.style.boxShadow='0 6px 24px rgba(0,184,148,0.3)'"
+            onmouseout="this.style.boxShadow='none'">
             🔬 전체 분석 시작
           </button>
+          <div id="valAllBadgeRow" style="display:none; gap:6px; flex-wrap:wrap; justify-content:center;"></div>
         </div>
         <div id="valAllProgress" style="display:none; margin-top:10px; font-size:0.83rem; color:#7ec8a4; text-align:center;">
           <span style="display:inline-block; animation:spin 0.8s linear infinite;">⏳</span>
@@ -1635,7 +1637,15 @@
                 </tr>
               </tbody>
             </table></div>
-            <div class="val-compare-note" id="valNote-0">* 이미지 분석 버튼을 누르거나 Bridge 서버를 연결해주세요.</div>
+            <button id="valAnalyzeBtn-0" onclick="runValAnalysis(0, bridgeOnline, profilerOnline)"
+              style="margin-top:10px; width:100%; padding:8px; border:1.5px solid rgba(0,184,148,0.4);
+                     border-radius:8px; background:rgba(0,184,148,0.08); color:#00e898;
+                     font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(0,184,148,0.2)'"
+              onmouseout="this.style.background='rgba(0,184,148,0.08)'">
+              🔬 이미지 분석
+            </button>
+            <div class="val-compare-note" id="valNote-0">* 분석 버튼을 누르거나 위의 전체 분석 버튼을 사용하세요.</div>
             <button id="valPipeBtn-0" onclick="openValPipeline(0)"
               style="display:none; margin-top:6px; width:100%; padding:7px; border:1px solid rgba(108,92,231,0.45);
                      border-radius:8px; background:rgba(108,92,231,0.08); color:#a29bfe;
@@ -1717,7 +1727,15 @@
                 </tr>
               </tbody>
             </table></div>
-            <div class="val-compare-note" id="valNote-1">* 이미지 분석 버튼을 누르거나 Bridge 서버를 연결해주세요.</div>
+            <button id="valAnalyzeBtn-1" onclick="runValAnalysis(1, bridgeOnline, profilerOnline)"
+              style="margin-top:10px; width:100%; padding:8px; border:1.5px solid rgba(9,132,227,0.4);
+                     border-radius:8px; background:rgba(9,132,227,0.08); color:#74b9ff;
+                     font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(9,132,227,0.2)'"
+              onmouseout="this.style.background='rgba(9,132,227,0.08)'">
+              🔬 이미지 분석
+            </button>
+            <div class="val-compare-note" id="valNote-1">* 분석 버튼을 누르거나 위의 전체 분석 버튼을 사용하세요.</div>
             <button id="valPipeBtn-1" onclick="openValPipeline(1)"
               style="display:none; margin-top:6px; width:100%; padding:7px; border:1px solid rgba(108,92,231,0.45);
                      border-radius:8px; background:rgba(108,92,231,0.08); color:#a29bfe;
@@ -1799,7 +1817,15 @@
                 </tr>
               </tbody>
             </table></div>
-            <div class="val-compare-note" id="valNote-2">* 이미지 분석 버튼을 누르거나 Bridge 서버를 연결해주세요.</div>
+            <button id="valAnalyzeBtn-2" onclick="runValAnalysis(2, bridgeOnline, profilerOnline)"
+              style="margin-top:10px; width:100%; padding:8px; border:1.5px solid rgba(253,203,110,0.4);
+                     border-radius:8px; background:rgba(253,203,110,0.08); color:#fdcb6e;
+                     font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(253,203,110,0.2)'"
+              onmouseout="this.style.background='rgba(253,203,110,0.08)'">
+              🔬 이미지 분석
+            </button>
+            <div class="val-compare-note" id="valNote-2">* 분석 버튼을 누르거나 위의 전체 분석 버튼을 사용하세요.</div>
             <button id="valPipeBtn-2" onclick="openValPipeline(2)"
               style="display:none; margin-top:6px; width:100%; padding:7px; border:1px solid rgba(108,92,231,0.45);
                      border-radius:8px; background:rgba(108,92,231,0.08); color:#a29bfe;
@@ -1881,7 +1907,15 @@
                 </tr>
               </tbody>
             </table></div>
-            <div class="val-compare-note" id="valNote-3">* 이미지 분석 버튼을 누르거나 Bridge 서버를 연결해주세요.</div>
+            <button id="valAnalyzeBtn-3" onclick="runValAnalysis(3, bridgeOnline, profilerOnline)"
+              style="margin-top:10px; width:100%; padding:8px; border:1.5px solid rgba(255,118,117,0.4);
+                     border-radius:8px; background:rgba(255,118,117,0.08); color:#ff7675;
+                     font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(255,118,117,0.2)'"
+              onmouseout="this.style.background='rgba(255,118,117,0.08)'">
+              🔬 이미지 분석
+            </button>
+            <div class="val-compare-note" id="valNote-3">* 분석 버튼을 누르거나 위의 전체 분석 버튼을 사용하세요.</div>
             <button id="valPipeBtn-3" onclick="openValPipeline(3)"
               style="display:none; margin-top:6px; width:100%; padding:7px; border:1px solid rgba(108,92,231,0.45);
                      border-radius:8px; background:rgba(108,92,231,0.08); color:#a29bfe;
@@ -2443,20 +2477,8 @@
             profilerOnline = true;
             banner.className = 'online';
             statusT.innerHTML = `organoid-profiler.com — 연결됨 <span style="font-size:0.75rem;padding:2px 8px;border-radius:50px;background:#b87f00;color:white;margin-left:4px;">API</span>`;
-            // 검증 카드 Profiler 버튼 활성화
-            const pfBtn = document.getElementById('valProfilerAllBtn');
-            if (pfBtn) {
-                pfBtn.disabled = false;
-                pfBtn.style.opacity = '1'; pfBtn.style.cursor = 'pointer';
-                pfBtn.style.color = '#fdcb6e'; pfBtn.style.borderColor = 'rgba(253,203,110,0.5)';
-                pfBtn.style.background = 'rgba(253,203,110,0.08)';
-                pfBtn.onmouseover = () => pfBtn.style.background = 'rgba(253,203,110,0.2)';
-                pfBtn.onmouseout  = () => pfBtn.style.background = 'rgba(253,203,110,0.08)';
-                for (let i = 0; i < 4; i++) {
-                    const el = document.getElementById(`valPfCount-${i}`);
-                    if (el && el.textContent.includes('연결 필요')) el.textContent = '— 분석 대기';
-                }
-            }
+            // 통합 버튼 배지 업데이트 (Profiler 연결됨)
+            _updateValAllBtnBadge();
             // Pipeline Step5 상태 칩 업데이트
             const s5chip = document.getElementById('pipeS5PfStatus');
             if (s5chip) { s5chip.textContent = 'API 연결됨 — 분석 가능'; s5chip.classList.add('active'); }
@@ -2531,6 +2553,31 @@
     let bridgeMode     = 'pixel';   // 'stub' | 'pixel' | 'organoID'
     let pendingFile    = null;      // 업로드 대기 중인 File 객체
 
+    // ── 통합 분석 버튼 배지 업데이트 ──────────────────────────────
+    function _updateValAllBtnBadge() {
+        const btn     = document.getElementById('valAllBtn');
+        const badgeRow= document.getElementById('valAllBadgeRow');
+        if (!btn) return;
+
+        const badges = [];
+        badges.push('<span style="font-size:0.72rem;padding:2px 9px;border-radius:50px;background:rgba(0,184,148,0.18);color:#00e898;border:1px solid rgba(0,184,148,0.4);">⚙️ 픽셀</span>');
+        if (bridgeOnline)   badges.push('<span style="font-size:0.72rem;padding:2px 9px;border-radius:50px;background:rgba(9,132,227,0.18);color:#74b9ff;border:1px solid rgba(9,132,227,0.4);">🤖 OrganoID</span>');
+        if (profilerOnline) badges.push('<span style="font-size:0.72rem;padding:2px 9px;border-radius:50px;background:rgba(253,203,110,0.18);color:#fdcb6e;border:1px solid rgba(253,203,110,0.4);">🌿 Profiler</span>');
+
+        if (badgeRow) {
+            badgeRow.style.display = 'flex';
+            badgeRow.innerHTML = badges.join('');
+        }
+
+        // Profiler 연결 시 카운트 셀 대기 상태로
+        if (profilerOnline) {
+            for (let i = 0; i < 4; i++) {
+                const el = document.getElementById(`valPfCount-${i}`);
+                if (el && el.textContent.includes('연결 필요')) el.textContent = '— 분석 대기';
+            }
+        }
+    }
+
     // ── Bridge 상태 폴링 ──────────────────────────────────────────
     async function checkBridge() {
         const t       = translations[currentLang];
@@ -2548,21 +2595,11 @@
             banner.className  = 'online';
             dotText.innerHTML = `${t.bridgeOnline} &nbsp;<span style="font-size:0.78rem;padding:2px 9px;border-radius:50px;background:#00b894;color:white;">${modeLabel}</span>`;
             if (pendingFile) showAnalyzeBtn();
-            // ★ 검증 섹션 OrganoID 버튼 — pendingFile 유무와 무관하게 즉시 활성화
-            const vBridgeBtn = document.getElementById('valBridgeAllBtn');
-            if (vBridgeBtn) {
-                vBridgeBtn.disabled = false;
-                vBridgeBtn.style.opacity = '1';
-                vBridgeBtn.style.cursor = 'pointer';
-                vBridgeBtn.style.color = '#74b9ff';
-                vBridgeBtn.style.borderColor = 'rgba(9,132,227,0.5)';
-                vBridgeBtn.style.background = 'rgba(9,132,227,0.08)';
-                vBridgeBtn.onmouseover = () => vBridgeBtn.style.background = 'rgba(9,132,227,0.2)';
-                vBridgeBtn.onmouseout  = () => vBridgeBtn.style.background = 'rgba(9,132,227,0.08)';
-                for (let i = 0; i < 4; i++) {
-                    const el = document.getElementById(`valOiCount-${i}`);
-                    if (el && el.textContent.includes('연결 필요')) el.textContent = '— 분석 대기';
-                }
+            // 통합 버튼 배지 업데이트 (Bridge 연결됨)
+            _updateValAllBtnBadge();
+            for (let i = 0; i < 4; i++) {
+                const el = document.getElementById(`valOiCount-${i}`);
+                if (el && el.textContent.includes('연결 필요')) el.textContent = '— 분석 대기';
             }
         } catch {
             bridgeOnline = false;
