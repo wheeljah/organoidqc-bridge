@@ -219,7 +219,7 @@
         .val-compare-table th.th-profiler { color: #fdcb6e; }
         .val-compare-table td.td-profiler  { color: #fdcb6e; font-weight: 700; }
 
-        /* ── Profiler API URL 입력 ── */
+        /* ── SAM4organoid API URL 입력 ── */
         #profilerBanner { display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:10px;
             font-size:0.83rem; font-weight:600; margin-top:8px; transition:all 0.4s; }
         #profilerBanner.offline { background:rgba(253,203,110,0.08); color:#fdcb6e; border:1.5px solid rgba(253,203,110,0.35); }
@@ -458,33 +458,47 @@
         #daysValue, #supabaseStatus { color:#00e898; }
         select option { background:#0d1f17; }
 
-        /* ── Tablet (1024px 이하) ── */
-        @media (max-width: 1024px) {
-            .container { padding: 16px; }
-            .dashboard { grid-template-columns: 240px 1fr; gap: 18px; }
-            .benefits-banner { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        /* ── Large Desktop (1280px 초과) ── */
+        @media (min-width: 1281px) {
+            .dashboard { grid-template-columns: clamp(280px, 24%, 340px) 1fr; gap: 28px; }
+            .container { max-width: 1440px; padding: 24px 32px; }
         }
 
-        /* ── Mobile (768px 이하): 1컬럼 전환 ── */
+        /* ── Desktop (1024px ~ 1280px) ── */
+        @media (max-width: 1280px) and (min-width: 1025px) {
+            .dashboard { grid-template-columns: clamp(260px, 23%, 300px) 1fr; gap: 22px; }
+        }
+
+        /* ── Tablet Landscape (768px ~ 1024px) ── */
+        @media (max-width: 1024px) {
+            .container { padding: 16px 18px; }
+            .dashboard { grid-template-columns: 220px 1fr; gap: 16px; }
+            .benefits-banner { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+            .sidebar { padding: 18px 16px; }
+            .main { padding: 20px 18px; }
+            header h1 { font-size: 1.9rem; }
+        }
+
+        /* ── Tablet Portrait (768px 이하): 1컬럼 전환 ── */
         @media (max-width: 768px) {
             body { font-size: 15px; }
-            .container { padding: 10px; }
+            .container { padding: 12px 14px; }
 
             /* 헤더 */
-            header { padding: 16px 14px; margin-bottom: 14px; }
-            header h1 { font-size: 1.45rem; }
-            header p.subtitle { font-size: 0.83rem; }
+            header { padding: 18px 16px; margin-bottom: 16px; }
+            header h1 { font-size: 1.55rem; line-height: 1.25; }
+            header p.subtitle { font-size: 0.84rem; }
             #langToggle { top: 10px; right: 10px; padding: 5px 11px; font-size: 0.82rem; }
 
-            /* 대시보드: 1컬럼 */
-            .dashboard { grid-template-columns: 1fr; gap: 12px; }
+            /* 대시보드: 사이드바 위 → 메인 아래 1컬럼 */
+            .dashboard { grid-template-columns: 1fr; gap: 14px; }
 
-            /* 사이드바 */
-            .sidebar { padding: 16px; }
-            .sidebar h3 { font-size: 0.95rem; margin-bottom: 10px; }
+            /* 사이드바: 전체폭 가로 배치 느낌으로 패딩 조정 */
+            .sidebar { padding: 16px 18px; }
+            .sidebar h3 { font-size: 0.96rem; margin-bottom: 10px; }
             .sidebar hr { margin: 14px 0; }
             .sidebar .field-group { margin-bottom: 10px; }
-            .sidebar .field-label { font-size: 0.74rem; margin-bottom: 4px; }
+            .sidebar .field-label { font-size: 0.75rem; margin-bottom: 4px; }
             .slider-value { font-size: 0.95rem; min-width: 34px; }
 
             /* URL 입력행: 세로 스택 */
@@ -492,78 +506,82 @@
             .input-btn-row button { width: 100%; text-align: center; padding: 9px 12px; }
 
             /* 업로드 영역 */
-            .upload-area { padding: 16px 12px; }
+            .upload-area { padding: 18px 14px; font-size: 0.9rem; }
 
             /* Bridge URL 행 */
             #bridgeUrlRow { flex-wrap: wrap; gap: 4px; }
             #bridgeUrlInput { width: 100% !important; }
 
             /* 메인 */
-            .main { padding: 16px; }
-            .main h2 { font-size: 1.1rem; }
-            .main h3 { font-size: 1rem; }
+            .main { padding: 18px 16px; }
+            .main h2 { font-size: 1.15rem; }
+            .main h3 { font-size: 1.02rem; }
 
             /* 베네핏 배너: 2열 */
             .benefits-banner { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-            .benefit-card { padding: 11px 12px; }
-            .benefit-icon { font-size: 1.35rem; }
-            .benefit-card h4 { font-size: 0.86rem; }
-            .benefit-card p { font-size: 0.77rem; }
+            .benefit-card { padding: 12px 13px; }
+            .benefit-icon { font-size: 1.4rem; }
+            .benefit-card h4 { font-size: 0.87rem; }
+            .benefit-card p { font-size: 0.78rem; }
 
             /* QC 카드 */
-            .card { padding: 12px 8px; }
-            .metric { font-size: 1.75rem; }
-            .chart-container { height: 210px; }
+            .card { padding: 13px 10px; }
+            .metric { font-size: 1.85rem; }
+            .chart-container { height: 220px; }
 
             /* 탭 */
             .data-source-tabs { flex-wrap: wrap; }
-            .tab-btn { font-size: 0.8rem; padding: 8px 6px; }
+            .tab-btn { font-size: 0.81rem; padding: 8px 8px; }
 
             /* 알고리즘 비교 */
             .algo-compare-grid { grid-template-columns: 1fr; gap: 10px; }
             .algo-view-toggle { gap: 6px; }
-            .algo-view-btn { font-size: 0.74rem; padding: 5px 10px; }
+            .algo-view-btn { font-size: 0.75rem; padding: 5px 10px; }
 
             /* 수동 입력 */
             .manual-entry-grid { grid-template-columns: 1fr; }
 
             /* 버튼 */
-            .btn { font-size: 0.98rem; padding: 12px 18px; }
-            #analyzeBtn { font-size: 0.93rem; padding: 12px 18px; }
+            .btn { font-size: 0.98rem; padding: 13px 20px; }
+            #analyzeBtn { font-size: 0.94rem; padding: 13px 20px; }
 
             /* 비교 테이블 */
             .comparison-section { overflow-x: auto; }
-            .data-preview { font-size: 0.8rem; }
+            .data-preview { font-size: 0.81rem; }
+
+            /* 검증 섹션 */
+            #validationGrid { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
 
             /* 푸터 */
             .footer-grid { flex-direction: column; gap: 10px; align-items: center; text-align: center; }
-            footer { padding: 16px 14px; font-size: 0.82rem; }
+            footer { padding: 18px 16px; font-size: 0.83rem; }
 
             /* 모달 */
-            #manualModal { padding: 16px 10px; }
-            #manualBox { padding: 22px 16px; }
-            #manualBox h2 { font-size: 1.2rem; }
+            #manualModal { padding: 16px 12px; }
+            #manualBox { padding: 24px 18px; }
+            #manualBox h2 { font-size: 1.25rem; }
         }
 
         /* ── Small Mobile (480px 이하) ── */
         @media (max-width: 480px) {
-            .container { padding: 8px; }
+            body { font-size: 14px; }
+            .container { padding: 8px 10px; }
 
             /* 헤더 */
-            header { padding: 13px 12px; margin-bottom: 12px; }
-            header h1 { font-size: 1.2rem; }
-            header p.subtitle { font-size: 0.78rem; }
+            header { padding: 14px 12px; margin-bottom: 12px; }
+            header h1 { font-size: 1.25rem; }
+            header p.subtitle { font-size: 0.79rem; }
             header div button { font-size: 0.82rem; padding: 7px 14px; }
 
             /* 사이드바 */
-            .sidebar { padding: 13px; }
-            .sidebar h3 { font-size: 0.88rem; }
+            .sidebar { padding: 13px 12px; }
+            .sidebar h3 { font-size: 0.89rem; }
             .sidebar hr { margin: 12px 0; }
             .sidebar select,
             .sidebar input[type="number"],
             .sidebar input[type="text"],
             .sidebar input[type="password"],
-            .sidebar input[type="url"] { font-size: 0.84rem; padding: 8px 10px !important; }
+            .sidebar input[type="url"] { font-size: 0.85rem; padding: 8px 10px !important; }
             .slider-value { font-size: 0.88rem; }
 
             /* 베네핏: 2열 유지, 설명 숨김 */
@@ -571,37 +589,45 @@
             .benefit-card { padding: 10px 10px; gap: 8px; }
             .benefit-card p { display: none; }
             .benefit-icon { font-size: 1.25rem; }
-            .benefit-card h4 { font-size: 0.82rem; }
+            .benefit-card h4 { font-size: 0.83rem; }
 
             /* QC 카드 */
-            .metric { font-size: 1.5rem; }
-            .card { padding: 10px 7px; }
+            .metric { font-size: 1.55rem; }
+            .card { padding: 11px 8px; }
             .status { font-size: 0.78rem; padding: 4px 10px; }
 
             /* 탭 */
-            .tab-btn { padding: 7px 4px; font-size: 0.76rem; }
+            .tab-btn { padding: 7px 5px; font-size: 0.77rem; }
 
             /* 알고리즘 */
-            .algo-view-btn { font-size: 0.7rem; padding: 4px 8px; }
+            .algo-view-btn { font-size: 0.71rem; padding: 4px 8px; }
 
             /* 버튼 */
-            .btn { font-size: 0.92rem; padding: 11px 16px; }
-            #analyzeBtn { font-size: 0.88rem; padding: 11px 16px; }
+            .btn { font-size: 0.93rem; padding: 11px 16px; }
+            #analyzeBtn { font-size: 0.89rem; padding: 11px 16px; }
 
             /* 메인 */
-            .main { padding: 13px; }
+            .main { padding: 13px 12px; }
+
+            /* 검증 섹션: 1컬럼 */
+            #validationGrid { grid-template-columns: 1fr !important; gap: 12px !important; }
+            .val-card div[style*="padding:14px"] { padding: 10px 12px !important; }
+            .val-compare-table { min-width: unset; width: 100%; }
         }
 
         /* ── Extra Small (360px 이하) ── */
         @media (max-width: 360px) {
-            .container { padding: 6px; }
-            header h1 { font-size: 1.05rem; }
-            header p.subtitle { font-size: 0.72rem; }
+            .container { padding: 6px 8px; }
+            header h1 { font-size: 1.08rem; }
+            header p.subtitle { font-size: 0.73rem; }
             .benefits-banner { grid-template-columns: 1fr 1fr; gap: 5px; }
-            .benefit-card h4 { font-size: 0.76rem; }
-            .sidebar { padding: 11px; }
-            .main { padding: 11px; }
+            .benefit-card h4 { font-size: 0.77rem; }
+            .sidebar { padding: 10px; }
+            .main { padding: 10px; }
             .metric { font-size: 1.35rem; }
+            .btn { font-size: 0.88rem; padding: 10px 14px; }
+            #analyzeBtn { font-size: 0.85rem; padding: 10px 14px; }
+            header { padding: 12px 10px; }
         }
 
         /* ── Request 접수 모달 ── */
@@ -673,14 +699,7 @@
         }
         .val-compare-table { min-width: 280px; }
 
-        @media (max-width: 900px) {
-            #validationGrid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        @media (max-width: 480px) {
-            #validationGrid { grid-template-columns: 1fr !important; gap: 12px !important; }
-            .val-card div[style*="padding:14px"] { padding: 10px 12px !important; }
-            .val-compare-table { min-width: unset; width: 100%; }
-        }
+        /* validationGrid 반응형은 메인 미디어쿼리 블록에서 처리 */
 
         /* ══════════════════════════════════════════════════
            ★ v5.4 OrganoID-style Step Pipeline
@@ -1046,21 +1065,21 @@
             <button id="analyzeBtn" onclick="runBridgeAnalysis()" data-ko="🔬 OrganoID로 이미지 분석" data-en="🔬 Analyze with OrganoID">🔬 OrganoID로 이미지 분석</button>
             <div id="analyzeProgress"><span class="spinner">⏳</span> <span id="analyzeMsg">분석 중...</span></div>
 
-            <!-- Profiler -->
+            <!-- SAM4organoid -->
             <div style="font-size:0.8rem; font-weight:700; color:#fdcb6e; margin:12px 0 4px; display:flex; align-items:center; justify-content:space-between;">
-                <span>🌿 Organoid-Profiler</span>
+                <span>🌿 SAM4organoid</span>
                 <button onclick="toggleProfilerUrlRow()" style="font-size:0.72rem; color:#7ec8a4; background:none; border:1px solid rgba(0,184,148,0.2); border-radius:6px; cursor:pointer; padding:3px 8px;">⚙️ URL</button>
             </div>
             <div id="profilerUrlRow" style="display:none; align-items:center; gap:6px; margin-bottom:6px;">
                 <input id="profilerUrlInput" type="url"
-                       value="https://organoid-profiler.com/api"
+                       value="https://wheelja-sam4organoid.hf.space"
                        style="flex:1; min-width:0; padding:6px 10px; border:1.5px solid rgba(253,203,110,0.3); border-radius:8px; font-size:0.82rem; background:#0d1f17; color:#cde8da;"
                        oninput="onProfilerUrlChanged(this.value)" />
                 <button onclick="checkProfiler()" style="padding:6px 12px; border:none; border-radius:8px; background:#b87f00; color:white; font-size:0.78rem; font-weight:600; cursor:pointer; white-space:nowrap;">재연결</button>
             </div>
             <div id="profilerBanner" class="offline">
                 <div style="width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0;"></div>
-                <span id="profilerStatusText">organoid-profiler.com — 연결 중...</span>
+                <span id="profilerStatusText">SAM4organoid — 연결 중...</span>
             </div>
 
             <!-- 데모 버튼 -->
@@ -1111,7 +1130,7 @@
                     </div>
                     <div class="pipe-info-row" id="pipeS1Info"></div>
                     <div id="pipeS1ProfilerRow" style="margin-top:8px;">
-                        <div class="pipe-source-label">🌿 organoid-profiler.com 비교</div>
+                        <div class="pipe-source-label">🌿 SAM4organoid 비교</div>
                         <div class="pipe-source-row">
                             <span class="pipe-source-chip active">이미지 업로드 & 배경 정규화</span>
                             <span class="pipe-source-chip active">TIFF / PNG / JPEG 지원</span>
@@ -1142,7 +1161,7 @@
                     </div>
                     <div class="pipe-info-row" id="pipeS2Info"></div>
                     <div id="pipeS2ProfilerRow" style="margin-top:8px;">
-                        <div class="pipe-source-label">🌿 organoid-profiler.com 비교</div>
+                        <div class="pipe-source-label">🌿 SAM4organoid 비교</div>
                         <div class="pipe-source-row">
                             <span class="pipe-source-chip active">채널 분리 & 강도 정규화</span>
                             <span class="pipe-source-chip active">형광/명시야 자동 감지</span>
@@ -1169,7 +1188,7 @@
                     </div>
                     <div class="pipe-info-row" id="pipeS3Info"></div>
                     <div id="pipeS3ProfilerRow" style="margin-top:8px;">
-                        <div class="pipe-source-label">🌿 organoid-profiler.com 비교</div>
+                        <div class="pipe-source-label">🌿 SAM4organoid 비교</div>
                         <div class="pipe-source-row">
                             <span class="pipe-source-chip active">Watershed 기반 인스턴스 분할</span>
                             <span class="pipe-source-chip active">엣지 강화 후 분리</span>
@@ -1197,7 +1216,7 @@
                     </div>
                     <div class="pipe-info-row" id="pipeS4Info"></div>
                     <div id="pipeS4ProfilerRow" style="margin-top:8px;">
-                        <div class="pipe-source-label">🌿 organoid-profiler.com 비교</div>
+                        <div class="pipe-source-label">🌿 SAM4organoid 비교</div>
                         <div class="pipe-source-row">
                             <span class="pipe-source-chip active" id="pipeS4PfCountChip">25가지 형태 지표 추출</span>
                             <span class="pipe-source-chip active">면적·둘레·장단축·Feret 직경</span>
@@ -1217,11 +1236,11 @@
                          gap:12px; margin:14px 0;"></div>
                     <div class="pipe-info-row" id="pipeS5Info"></div>
                     <div id="pipeS5ProfilerRow" style="margin-top:8px;">
-                        <div class="pipe-source-label">🌿 organoid-profiler.com 비교</div>
+                        <div class="pipe-source-label">🌿 SAM4organoid 비교</div>
                         <div class="pipe-source-row" id="pipeS5PfChips">
                             <span class="pipe-source-chip active">QC 종합 점수화 & 리포트 생성</span>
                             <span class="pipe-source-chip active">25지표 → Pass/Fail 자동 판정</span>
-                            <span class="pipe-source-chip active" id="pipeS5PfStatus">API 미연결 — 연결 시 실측값 표시</span>
+                            <span class="pipe-source-chip active" id="pipeS5PfStatus">SAM4organoid 미연결 — 연결 시 실측값 표시</span>
                         </div>
                     </div>
                         <button class="pipe-next-btn report-btn" onclick="Pipeline.showFullReport()">
@@ -1516,8 +1535,7 @@
 
             <div id="initialGuide" style="text-align:center; padding:40px 20px; color:#6da88a;">
                 <h3 id="initialGuideText">👆 현미경 이미지를 업로드하고 "🔬 이미지 분석 시작" 버튼을 눌러주세요</h3>
-
-
+                <p style="margin:10px 0 0; font-size:0.88rem; color:#4a8a6a; letter-spacing:0.01em;">아래 검증 예시의 <strong style="color:#7ec8a4;">🔬 전체 분석 시작</strong> 버튼으로 Published Data 기반 QC를 먼저 체험해볼 수 있습니다.</p>
             </div>
         </div>
     </div>
@@ -1580,19 +1598,19 @@
             <div style="font-size:0.95rem; font-weight:700; color:#cde8da; margin-bottom:4px;">0% H₂O₂ Control</div>
             <div style="font-size:0.78rem; color:#7ec8a4; margin-bottom:12px; line-height:1.5;">Intact neuroepithelium<br>Optimal morphology</div>
 
-            <!-- ★ 픽셀 vs OrganoID vs Organoid-Profiler 비교표 -->
+            <!-- ★ 픽셀 vs OrganoID vs SAM4organoid 비교표 -->
             <div class="val-compare-header">
               <span>분석 비교</span>
               <span class="badge-pixel">⚙️ Pixel</span>
               <span class="badge-organo">🤖 OrganoID</span>
-              <span class="badge-profiler">🌿 Profiler</span>
+              <span class="badge-profiler">🌿 SAM4organoid</span>
             </div>
             <div class="val-compare-table-wrap"><table class="val-compare-table">
               <thead><tr>
                 <th class="th-metric">지표</th>
                 <th class="th-pixel">픽셀</th>
                 <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
-                <th class="th-profiler">Profiler<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
+                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
               </tr></thead>
               <tbody>
                 <tr>
@@ -1670,19 +1688,19 @@
             <div style="font-size:0.95rem; font-weight:700; color:#cde8da; margin-bottom:4px;">0.25% H₂O₂ Pre</div>
             <div style="font-size:0.78rem; color:#7ec8a4; margin-bottom:12px; line-height:1.5;">Optimal morphology<br>before H₂O₂ exposure</div>
 
-            <!-- ★ 픽셀 vs OrganoID vs Organoid-Profiler 비교표 -->
+            <!-- ★ 픽셀 vs OrganoID vs SAM4organoid 비교표 -->
             <div class="val-compare-header">
               <span>분석 비교</span>
               <span class="badge-pixel">⚙️ Pixel</span>
               <span class="badge-organo">🤖 OrganoID</span>
-              <span class="badge-profiler">🌿 Profiler</span>
+              <span class="badge-profiler">🌿 SAM4organoid</span>
             </div>
             <div class="val-compare-table-wrap"><table class="val-compare-table">
               <thead><tr>
                 <th class="th-metric">지표</th>
                 <th class="th-pixel">픽셀</th>
                 <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
-                <th class="th-profiler">Profiler<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
+                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
               </tr></thead>
               <tbody>
                 <tr>
@@ -1760,19 +1778,19 @@
             <div style="font-size:0.95rem; font-weight:700; color:#cde8da; margin-bottom:4px;">0.25% H₂O₂ Post</div>
             <div style="font-size:0.78rem; color:#7ec8a4; margin-bottom:12px; line-height:1.5;">Mild morphological change<br>QC still passes</div>
 
-            <!-- ★ 픽셀 vs OrganoID vs Organoid-Profiler 비교표 -->
+            <!-- ★ 픽셀 vs OrganoID vs SAM4organoid 비교표 -->
             <div class="val-compare-header">
               <span>분석 비교</span>
               <span class="badge-pixel">⚙️ Pixel</span>
               <span class="badge-organo">🤖 OrganoID</span>
-              <span class="badge-profiler">🌿 Profiler</span>
+              <span class="badge-profiler">🌿 SAM4organoid</span>
             </div>
             <div class="val-compare-table-wrap"><table class="val-compare-table">
               <thead><tr>
                 <th class="th-metric">지표</th>
                 <th class="th-pixel">픽셀</th>
                 <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
-                <th class="th-profiler">Profiler<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
+                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
               </tr></thead>
               <tbody>
                 <tr>
@@ -1850,19 +1868,19 @@
             <div style="font-size:0.95rem; font-weight:700; color:#cde8da; margin-bottom:4px;">5% H₂O₂ Post</div>
             <div style="font-size:0.78rem; color:#7ec8a4; margin-bottom:12px; line-height:1.5;">Severe disaggregation<br>&amp; loss of integrity</div>
 
-            <!-- ★ 픽셀 vs OrganoID vs Organoid-Profiler 비교표 -->
+            <!-- ★ 픽셀 vs OrganoID vs SAM4organoid 비교표 -->
             <div class="val-compare-header">
               <span>분석 비교</span>
               <span class="badge-pixel">⚙️ Pixel</span>
               <span class="badge-organo">🤖 OrganoID</span>
-              <span class="badge-profiler">🌿 Profiler</span>
+              <span class="badge-profiler">🌿 SAM4organoid</span>
             </div>
             <div class="val-compare-table-wrap"><table class="val-compare-table">
               <thead><tr>
                 <th class="th-metric">지표</th>
                 <th class="th-pixel">픽셀</th>
                 <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
-                <th class="th-profiler">Profiler<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
+                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
               </tr></thead>
               <tbody>
                 <tr>
@@ -1960,8 +1978,8 @@
     let currentSimulation = { cv:0, viability:0, marker:0, score:0, circ:0, organ:'' };
     let comparisonChartInstance = null;
     let supabaseRealData = [];   // Supabase에서 불러온 데이터
-    // ── ★ v5.6 Organoid-Profiler 연동 상태 ──────────────────────
-    let PROFILER_URL = 'https://organoid-profiler.com/api';
+    // ── ★ v5.6 SAM4organoid 연동 상태 ──────────────────────
+    let PROFILER_URL = 'https://wheelja-sam4organoid.hf.space';
     let profilerOnline = false;
     // ── 보안 v5.2: XSS 방어용 HTML 이스케이프 헬퍼 (H-2) ──────────
     function esc(str) {
@@ -2451,7 +2469,7 @@
         localStorage.setItem('bridgeUrl', BRIDGE_URL);
     }
 
-    // ── ★ v5.6 Organoid-Profiler URL 변경 ────────────────────────
+    // ── ★ v5.6 SAM4organoid URL 변경 ────────────────────────
     function onProfilerUrlChanged(val) {
         PROFILER_URL = val.trim().replace(/\/$/, '');
     }
@@ -2462,7 +2480,7 @@
         row.style.display = row.style.display === 'none' ? 'flex' : 'none';
     }
 
-    // ── ★ v5.6 Organoid-Profiler 연결 확인 ───────────────────────
+    // ── ★ v5.6 SAM4organoid 연결 확인 ───────────────────────
     async function checkProfiler() {
         const banner  = document.getElementById('profilerBanner');
         const statusT = document.getElementById('profilerStatusText');
@@ -2476,8 +2494,8 @@
             if (!res.ok) throw new Error('non-200');
             profilerOnline = true;
             banner.className = 'online';
-            statusT.innerHTML = `organoid-profiler.com — 연결됨 <span style="font-size:0.75rem;padding:2px 8px;border-radius:50px;background:#b87f00;color:white;margin-left:4px;">API</span>`;
-            // 통합 버튼 배지 업데이트 (Profiler 연결됨)
+            statusT.innerHTML = `SAM4organoid — 연결됨 <span style="font-size:0.75rem;padding:2px 8px;border-radius:50px;background:#b87f00;color:white;margin-left:4px;">API</span>`;
+            // 통합 버튼 배지 업데이트 (SAM4organoid 연결됨)
             _updateValAllBtnBadge();
             // Pipeline Step5 상태 칩 업데이트
             const s5chip = document.getElementById('pipeS5PfStatus');
@@ -2485,11 +2503,11 @@
         } catch {
             profilerOnline = false;
             banner.className = 'offline';
-            statusT.textContent = 'organoid-profiler.com — 연결 실패';
+            statusT.textContent = 'SAM4organoid — 연결 실패';
         }
     }
 
-    // ── ★ v5.6 Profiler API 분석 호출 ────────────────────────────
+    // ── ★ v5.6 SAM4organoid API 분석 호출 ────────────────────────────
     async function runProfilerAnalysis(imgSrc) {
         if (!profilerOnline || !PROFILER_URL) return null;
         try {
@@ -2505,7 +2523,7 @@
         } catch { return null; }
     }
 
-    // ── ★ v5.6 Profiler 결과를 검증 테이블 셀에 반영 ─────────────
+    // ── ★ v5.6 SAM4organoid 결과를 검증 테이블 셀에 반영 ─────────────
     function updateValPfCells(idx, r, loading = false, errMsg = null) {
         const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
         if (loading) {
@@ -2520,7 +2538,7 @@
             if (vEl) { vEl.textContent = errMsg || '— 오류'; vEl.className = 'td-profiler'; }
             return;
         }
-        // Profiler API 응답 필드 매핑 (organoid-profiler.com 스펙 기준)
+        // SAM4organoid API 응답 필드 매핑
         const count = r.organoid_count ?? r.count ?? '—';
         const cv    = r.size_cv ?? r.cv ?? '—';
         const circ  = r.mean_circularity ?? r.circularity ?? '—';
@@ -2547,7 +2565,7 @@
                 { vEl.textContent = '❌ Fail'; vEl.className = 'td-profiler td-match-bad'; }
         }
         const noteEl = document.getElementById(`valNote-${idx}`);
-        if (noteEl) noteEl.textContent = `✅ 픽셀 + OrganoID + Profiler 분석 완료`;
+        if (noteEl) noteEl.textContent = `✅ 픽셀 + OrganoID + SAM4organoid 분석 완료`;
     }
     let bridgeOnline   = false;
     let bridgeMode     = 'pixel';   // 'stub' | 'pixel' | 'organoID'
@@ -2562,14 +2580,14 @@
         const badges = [];
         badges.push('<span style="font-size:0.72rem;padding:2px 9px;border-radius:50px;background:rgba(0,184,148,0.18);color:#00e898;border:1px solid rgba(0,184,148,0.4);">⚙️ 픽셀</span>');
         if (bridgeOnline)   badges.push('<span style="font-size:0.72rem;padding:2px 9px;border-radius:50px;background:rgba(9,132,227,0.18);color:#74b9ff;border:1px solid rgba(9,132,227,0.4);">🤖 OrganoID</span>');
-        if (profilerOnline) badges.push('<span style="font-size:0.72rem;padding:2px 9px;border-radius:50px;background:rgba(253,203,110,0.18);color:#fdcb6e;border:1px solid rgba(253,203,110,0.4);">🌿 Profiler</span>');
+        if (profilerOnline) badges.push('<span style="font-size:0.72rem;padding:2px 9px;border-radius:50px;background:rgba(253,203,110,0.18);color:#fdcb6e;border:1px solid rgba(253,203,110,0.4);">🌿 SAM4organoid</span>');
 
         if (badgeRow) {
             badgeRow.style.display = 'flex';
             badgeRow.innerHTML = badges.join('');
         }
 
-        // Profiler 연결 시 카운트 셀 대기 상태로
+        // SAM4organoid 연결 시 카운트 셀 대기 상태로
         if (profilerOnline) {
             for (let i = 0; i < 4; i++) {
                 const el = document.getElementById(`valPfCount-${i}`);
@@ -2619,7 +2637,7 @@
         }
     }
 
-    // ── ★ v5.6 검증 카드 개별 분석 (Bridge + Profiler) ──────────
+    // ── ★ v5.6 검증 카드 개별 분석 (Bridge + SAM4organoid) ──────────
     async function runValAnalysis(idx, includeBridge = false, includeProfiler = false) {
         const imgEl = document.getElementById(`valImg-${idx}`);
         const btn   = document.getElementById(`valAnalyzeBtn-${idx}`);
@@ -2652,15 +2670,15 @@
                 }
             }
 
-            // ③ ★ v5.6 Organoid-Profiler API
+            // ③ ★ v5.6 SAM4organoid API
             const shouldProfiler = profilerOnline && includeProfiler;
             if (shouldProfiler) {
                 updateValPfCells(idx, null, true);
                 try {
                     const pfResult = await runProfilerAnalysis(imgEl.src);
                     if (pfResult) updateValPfCells(idx, pfResult, false);
-                    else updateValPfCells(idx, null, false, '❌ Profiler 오류');
-                } catch(e) { updateValPfCells(idx, null, false, '❌ Profiler 오류'); }
+                    else updateValPfCells(idx, null, false, '❌ SAM4organoid 오류');
+                } catch(e) { updateValPfCells(idx, null, false, '❌ SAM4organoid 오류'); }
             } else {
                 for (const key of ['Count','CV','Circ','Viab','Score']) {
                     const el = document.getElementById(`valPf${key}-${idx}`);
@@ -2887,7 +2905,7 @@
         const matchEl = document.getElementById(`valMatchCell-${idx}`);
         if (!matchEl) return;
         if (!org) {
-            const pfConnected = profilerOnline ? ' | 🌿 Profiler 연결됨' : '';
+            const pfConnected = profilerOnline ? ' | 🌿 SAM4organoid 연결됨' : '';
             matchEl.textContent = `⚙️ 픽셀: ${pix.count}개 검출 | Bridge 연결 시 OrganoID 비교 가능${pfConnected}`;
             matchEl.style.color = '#7ec8a4';
             return;
@@ -4129,14 +4147,14 @@
                 chip(`Size CV: ${cv}%`) +
                 chip(`컴포넌트 후보: ${_components.length}개`);
 
-            // ★ v5.6 Profiler 비교 칩 업데이트
+            // ★ v5.6 SAM4organoid 비교 칩 업데이트
             const pfCompChip = document.getElementById('pipeS4PfCompare');
             if (pfCompChip) {
                 if (profilerOnline) {
-                    pfCompChip.textContent = `API 연결됨 — 픽셀 검출: ${_stats.length}개 / Profiler 비교 가능`;
+                    pfCompChip.textContent = `API 연결됨 — 픽셀 검출: ${_stats.length}개 / SAM4organoid 비교 가능`;
                     pfCompChip.classList.add('active');
                 } else {
-                    pfCompChip.textContent = `픽셀 검출: ${_stats.length}개 | Profiler API 연결 시 비교 가능`;
+                    pfCompChip.textContent = `픽셀 검출: ${_stats.length}개 | SAM4organoid 연결 시 비교 가능`;
                 }
             }
             const pfCountChip = document.getElementById('pipeS4PfCountChip');
@@ -4209,10 +4227,10 @@
                 chip(`배양: ${days}일`) +
                 chip(`Passage: P${document.getElementById('passage').value}`);
 
-            // ★ v5.6 Profiler 비교 칩 업데이트 및 API 호출
+            // ★ v5.6 SAM4organoid 비교 칩 업데이트 및 API 호출
             const s5chip = document.getElementById('pipeS5PfStatus');
             if (profilerOnline && _img) {
-                if (s5chip) { s5chip.textContent = '⏳ Profiler API 분석 중...'; s5chip.classList.add('active'); }
+                if (s5chip) { s5chip.textContent = '⏳ SAM4organoid 분석 중...'; s5chip.classList.add('active'); }
                 try {
                     const pfRes = await runProfilerAnalysis(_img.src);
                     if (pfRes) {
@@ -4221,13 +4239,13 @@
                         const pfViab  = pfRes.viability_proxy ?? pfRes.viability ?? '—';
                         const pfScore = pfRes.qc_score ?? pfRes.score ?? '—';
                         const pfCount = pfRes.organoid_count ?? pfRes.count ?? '—';
-                        if (s5chip) s5chip.textContent = `🌿 Profiler: 검출 ${pfCount}개 | CV ${pfCV}% | Circ ${pfCirc} | Score ${pfScore}`;
+                        if (s5chip) s5chip.textContent = `🌿 SAM4organoid: 검출 ${pfCount}개 | CV ${pfCV}% | Circ ${pfCirc} | Score ${pfScore}`;
                         // 비교 카드 추가
                         const pfDiv = document.createElement('div');
                         pfDiv.className = 'pipe-qc-card';
                         pfDiv.style.cssText = 'border:1.5px solid rgba(253,203,110,0.4);grid-column:1/-1;margin-top:6px;';
                         pfDiv.innerHTML = `
-                            <div style="font-size:0.68rem;color:#b8970a;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">🌿 organoid-profiler.com 비교</div>
+                            <div style="font-size:0.68rem;color:#b8970a;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">🌿 SAM4organoid 비교</div>
                             <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
                                 ${[['검출 수', pfCount + '개'],['Size CV', pfCV + '%'],['Circularity', pfCirc],['Viability', pfViab + '%'],['QC Score', pfScore]]
                                     .map(([label, val]) => `<div style="background:rgba(253,203,110,0.07);border:1px solid rgba(253,203,110,0.2);border-radius:8px;padding:6px 12px;min-width:80px;text-align:center;">
@@ -4237,13 +4255,13 @@
                             </div>`;
                         cardsEl.appendChild(pfDiv);
                     } else {
-                        if (s5chip) s5chip.textContent = '🌿 Profiler API — 응답 없음';
+                        if (s5chip) s5chip.textContent = '🌿 SAM4organoid — 응답 없음';
                     }
                 } catch(e) {
-                    if (s5chip) s5chip.textContent = '🌿 Profiler API — 오류 발생';
+                    if (s5chip) s5chip.textContent = '🌿 SAM4organoid — 오류 발생';
                 }
             } else if (s5chip) {
-                s5chip.textContent = profilerOnline ? '🌿 Profiler API 연결됨 — 분석 준비 완료' : 'API 미연결 — 연결 시 실측값 표시';
+                s5chip.textContent = profilerOnline ? '🌿 SAM4organoid 연결됨 — 분석 준비 완료' : 'SAM4organoid 미연결 — 연결 시 실측값 표시';
             }
         }  // ← step5() 닫는 브레이스 (v5.7 버그 수정)
 
@@ -4717,7 +4735,7 @@
         checkBridge();
         setInterval(checkBridge, 10000);
 
-        // ★ v5.7 Organoid-Profiler 자동 연결
+        // ★ v5.7 SAM4organoid 자동 연결
         checkProfiler();
 
         document.getElementById('cultureDays').addEventListener('input', function() {
