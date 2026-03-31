@@ -1072,7 +1072,7 @@
             </div>
             <div id="profilerUrlRow" style="display:none; align-items:center; gap:6px; margin-bottom:6px;">
                 <input id="profilerUrlInput" type="url"
-                       value="https://wheelja-sam4organoid.hf.space"
+                       value="https://wheelja-organoidqc.hf.space"
                        style="flex:1; min-width:0; padding:6px 10px; border:1.5px solid rgba(253,203,110,0.3); border-radius:8px; font-size:0.82rem; background:#0d1f17; color:#cde8da;"
                        oninput="onProfilerUrlChanged(this.value)" />
                 <button onclick="checkProfiler()" style="padding:6px 12px; border:none; border-radius:8px; background:#b87f00; color:white; font-size:0.78rem; font-weight:600; cursor:pointer; white-space:nowrap;">재연결</button>
@@ -1610,7 +1610,7 @@
                 <th class="th-metric">지표</th>
                 <th class="th-pixel">픽셀</th>
                 <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
-                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
+                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span><br><span style="font-size:0.55rem;font-weight:400;opacity:0.55;color:#fdcb6e;">⏳ 첫 연결 최대 60초</span></th>
               </tr></thead>
               <tbody>
                 <tr>
@@ -1700,7 +1700,7 @@
                 <th class="th-metric">지표</th>
                 <th class="th-pixel">픽셀</th>
                 <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
-                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
+                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span><br><span style="font-size:0.55rem;font-weight:400;opacity:0.55;color:#fdcb6e;">⏳ 첫 연결 최대 60초</span></th>
               </tr></thead>
               <tbody>
                 <tr>
@@ -1790,7 +1790,7 @@
                 <th class="th-metric">지표</th>
                 <th class="th-pixel">픽셀</th>
                 <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
-                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
+                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span><br><span style="font-size:0.55rem;font-weight:400;opacity:0.55;color:#fdcb6e;">⏳ 첫 연결 최대 60초</span></th>
               </tr></thead>
               <tbody>
                 <tr>
@@ -1880,7 +1880,7 @@
                 <th class="th-metric">지표</th>
                 <th class="th-pixel">픽셀</th>
                 <th class="th-organo">OrganoID<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(서버 연결 시)</span></th>
-                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span></th>
+                <th class="th-profiler">SAM4organoid<br><span style="font-size:0.6rem;font-weight:400;opacity:0.7;">(API 연결 시)</span><br><span style="font-size:0.55rem;font-weight:400;opacity:0.55;color:#fdcb6e;">⏳ 첫 연결 최대 60초</span></th>
               </tr></thead>
               <tbody>
                 <tr>
@@ -1979,7 +1979,7 @@
     let comparisonChartInstance = null;
     let supabaseRealData = [];   // Supabase에서 불러온 데이터
     // ── ★ v5.6 SAM4organoid 연동 상태 ──────────────────────
-    let PROFILER_URL = 'https://wheelja-sam4organoid.hf.space';
+    let PROFILER_URL = 'https://wheelja-organoidqc.hf.space';
     let profilerOnline = false;
     // ── 보안 v5.2: XSS 방어용 HTML 이스케이프 헬퍼 (H-2) ──────────
     function esc(str) {
@@ -2480,7 +2480,7 @@
         row.style.display = row.style.display === 'none' ? 'flex' : 'none';
     }
 
-    // ── ★ v5.6 SAM4organoid 연결 확인 ───────────────────────
+    // ── ★ v5.7fix SAM4organoid 연결 확인 (cold-start 대응, 60s timeout) ────
     async function checkProfiler() {
         const banner  = document.getElementById('profilerBanner');
         const statusT = document.getElementById('profilerStatusText');
@@ -2488,9 +2488,26 @@
             statusT.textContent = 'URL을 먼저 입력해주세요';
             return;
         }
-        statusT.textContent = '연결 확인 중...';
+
+        // HuggingFace Space는 비활성 시 슬립 → 재기동까지 최대 60초 소요.
+        // 단계별 안내 메시지로 사용자가 대기 상황을 인지하도록 함.
+        banner.className = 'offline';
+        statusT.textContent = '연결 확인 중…';
+
+        const coldMsgs = [
+            { after:  4000, text: 'HF Space 부팅 중… (최대 60초 소요)' },
+            { after: 12000, text: 'HF Space 부팅 중… ☕ 잠시만 기다려 주세요' },
+            { after: 25000, text: 'HF Space 부팅 중… 🔄 거의 다 됐어요' },
+            { after: 45000, text: 'HF Space 부팅 중… ⏳ 조금 더 기다려 주세요' },
+        ];
+        const timers = coldMsgs.map(({ after, text }) =>
+            setTimeout(() => { statusT.textContent = text; }, after)
+        );
+        const clearTimers = () => timers.forEach(clearTimeout);
+
         try {
-            const res = await fetch(`${PROFILER_URL}/health`, { signal: AbortSignal.timeout(3000) });
+            const res = await fetch(`${PROFILER_URL}/health`, { signal: AbortSignal.timeout(60000) });
+            clearTimers();
             if (!res.ok) throw new Error('non-200');
             profilerOnline = true;
             banner.className = 'online';
@@ -2501,9 +2518,10 @@
             const s5chip = document.getElementById('pipeS5PfStatus');
             if (s5chip) { s5chip.textContent = 'API 연결됨 — 분석 가능'; s5chip.classList.add('active'); }
         } catch {
+            clearTimers();
             profilerOnline = false;
             banner.className = 'offline';
-            statusT.textContent = 'SAM4organoid — 연결 실패';
+            statusT.textContent = 'SAM4organoid — 연결 실패 (재연결 버튼을 눌러 다시 시도)';
         }
     }
 
